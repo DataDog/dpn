@@ -1,0 +1,136 @@
+version: "3"
+
+# Unless explicitly stated otherwise all files in this repository are licensed under the Apache 2.0 License.
+# This product includes software developed at Datadog (https://www.datadoghq.com/). Copyright 2020 Datadog, Inc.
+
+services:
+  vote:
+    build: ./vote
+    environment:
+      - DD_ENV=demo
+      - DD_SERVICE=vote
+      - DD_VERSION=0.1
+      - DD_AGENT_HOST=datadog
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ANALYTICS_ENABLED=true
+      - DD_TRACE_AGENT_PORT=8126
+      - DATADOG_TRACE_DEBUG=true
+    command: ddtrace-run python app.py
+    volumes:
+     - ./vote:/app
+    ports:
+      - "8000:80"
+    networks:
+      - front-tier
+      - back-tier
+    labels:
+      com.datadoghq.ad.logs: '[{"service": "example-voting-app_vote", "source": "python", "log_processing_rules": [{"type": "multi_line", "name": "log_start_with_date", "pattern" : "\\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])"}]}]'
+
+  result:
+    build: ./result
+    command: nodemon server.js
+    volumes:
+      - ./result:/app
+    environment:
+      - DD_TRACE_ANALYTICS_ENABLED=true
+      - DD_LOGS_INJECTION=true
+      - DD_ENV=demo
+      - DD_SERVICE=result
+      - DD_VERSION=0.1
+      - DD_AGENT_HOST=datadog
+      - DD_TRACE_AGENT_PORT=8126
+      - DATADOG_TRACE_DEBUG=true
+    ports:
+      - "8080:80"
+      - "5858:5858"
+    networks:
+      - front-tier
+      - back-tier
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile.j
+    depends_on:
+      - "redis"
+      - "db"
+    environment:
+      - DD_ENV=demo
+      - DD_SERVICE=worker
+      - DD_VERSION=0.1
+      - DD_AGENT_HOST=datadog
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ANALYTICS_ENABLED=true
+      - DD_TRACE_AGENT_PORT=8126
+      # - DD_TRACE_DEBUG=true
+      # - JAVA_OPTS="-javaagent:/dd-java-agent.jar"
+    volumes:
+      - ./worker/dd-java-agent.jar:/dd-java-agent.jar
+    networks:
+      - back-tier
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports: ["6379"]
+    networks:
+      - back-tier
+    labels:
+      com.datadoghq.ad.check_names: '["redisdb"]'
+      com.datadoghq.ad.init_configs: '[{}]'
+      com.datadoghq.ad.instances: '[{"host": "%%host%%","port":"%%port%%"}]'
+
+  db:
+    image: postgres:9.4
+    container_name: db
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    volumes:
+      - "db-data:/var/lib/postgresql/data"
+    networks:
+      - back-tier
+    labels:
+      com.datadoghq.ad.check_names: '["postgres"]'
+      com.datadoghq.ad.init_configs: '[{}]'
+      com.datadoghq.ad.instances: '[{"host": "%%host%%","port":"%%port%%","username":"postgres","password":"postgres"}]'
+
+  datadog:
+    container_name: datadog-agent
+    image: datadog/agent:latest
+    environment:
+      ## GLOBALS
+      - DD_API_KEY=<DD_API_KEY>
+      - DD_SITE=<DD_SITE> # The value will be taken from the .env file
+      - DD_HOSTNAME=<HOSTNAME_BASE>.voting-app
+      - DD_TAGS=\"<TAG_DEFAULTS> env:demo\"
+      - DD_AC_EXCLUDE=name:datadog-agent # exclude this container from data collection. comment this out if you need to troubleshoot more.
+      ## APM https://docs.datadoghq.com/agent/docker/apm/
+      - DD_APM_ENABLED=true
+      - DD_APM_NON_LOCAL_TRAFFIC=true
+      ## LOGS https://docs.datadoghq.com/agent/docker/log/
+      - DD_LOGS_ENABLED=true
+      - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
+      ## LIVE PROCESSES https://docs.datadoghq.com/graphing/infrastructure/process/?tab=docker
+      - DD_PROCESS_AGENT_ENABLED=true
+      ## DOGSTATSD
+      - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
+    ports:
+      - 8126:8126/tcp # APM available from any host
+      - 8125:8125/udp # Dogstatsd
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
+      - /etc/passwd:/etc/passwd:ro # LIVE PROCESSES
+      - /opt/datadog-agent/run:/opt/datadog-agent/run:rw
+    networks:
+      - front-tier
+      - back-tier
+
+volumes:
+  db-data:
+
+networks:
+  front-tier:
+  back-tier:

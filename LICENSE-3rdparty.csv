@@ -1,0 +1,3 @@
+Component,Origin,License
+sample-app:sample-app-todo,"https://github.com/benc-uk/nodejs-demoapp",MIT
+sample-app:voting-app,"https://github.com/dockersamples/example-voting-app",Apache-2.0

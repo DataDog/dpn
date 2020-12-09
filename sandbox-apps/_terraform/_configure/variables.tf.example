@@ -1,0 +1,56 @@
+
+# Unless explicitly stated otherwise all files in this repository are licensed under the Apache 2.0 License.
+# This product includes software developed at Datadog (https://www.datadoghq.com/). Copyright 2020 Datadog, Inc.
+
+###################################################################################
+#                                                                                 #
+# REQUIRED VARS -- you should set the default values for these vars               #
+#                                                                                 #
+###################################################################################
+
+variable "creator" {
+  description = "the creator of the sandbox-app. Used for AWS account maintenance"
+  default     = "REPLACE_ME"  # "elliot.alderson"
+}
+
+variable "aws_region" {
+  description = "region for sandbox instance. can be overwritten, but then other AWS elements may need to be updated."
+  default     = "REPLACE_ME"  # "us-east-1"
+}
+
+variable "access_ips" {
+  description = "the list of IPs that should have http and ssh access in the security group for your dpn vpc"
+  default     = ["REPLACE_ME/32"]    # ["my.public.ip.here/32"]
+}
+
+variable "my_os_is_windows" {
+  description = "boolean, whether or not the OS of your computer running terraform is a Windows OS"
+  default     = false  # true or false
+}
+
+###################################################################################
+#                                                                                 #
+# AUTHENTICATION VARS --                                                          #
+#                                                                                 #
+#  - If you use aws-vault (recommended) then you can leave these as "REPLACE_ME"  #
+#                                                                                 #
+#  - Otherwise, shared_credentials_file is required                               #
+#               profile is optional, and                                          #
+#               role_arn is optional                                              #
+#                                                                                 #
+###################################################################################
+
+variable "shared_credentials_file" {
+  description = "the file that contains the details terraform will use to authenticate with your cloud provider. escape backslash chars as \\"
+  default     = "REPLACE_ME"  # "~/.aws/credentials" or "C:\\.aws\\credentials"
+}
+
+variable "profile" {
+  description = "the profile from your shared_credentials_file that terraform will use to authenticate with your cloud provider"
+  default     = "REPLACE_ME"  # "dpn-sandbox"
+}
+
+variable "role_arn" {
+  description = "the role terraform should use to provision EC2 instances with"
+  default     = "REPLACE_ME"  # "arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME"
+}

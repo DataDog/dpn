@@ -1,0 +1,105 @@
+
+# Unless explicitly stated otherwise all files in this repository are licensed under the Apache 2.0 License.
+# This product includes software developed at Datadog (https://www.datadoghq.com/). Copyright 2020 Datadog, Inc.
+
+#######################################################################
+#                                                                     #
+# REQUIRED VARS -- you should set the default values for these vars   #
+#                                                                     #
+#######################################################################
+
+variable "shared_credentials_file" {
+  description = "the file that contains the details terraform will use to authenticate with your cloud provider"
+  default     = "REPLACE_ME"    # "~/.aws/credentials"
+}
+
+variable "profile" {
+  description = "the profile from your shared_credentials_file that terraform will use to authenticate with your cloud provider"
+  default     = "REPLACE_ME"    # "dpn-sandbox"
+}
+
+variable "role_arn" {
+  description = "the role terraform should use to provision EC2 instances with"
+  default     = "REPLACE_ME"    # "arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME"
+}
+
+variable "creator" {
+  description = "the creator of the sandbox-app. Used for AWS account maintenance"
+  default     = "REPLACE_ME"    # "elliot.alderson"
+}
+
+variable "key_name" {
+  description = "the name of the key you will use to authenticate with the cloud provider"
+  default     = "REPLACE_ME"    # "my-key-name"
+}
+
+variable "private_key_path" {
+  description = "the path to the private key you will use to authenticate with the cloud provider"
+  default     = "REPLACE_ME"    # "~/.ssh/my-private-key-file.pem"
+}
+
+variable "aws_region" {
+  description = "region for sandbox instance. can be overwritten, but then other AWS elements may need to be updated."
+  default     = "REPLACE_ME"    # "us-east-1"
+}
+
+variable "vpc_security_group_ids" {
+  description = "the list of vpc security groups you will use"
+  default     = ["REPLACE_ME"]  # ["sg-12345678", "sg-23456789"]
+}
+
+variable "subnet_id" {
+  description = "the id of the subnet you will use"
+  default     = "REPLACE_ME"    # "subnet-12345678"
+}
+
+
+#######################################################################
+#                                                                     #
+# PRESET VARS -- you probably don't want to change these vars         #
+#                                                                     #
+#######################################################################
+
+variable "cloud_provider" {
+  description = "cloud provider for sandbox. will be aws for now, someday will support azure and gcp too."
+  default     = "aws"
+}
+
+variable "resource_type" {
+  description = "type of resource being started. will be aws_instance for now, someday other options will be added when we add support for other cloud_providers."
+  default     = "aws_instance"
+}
+
+variable "resource_os" {
+  description = "the operating system and/or distribution of the resource. this value will be mapped to aws AMIs. Defaults to ubuntu 16.04 (xenial)"
+  default     = "ubuntu"
+}
+
+variable "resource_size" {
+  description = "the size of your instnace. corelates with AWS instance type. Defaults to t2.micro. Only change if working on bigger projects--this has AWS billing implications. t2.nano == 0.5GB, t2.micro == 1GB, t2.small == 2GB, t2.medium == 4GB"
+  default     = "t2.micro"
+}
+
+variable "ami" {
+  description = "the ami for the instance that will be provisioned. Will be for a standard xenial ubuntu instance type."
+  default     = "ami-80861296"
+}
+
+variable "user" {
+  description = "the username for login to the machine that will be provisioned."
+  default     = "ubuntu"
+}
+
+variable "resource_name" {
+  description = "resource to be named for each app. intentionally left without default value here."
+  type        = string
+}
+
+locals {
+  # a map of the variables available in the _configure/configured.tfvars file
+  config_vars = file("${path.module}/_configure/configured.tfvars") == "" ? {} : {
+    for line in split("\n", file("${path.module}/_configure/configured.tfvars")):
+    element(split("=", line), 0) => element(split("=", line), 1)
+    if length(split("=", line)) == 2
+  }
+}
