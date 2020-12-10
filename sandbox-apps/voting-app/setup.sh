@@ -13,6 +13,15 @@ sudo mv setup.env.new setup.env
 
 TYPE=$(echo "$TYPE" | tr '[:upper:]' '[:lower:]')
 
+# quit if any of the required vars are not set
+[ -z "$DD_API_KEY" ] && echo "make sure to set DD_API_KEY in your setup.env file. exiting." && exit 1
+[ -z "$DD_APP_KEY" ] && echo "make sure to set DD_APP_KEY in your setup.env file. exiting." && exit 1
+[ -z "$PG_USER" ] && echo "make sure to set PG_USER in your setup.env file. exiting." && exit 1
+[ -z "$PG_PASS" ] && echo "make sure to set PG_PASS in your setup.env file. exiting." && exit 1
+[ -z "$HOSTNAME_BASE" ] && echo "make sure to set HOSTNAME_BASE in your setup.env file. exiting." && exit 1
+[ -z "$TAG_DEFAULTS" ] && echo "make sure to set TAG_DEFAULTS in your setup.env file. exiting." && exit 1
+[ -z "$TYPE" ] && echo "make sure to set TYPE in your setup.env file. exiting." && exit 1
+
 echo "Provisioning!"
 
 echo "apt-get updating"
