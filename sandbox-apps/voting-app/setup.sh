@@ -47,6 +47,16 @@ echo "cloning app repo"
 sudo git clone https://github.com/dockersamples/example-voting-app.git
 cd example-voting-app
 
+# replace username and passwords with setup.env input:
+psqlconnstring="Server=db;Username=${PG_USER:-e.alderson};Password=${PG_PASS:-the9cake4is8a3lie};"
+sudo sed -i.bak "s|var pgsql = OpenDbConnection(\"Server=db;Username=postgres;Password=postgres;\");|var pgsql = OpenDbConnection(\"${psqlconnstring}\");|g" ./worker/src/Worker/Worker.csproj
+sudo sed -i.bak "s|POSTGRES_USER: \"postgres\"|POSTGRES_USER: \"${PG_USER:-e.alderson}\"|g" $HOME/data/docker-compose-dotnetworker.yml
+sudo sed -i.bak "s|POSTGRES_PASSWORD: \"postgres\"|POSTGRES_PASSWORD: \"${PG_PASS:-the9cake4is8a3lie}\"|g" $HOME/data/docker-compose-dotnetworker.yml
+sudo sed -i.bak "s|conn = DriverManager.getConnection(url, \"postgres\", \"postgres\");|conn = DriverManager.getConnection(url, \"${PG_USER:-e.alderson}\", \"${PG_PASS:-the9cake4is8a3lie}\");|g" ./worker/src/main/java/worker/Worker.java
+sudo sed -i.bak "s|POSTGRES_USER: \"postgres\"|POSTGRES_USER: \"${PG_USER:-e.alderson}\"|g" $HOME/data/docker-compose-javaworker.yml
+sudo sed -i.bak "s|POSTGRES_PASSWORD: \"postgres\"|POSTGRES_PASSWORD: \"${PG_PASS:-the9cake4is8a3lie}\"|g" $HOME/data/docker-compose-javaworker.yml
+sudo sed -i.bak "s|connectionString: 'postgres://postgres:postgres@db/postgres'|connectionString: \"postgres://${PG_USER:-e.alderson}:${PG_PASS:-the9cake4is8a3lie}@db/postgres\"|g" ./result/server.js
+
 # this part will be for Java, once we add support for it. 
 echo "configure the docker-compose file and envs"
 sudo cp $HOME/data/docker-compose-javaworker.yml ./
