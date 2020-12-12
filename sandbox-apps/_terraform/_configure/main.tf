@@ -22,7 +22,7 @@ resource "null_resource" "configfile_manager" {
     command = contains(["REPLACE_ME", ""], var.aws_region) ? "echo ''" : (
       var.my_os_is_windows 
         ? "Add-Content -Value '\nCONFIG_AWS_REGION=${var.aws_region}' -Path ${path.cwd}\\configured.tfvars"
-        : "echo '\nCONFIG_AWS_REGION=${var.aws_region}' >> ${path.cwd}/configured.tfvars"
+        : "echo 'CONFIG_AWS_REGION=${var.aws_region}' >> ${path.cwd}/configured.tfvars"
     )
   }
   provisioner "local-exec" {
@@ -30,7 +30,7 @@ resource "null_resource" "configfile_manager" {
     command = contains(["REPLACE_ME", ""], var.aws_region) ? "echo ''" : (
     var.my_os_is_windows 
         ? "Add-Content -Value '\nCONFIG_CREATOR=${var.creator}' -Path ${path.cwd}\\configured.tfvars"
-        : "echo '\nCONFIG_CREATOR=${var.creator}' >> ${path.cwd}/configured.tfvars"
+        : "echo 'CONFIG_CREATOR=${var.creator}' >> ${path.cwd}/configured.tfvars"
     )
   }
   provisioner "local-exec" {
@@ -79,6 +79,10 @@ resource "null_resource" "configfile_manager" {
         sed -i '' '/CONFIG_SHARED_CREDENTIALS_FILE/d' ${path.cwd}/configured.tfvars
         sed -i '' '/CONFIG_PROFILE/d' ${path.cwd}/configured.tfvars
         sed -i '' '/CONFIG_ROLE_ARN/d' ${path.cwd}/configured.tfvars
+        sed -i '' '/CONFIG_PRIVATE_KEY_PATH/d' ${path.cwd}/configured.tfvars
+        sed -i '' '/CONFIG_KEY_NAME/d' ${path.cwd}/configured.tfvars
+        sed -i '' '/CONFIG_VPC_SECURITY_GROUP_ID/d' ${path.cwd}/configured.tfvars
+        sed -i '' '/CONFIG_SUBNET_ID/d' ${path.cwd}/configured.tfvars
         sed -i '' '/^$/d' ${path.cwd}/configured.tfvars
         EOT
     )

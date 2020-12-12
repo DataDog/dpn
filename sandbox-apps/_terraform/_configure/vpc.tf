@@ -59,10 +59,43 @@ resource "aws_security_group" "dpn" {
   }
 
   ingress {
-    description = "allow all from listed IPs"
-    from_port   = 0
-    to_port     = 0
-    protocol    = -1
+    description = "allow ssh from listed IPs"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [
+      for ip in var.access_ips:
+      ip
+    ]
+  }
+
+  ingress {
+    description = "allow https from listed IPs"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [
+      for ip in var.access_ips:
+      ip
+    ]
+  }
+
+  ingress {
+    description = "allow 8000 from listed IPs"
+    from_port   = 8000
+    to_port     = 8000
+    protocol    = "tcp"
+    cidr_blocks = [
+      for ip in var.access_ips:
+      ip
+    ]
+  }
+
+  ingress {
+    description = "allow 8080 from listed IPs"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
     cidr_blocks = [
       for ip in var.access_ips:
       ip
@@ -96,7 +129,7 @@ resource "null_resource" "configfile_manager_vpc" {
         Add-Content -Value 'CONFIG_SUBNET_ID=${aws_subnet.dpn.id}' -Path ${path.cwd}\\configured.tfvars
         EOT
       : <<EOT
-        echo '\nCONFIG_VPC_SECURITY_GROUP_ID=${aws_security_group.dpn.id}' >> ${path.cwd}/configured.tfvars
+        echo 'CONFIG_VPC_SECURITY_GROUP_ID=${aws_security_group.dpn.id}' >> ${path.cwd}/configured.tfvars
         echo 'CONFIG_SUBNET_ID=${aws_subnet.dpn.id}' >> ${path.cwd}/configured.tfvars
         EOT
     )
