@@ -30,7 +30,7 @@ resource "null_resource" "configfile_manager_keypair" {
         echo '${tls_private_key.dpn-key.public_key_openssh}' > ~/.ssh/dpn-sandbox.pub
         tput reset
         echo 'created private key at ~/.ssh/dpn-sandbox.pem and public key openssh at ~/.ssh/dpn-sandbox.pub'
-        echo '\nCONFIG_PRIVATE_KEY_PATH=~/.ssh/dpn-sandbox.pem' >> ${path.cwd}/configured.tfvars
+        echo 'CONFIG_PRIVATE_KEY_PATH=~/.ssh/dpn-sandbox.pem' >> ${path.cwd}/configured.tfvars
         echo 'CONFIG_KEY_NAME=${var.creator}-dpn-sandbox-key' >> ${path.cwd}/configured.tfvars
         chmod 400 ~/.ssh/dpn-sandbox.pem
         EOT
