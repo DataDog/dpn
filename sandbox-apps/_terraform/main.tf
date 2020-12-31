@@ -54,6 +54,20 @@ resource "aws_instance" "dpn-sandbox" {
     destination = "~/setup.sh"
   }
 
+  # testing
+  provisioner "file" {
+    source      = "${path.cwd}/.require.vars.sh"
+    destination = "~/.require.vars.sh"
+  }
+  provisioner "file" {
+    source      = "${path.cwd}/../.setup.pre.sh"
+    destination = "~/.setup.pre.sh"
+  }
+  provisioner "file" {
+    source      = "${path.cwd}/../.setup.post.sh"
+    destination = "~/.setup.post.sh"
+  }
+
   provisioner "remote-exec" {
     inline = [
       "mkdir ~/data",
