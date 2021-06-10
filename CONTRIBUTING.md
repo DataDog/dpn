@@ -40,8 +40,9 @@ Here are a few things we like to look for in new sample apps:
 
 * Does it use lots of technologies that can be used to showcase Datadog integrations?
 * Can we use lots of products with it to demonstrate a comprehensive “platform” approach to monitoring?
-* Can it be run in containers? Does a docker-compose exist for it? (If yes, that'll make adding a sample app for it easier)
+* Can it be run in containers? Does a docker-compose or a terraform form script exist for it? (If yes, that'll make adding a sample app for it easier)
 * Would the new sample app offer something that the current suite of sample apps don't have? (A new language, a new integration, a new architecture, a new business sector or valuable real-life use-case, etc.)
+* If you're writing the sample app yourself, consider if it could be an addition to an existing sandbox app - e.g. a new microservice. 
 * (Bonus points) Is the app similar or comparable to apps that real-life Datadog users/prospects will be monitoring?
 * (Bonus points) Can the app be interactive? (Helps to make demonstrations of the product more engaging)
 
@@ -62,6 +63,7 @@ Cool! Please create a [new issue](https://github.com/DataDog/dpn/issues/new) and
 ### **Do you have a dashboard, monitor, or other resource that you find useful and would like to add as a resource for others?**
 
 Great! Please [open a PR](https://github.com/DataDog/dpn/pulls) to add it! Please also provide a screenshot of your dashboard, monitor, or other resource in the PR and a thorough description of what it is and why it's valuable. 
+We are also always looking for dashboards, monitors, etc. that are created through the API / Terraform. 
 
 :heart: Thanks tons! :heart:
 
