@@ -93,7 +93,7 @@ In order to verify that you have all the expected data coming into your Datadog 
 
 ## Shutting down
 
-You can pause your virtual machine that runs your app with `vagrant halt`, or you can destroy it completely with `vagrant destroy`. Whenever you want to run it again, you can just `vagrant up` again after that.
+You can pause your virtual machine that runs your app with `vagrant halt`, or you can destroy it completely with `vagrant destroy`. Whenever you want to run it again, you can just `vagrant up --no-provision` again after that.
 
 ## Troubleshooting
 

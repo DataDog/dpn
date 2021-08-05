@@ -15,7 +15,7 @@ The application comes in two versions: "working" and "intact". This allows you t
 
 ### Deploying Locally
 
-To deploy locally, a virtual machine will be instantiated in which docker and the sandbox application itself is being installed. 
+To deploy locally, a virtual machine will be instantiated in which docker and the sandbox application itself is being installed.
 Please note that the vm is running the Datadog APM agent and will therefore incur the cost for 1 infrastructure host and 1 APM host as long as the vm is running.
 
 Expected installation time: 10 minutes
@@ -44,11 +44,11 @@ Expected installation time: 10-30 minutes, depending on your AWS account setting
 4. Configure your `setup.env`, replacing all "REPLACE_ME" strings with your own values.
 5. To deploy locally: Run `vagrant up` (and then enter the "y" confirmation if prompted). To deploy in AWS: Run the terraform `apply` command (and then enter the "yes" confirmation when prompted)
 
-And then it should all work out magically from there. It will take about 10 minutes for the whole thing to get running, so maybe go grab some coffee and come back. And if you see a bunch of warning- / error-looking messages in your terminal, don't panic, some warnings and errors are actually expected and totally benign. 
+And then it should all work out magically from there. It will take about 10 minutes for the whole thing to get running, so maybe go grab some coffee and come back. And if you see a bunch of warning- / error-looking messages in your terminal, don't panic, some warnings and errors are actually expected and totally benign.
 
 ## Verification
 
-Once you have control of the terminal again, you know the setup has finished. The last messages you see before that should look like `Operation complete!` or `Creating * ... done.` At this point your app should be running and integrated nicely with your Datadog account. 
+Once you have control of the terminal again, you know the setup has finished. The last messages you see before that should look like `Operation complete!` or `Creating * ... done.` At this point your app should be running and integrated nicely with your Datadog account.
 
 In order to verify that you have all the expected data coming into your Datadog account, visit your local app at http://localhost:8000/ in your browser and select a few buttons. Then go to http://localhost:8080/ and do the same thing. If you deployed in AWS, your terminal will tell you the server IP addresses, so you can instead go to http://that_ip:8000/ and http://that_ip:8080/ instead.
 
@@ -64,31 +64,31 @@ At this point, you should then start to data start to populate in your Datadog a
 (Verification photos and links forthecoming)e
 <details>
   <summary><a href="https://app.datadoghq.com/infrastructure" target="_blank">Infrastructure List</a></summary>
-  
+
   ![Infrastructure List](https://github.com/DataDog/dpn/blob/master/sandbox-apps/ecommerce-webapp/static/images/infrastructure_list.jpg)
 </details>
 
 <details>
   <summary><a href="https://app.datadoghq.com/infrastructure/map?node_type=container" target="_blank">Container Map</a></summary>
-  
+
   ![Container Map](https://github.com/DataDog/dpn/blob/master/sandbox-apps/ecommerce-webapp/static/images/container_map.jpg)
 </details>
 
 <details>
   <summary><a href="https://app.datadoghq.com/containers" target="_blank">Containers List</a></summary>
-  
+
   ![Container List](https://github.com/DataDog/dpn/blob/master/sandbox-apps/ecommerce-webapp/static/images/container_list.jpg)
 </details>
 
 <details>
   <summary><a href="https://app.datadoghq.com/process" target="_blank">Processes List</a></summary>
-  
+
   ![Process List](https://github.com/DataDog/dpn/blob/master/sandbox-apps/ecommerce-webapp/static/images/processes_list.jpg)
 </details>
 
 <details>
   <summary><a href="https://app.datadoghq.com/apm/map?env=dpn-sandbox" target="_blank">Service Map</a></summary>
-  
+
   (make sure to scope to the relevant "env")
 
   ![Service Map](https://github.com/DataDog/dpn/blob/master/sandbox-apps/ecommerce-webapp/static/images/service_map.jpg)
@@ -96,7 +96,7 @@ At this point, you should then start to data start to populate in your Datadog a
 
 <details>
   <summary><a href="https://app.datadoghq.com/apm/traces?env=dpn-sandbox" target="_blank">Trace Search</a></summary>
-  
+
   (make sure to scope to the relevant "env")
 
   ![Trace Search](https://github.com/DataDog/dpn/blob/master/sandbox-apps/ecommerce-webapp/static/images/trace_search.jpg)
@@ -106,14 +106,14 @@ At this point, you should then start to data start to populate in your Datadog a
   <summary><a href="https://app.datadoghq.com/logs" target="_blank">Log Explorer</a></summary>
 
   (you may have to click through the "getting started" flow before you see the logs, make sure to filter out the service "agent".)
-  
+
   ![Log Explorer](https://github.com/DataDog/dpn/blob/master/sandbox-apps/ecommerce-webapp/static/images/log_explorer.jpg)
 </details>
 
 <details>
   <summary><a href="https://app.datadoghq.com/rum" target="_blank">Real User Monitoring</a></summary>
-  
-  You will find "storedog-XXX" (where XXX is the name of the host you defined in your setup.env file) in the list of RUM Applications. 
+
+  You will find "storedog-XXX" (where XXX is the name of the host you defined in your setup.env file) in the list of RUM Applications.
 
   ![RUM Applications](https://github.com/DataDog/dpn/blob/master/sandbox-apps/ecommerce-webapp/static/images/rum_applications.jpg)
 
@@ -127,7 +127,7 @@ At this point, you should then start to data start to populate in your Datadog a
 
 You can pause your virtual machine that runs your app with `vagrant halt`, or you can destroy it completely with `vagrant destroy`. Whenever you want to run it again, you can just `vagrant up --no-provision` again after that.
 
-For AWS deployments, you can tear down your application with the terraform `destroy` command, and rebuild again with the `apply` command. 
+For AWS deployments, you can tear down your application with the terraform `destroy` command, and rebuild again with the `apply` command.
 
 ## Troubleshooting
 
