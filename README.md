@@ -38,6 +38,10 @@ Please consider [contributing](#Contributing-and-Feedback) to this repo, since i
 ## Automation Tooling
 (Forthcoming)
 
+## Scripts and Miscellany
+
+1. [Windows Secret Fetcher (Azure KeyVault)](./scripts/secrets-exe) - A guide on how to create an Azure KeyVault Secrets fetcher for use with [Datadog Secrets Management](https://docs.datadoghq.com/agent/guide/secrets-management/?tab=windows)
+
 
 # Contributing and Feedback
 Thank you for contributing! If you wish to contribute an application, dashboard, or other resources to this repo, or if you wish to share feedback on how we can make it better, please email charlie@datadoghq.com. 
