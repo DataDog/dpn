@@ -24,8 +24,9 @@ services:
     environment:
       - FLASK_APP=discounts.py
       - FLASK_DEBUG=1
-      - POSTGRES_PASSWORD
-      - POSTGRES_USER
+      - POSTGRES_PASSWORD=__PG_USER__
+      - POSTGRES_USER=__PG_PASS__
+      - POSTGRES_HOST=db
       - DD_SERVICE=discounts-service
       - DD_AGENT_HOST=agent
       - DD_LOGS_INJECTION=true
@@ -73,8 +74,8 @@ services:
     environment:
       - FLASK_APP=ads.py
       - FLASK_DEBUG=1
-      - POSTGRES_PASSWORD
-      - POSTGRES_USER
+      - POSTGRES_PASSWORD=__PG_USER__
+      - POSTGRES_USER=__PG_PASS__
       - DD_SERVICE=advertisements-service
       - DD_AGENT_HOST=agent
       - DD_LOGS_INJECTION=true
@@ -95,8 +96,8 @@ services:
     image: postgres:11-alpine
     restart: always
     environment:
-      - POSTGRES_PASSWORD
-      - POSTGRES_USER
+      - POSTGRES_PASSWORD=__PG_USER__
+      - POSTGRES_USER=__PG_PASS__
     labels:
       com.datadoghq.ad.logs: '[{"source": "postgresql", "service": "postgres"}]'
       my.custom.label.stage: "working"
@@ -105,8 +106,6 @@ services:
     environment:
       - FLASK_APP=discounts.py
       - FLASK_DEBUG=1
-      - POSTGRES_PASSWORD
-      - POSTGRES_USER
       - DD_SERVICE=discounts-service
       - DD_AGENT_HOST=agent
       - DD_LOGS_INJECTION=true
@@ -154,8 +153,8 @@ services:
     environment:
       - FLASK_APP=ads.py
       - FLASK_DEBUG=1
-      - POSTGRES_PASSWORD
-      - POSTGRES_USER
+      - POSTGRES_PASSWORD=__PG_USER__
+      - POSTGRES_USER=__PG_PASS__
       - DD_SERVICE=advertisements-service
       - DD_AGENT_HOST=agent
       - DD_LOGS_INJECTION=true
@@ -178,8 +177,8 @@ services:
     image: postgres:11-alpine
     restart: always
     environment:
-      - POSTGRES_PASSWORD
-      - POSTGRES_USER
+      - POSTGRES_PASSWORD=__PG_USER__
+      - POSTGRES_USER=__PG_PASS__
     labels:
       com.datadoghq.ad.logs: '[{"source": "postgresql", "service": "postgres"}]'
       my.custom.label.stage: "broken"
