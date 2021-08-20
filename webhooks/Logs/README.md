@@ -1,5 +1,5 @@
 # Logs related Webhooks
-The Datadog API for Logs has several categories for general [Logs](https://docs.datadoghq.com/api/latest/logs/), [Archives](https://docs.datadoghq.com/api/latest/logs-archives/), [Indexes](https://docs.datadoghq.com/api/latest/logs-indexes/), [Metrics](https://docs.datadoghq.com/api/latest/logs-metrics/), [Pipelines](https://docs.datadoghq.com/api/latest/logs-pipelines/) and [Restriction queries](https://docs.datadoghq.com/api/latest/logs-restriction-queries/).
+The Datadog API for [Logs](https://docs.datadoghq.com/logs/) has several categories for general [Logs](https://docs.datadoghq.com/api/latest/logs/), [Archives](https://docs.datadoghq.com/api/latest/logs-archives/), [Indexes](https://docs.datadoghq.com/api/latest/logs-indexes/), [Metrics](https://docs.datadoghq.com/api/latest/logs-metrics/), [Pipelines](https://docs.datadoghq.com/api/latest/logs-pipelines/) and [Restriction queries](https://docs.datadoghq.com/api/latest/logs-restriction-queries/).
 
 Several of the API calls requires using HTTP PUT rather than POST. Since Webhooks only use the POST method, we use utilize Synthetics Tests to perform the PUT method and trigger these Tests to run via Webhook as needed.
 
