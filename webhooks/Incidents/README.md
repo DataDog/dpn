@@ -1,5 +1,5 @@
 # Incidents related Webhooks
-Incidents are closely tied with Alerts. Here we have an example of creating an Incident with an Alert notification. The Payload can be modified to set severity and other details.
+[Incidents](https://docs.datadoghq.com/monitors/incident_management) are closely tied with Alerts. Here we have an example of creating an Incident with an Alert notification. The Payload can be modified to set severity and other details.
 
 ## Getting started
 First complete the general Webhook Getting started.
