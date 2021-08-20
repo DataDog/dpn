@@ -12,7 +12,7 @@ Set up the [Synthetics trigger Webhook](webhooks/Synthetics).
 ### Manual setup
 Create [Synthetic API HTTP Test](https://docs.datadoghq.com/synthetics/api_tests/http_tests). Use the URL listed below and the `synthetics-payload` JSON for the [request body](https://docs.datadoghq.com/synthetics/api_tests/http_tests/?tab=requestbody) docs.
 
-## API Setup
+### API Setup
 Use the Synthetics API endpoint to create the Tests (TODO)
 
 ## Synthetics setup
