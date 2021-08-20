@@ -28,7 +28,7 @@ URL: https://api.datadoghq.com/api/v1/synthetics/tests/trigger/ci
 
 | Payload JSON                 | Description                   |
 |------------------------------|-------------------------------|
-| [trigger_synthetics_test.json(/webhooks/Synthetics/trigger_synthetic_test.json)] | Trigger a Synthetics Test now |
+| [trigger_synthetics_test.json](/webhooks/Synthetics/trigger_synthetic_test.json) | Trigger a Synthetics Test now |
 |                              |                               |
 |                              |                               |
 
