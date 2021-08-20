@@ -1,5 +1,5 @@
 # Synthetics related Webhooks
-These examples use the [Synthetics API endpoint(https://docs.datadoghq.com/synthetics/)]. Running a Synthetics Test from Webhook allows for more flexibility when working with API calls. Synthetics Test for example, can do other HTTP methods besides POST.
+These examples use the [Synthetics](https://docs.datadoghq.com/synthetics/) API endpoint. Running a Synthetics Test from Webhook allows for more flexibility when working with API calls. Synthetics Test for example, can do other HTTP methods besides POST.
 
 ## Getting started
 First complete the general Webhook Getting started.
