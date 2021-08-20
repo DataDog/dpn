@@ -1,5 +1,7 @@
 # Monitor related Webhooks
-The Monitors API allows for various functionality. However there are some limitations to working with this API with Webhooks.
+When working with [Datadog Monitors](https://docs.datadoghq.com/monitors/monitor_types/), the Monitors API allows for various functionality. The focus of these examples are on muting to help reduce Alert noise/fatigue.
+
+The API typically can only work with one monitor at a time. Since it does not handle an array of Monitor IDs, there are some limitations to working with this API with Webhooks. For more complex evaluation, consider using a Lambda to create more complex Alert handling.
 
 ## Getting started
 First complete the general Webhook Getting started.
@@ -7,7 +9,7 @@ First complete the general Webhook Getting started.
 ## Considerations
 The API endpoints used here require using a built-in variable for hostname within the URL.
 
-Unmuting a host does not require a Payload.
+The host unmute endpoint does not require a Payload.
 
 When muting a host, a custom message can be added to the Payload which will display on the Host Muted Event.
 
@@ -20,5 +22,5 @@ When muting a host, a custom message can be added to the Payload which will disp
 |                |                                                        |                                                   |
 
 ## Resources
-[Alert Monitors API](https://docs.datadoghq.com/api/latest/monitors/)
-[Hosts API](https://docs.datadoghq.com/api/latest/hosts/)
+[Datadog Alert Monitors API](https://docs.datadoghq.com/api/latest/monitors/)
+[Datadog Hosts API](https://docs.datadoghq.com/api/latest/hosts/)
