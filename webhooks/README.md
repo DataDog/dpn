@@ -12,16 +12,16 @@ Webhooks only perform a POST request against a given URL. Each Webhook will requ
 
 ## Getting started
 Install the Webhooks integration through the [Datadog Integrations page](https://app.datadoghq.com/account/settings#integrations/webhooks).
-You'll want to create new Variables for the Webhook authentication. These will store the [Datadog API and APP keys](https://docs.datadoghq.com/account_management/api-app-keys/) you want to use for the Webhooks.
+You'll want to create new Variables for the Webhook authentication. These will store the [Datadog API and Application keys](https://docs.datadoghq.com/account_management/api-app-keys/) you want to use for the Webhooks.
  - $DD_API_KEY
- - $DD_APP_KEY
+ - $DD_APPLICATION_KEY
 
  For every Webhook you create, use the following Custom Headers:
  ```
  {
 "Content-Type": "application/json",
 "DD-API-KEY": "$DD_API_KEY",
-"DD-APPLICATION-KEY": "$DD_APP_KEY"
+"DD-APPLICATION-KEY": "$DD_APPLICATION_KEY"
 }
 ```
 
