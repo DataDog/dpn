@@ -1,5 +1,5 @@
 # Webhooks
-This is a collection of Webhooks which use the Datadog API.
+This is a collection of [Webhooks](https://docs.datadoghq.com/integrations/webhooks/) which use the Datadog API.
 
 ## About creating Webhooks
 Webhooks only perform a POST request against a given URL. Each Webhook will require the following fields:
