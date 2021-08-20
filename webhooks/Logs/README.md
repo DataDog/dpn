@@ -24,5 +24,8 @@ Use the Synthetics API endpoint to create the Tests (TODO)
 |                                                  |                                                                   |                                                                   |
 |                                                  |                                                                   |                                                                   |
 
+## Considerations
+For the use case of disabling/enabling exclusion filters, be sure to return the filter to it's original state when the alert resolves.
+
 ## Resources
 [Datadog Logs configuration](https://docs.datadoghq.com/logs/log_configuration/)

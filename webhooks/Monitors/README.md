@@ -13,6 +13,8 @@ The host unmute endpoint does not require a Payload.
 
 When muting a host, a custom message can be added to the Payload which will display on the Host Muted Event.
 
+Be sure to unmute host when the alert resolves.
+
 ## Webhook setup
 | Payload JSON   | URL                                                    | Description                                       |
 |----------------|--------------------------------------------------------|---------------------------------------------------|
