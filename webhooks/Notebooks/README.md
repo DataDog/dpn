@@ -1,5 +1,5 @@
 # Notebooks related Webhooks
-Notebooks can be helpful for tracking work and taking markdown notes alongside metrics charts. You may want to create a Notebook related to an Alert notification.
+[Notebooks](https://docs.datadoghq.com/notebooks/) can be helpful for tracking work and taking markdown notes alongside metrics charts. You may want to create a Notebook related to an Alert notification.
 
 ## Getting started
 First complete the general Webhook Getting started.
