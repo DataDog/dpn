@@ -26,11 +26,11 @@ When using a Synthetics Test to create/update an API endpoint, only a single loc
 ## Webhook setup
 URL: https://api.datadoghq.com/api/v1/synthetics/tests/trigger/ci
 
-| Payload JSON                 | Description                   |   |   |   |
-|------------------------------|-------------------------------|---|---|---|
-| trigger_synthetics_test.json | Trigger a Synthetics Test now |   |   |   |
-|                              |                               |   |   |   |
-|                              |                               |   |   |   |
+| Payload JSON                 | Description                   |
+|------------------------------|-------------------------------|
+| trigger_synthetics_test.json | Trigger a Synthetics Test now |
+|                              |                               |
+|                              |                               |
 
 ## Resources
 [Datadog Synthetics docs](https://docs.datadoghq.com/synthetics/)
