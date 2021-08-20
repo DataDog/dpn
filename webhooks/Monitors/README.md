@@ -9,6 +9,8 @@ The API endpoints used here require using a built-in variable for hostname withi
 
 Unmuting a host does not require a Payload.
 
+When muting a host, a custom message can be added to the Payload which will display on the Host Muted Event.
+
 ## Webhook setup
 | Payload JSON   | URL                                                    | Description                                       |
 |----------------|--------------------------------------------------------|---------------------------------------------------|
