@@ -4,14 +4,15 @@ These examples use the [Synthetics](https://docs.datadoghq.com/synthetics/) API 
 ## Getting started
 First complete the general Webhook Getting started.
 
-You will also need to create [Synthetics Global Variables(https://docs.datadoghq.com/synthetics/settings/?tab=specifyvalue#global-variables)] for your Datadog API and Application keys.
+You will need to create [Synthetics Global Variables(https://docs.datadoghq.com/synthetics/settings/?tab=specifyvalue#global-variables)] for your Datadog API and Application keys.
  - DD_API_KEY
  - DD_APPLICATION_KEY
 
-These will need to be added to each Test as Request-Headers under Advanced Options > [Request Options](https://docs.datadoghq.com/synthetics/api_tests/http_tests?tab=requestoptions). You will also need to add the following Header:
- - Content-Type `application/json`
+These will need to be added to each Test as Request-Headers under Advanced Options > [Request Options](https://docs.datadoghq.com/synthetics/api_tests/http_tests?tab=requestoptions). The `content-type` header will be added automatically when setting the *Request Body* to `application/json`.
 
-Finding the Synthetic Test `public_id`:
+![request headers](/webhooks/images/request_headers.png)
+
+**Finding the Synthetic Test** `public_id`:
 You will need the `public_id` for the Synthetic Test you want to run. This can be found in the URL when viewing a Test. The `public_id` for the following example is `bxt-grk-tuv`:
 ```
 https://app.datadoghq.com/synthetics/details/bxt-grk-tuv
