@@ -11,7 +11,7 @@ Set up the [Synthetics trigger Webhook](/webhooks/Synthetics).
 
 ## Synthetics API Test setup
 
-### Manual setup
+### Create Synthetics API Test
 Create [Synthetic API HTTP Test](https://docs.datadoghq.com/synthetics/api_tests/http_tests). Use a PUT method with the URL listed below.
 
 Expand Advanced Options. Create these 2 Request Headers (see [Synthetics trigger Webhook](/webhooks/Synthetics) for creating variables).
@@ -43,9 +43,6 @@ Check the Index exclusion filter to confirm appropriate state.
 ```
 
  After creating the Test, click the *Pause Scheduling* button at the top right corner.
-
-### API Setup
-Use the Synthetics API endpoint to create the Tests (TODO)
 
 ## Synthetics setup
 | Synthetics Payload JSON                          | URL                                                               | Description                                                       |
