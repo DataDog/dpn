@@ -18,6 +18,8 @@ Expand Advanced Options. Create these 2 Request Headers (see [Synthetics trigger
  - DD_API_KEY = `{{ DD_API_KEY }}`
  - DD_APPLICATION_KEY = `{{ DD_APPLICATION_KEY }}`
 
+ ![request headers](/webhooks/images/request_headers.png)
+
  Click *Request Body* and set the *Body Type* to `application/json`. Paste in the `synthetics-payload` JSON for the [Request Body](https://docs.datadoghq.com/synthetics/api_tests/http_tests/?tab=requestbody).
 
  Give the Test a meaningful name such as:
@@ -35,7 +37,7 @@ Expand Advanced Options. Create these 2 Request Headers (see [Synthetics trigger
 
  **Notify your team**: Create a message to notify if this test fails.
  ```
- The Synthetics Test to disable exclusion filter {exclusion_filter_name} on {index_name} has failing.
+The Synthetics Test to disable exclusion filter {exclusion_filter_name} on {index_name} has failing.
 
 Check the Index exclusion filter to confirm appropriate state.
 ```
