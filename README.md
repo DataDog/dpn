@@ -38,7 +38,8 @@ Please consider [contributing](#Contributing-and-Feedback) to this repo, since i
 ## Automation Tooling
 (Forthcoming)
 
-## Scripts and Miscellany
+## Azure Collection
+A collection of resources dedicated to deployments that happen in Azure.
 
 1. [Windows Secret Fetcher (Azure KeyVault)](./scripts/secrets-exe) - A guide on how to create an Azure KeyVault Secrets fetcher for use with [Datadog Secrets Management](https://docs.datadoghq.com/agent/guide/secrets-management/?tab=windows)
 
