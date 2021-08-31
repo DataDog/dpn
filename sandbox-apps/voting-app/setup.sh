@@ -11,38 +11,15 @@ sudo mv setup.env.new setup.env
 # get env variables
 . setup.env
 
+# quit if any of the required vars are not set
+. .require.vars.sh
+
 TYPE=$(echo "$TYPE" | tr '[:upper:]' '[:lower:]')
 
-# quit if any of the required vars are not set
-[ -z "$DD_API_KEY" ] && echo "make sure to set DD_API_KEY in your setup.env file. exiting." && exit 1
-[ -z "$DD_APP_KEY" ] && echo "make sure to set DD_APP_KEY in your setup.env file. exiting." && exit 1
-[ -z "$PG_USER" ] && echo "make sure to set PG_USER in your setup.env file. exiting." && exit 1
-[ -z "$PG_PASS" ] && echo "make sure to set PG_PASS in your setup.env file. exiting." && exit 1
-[ -z "$HOSTNAME_BASE" ] && echo "make sure to set HOSTNAME_BASE in your setup.env file. exiting." && exit 1
-[ -z "$TAG_DEFAULTS" ] && echo "make sure to set TAG_DEFAULTS in your setup.env file. exiting." && exit 1
-[ -z "$TYPE" ] && echo "make sure to set TYPE in your setup.env file. exiting." && exit 1
+# run preprovisioning
+. .setup.pre.sh
 
 echo "Provisioning!"
-
-echo "apt-get updating"
-sudo apt-get update
-echo "installing curl, git..."
-sudo apt-get -y install curl git
-
-DPN_STRING="puba793760ef4e28fab630a7f13eda9e213"
-curl -X POST https://browser-http-intake.logs.datadoghq.com/v1/input/${DPN_STRING} \
--H "Content-Type: application/json" \
--d @- << EOF
-{
-	"message": "started provisioning a sandbox app", 
-	"status": "info",
-	"sandbox-app": "voting-app",
-	"tag_defaults": "${TAG_DEFAULTS}",
-	"hostname_base": "${HOSTNAME_BASE}",
-	"step": "start",
-	"type": "${TYPE}"
-}
-EOF
 
 echo "installing docker..."
 sudo curl -sSL https://get.docker.com/ | sh
@@ -124,18 +101,7 @@ fi
 # npm library won't install successfully with the result/Dockerfile RUN command and i can't understand why. this is a lame workaround. 
 sudo docker exec example-voting-app_result_1 npm install --save dd-trace
 
-curl -X POST https://browser-http-intake.logs.datadoghq.com/v1/input/${DPN_STRING} \
--H "Content-Type: application/json" \
--d @- << EOF
-{
-	"message": "completed provisioning a sandbox app", 
-	"status": "info",
-	"sandbox-app": "voting-app",
-	"tag_defaults": "${TAG_DEFAULTS}",
-	"hostname_base": "${HOSTNAME_BASE}",
-	"step": "end",
-	"type": "${TYPE}"
-}
-EOF
+# run postprovisioning
+cd ../../../
+. ./.setup.post.sh
 
-echo "Operation complete!"
