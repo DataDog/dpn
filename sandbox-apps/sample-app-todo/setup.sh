@@ -11,31 +11,13 @@ sudo mv setup.env.new setup.env
 # get env variables
 . setup.env
 
+# quit if any of the required vars are not set
+. .require.vars.sh
+
+# run preprovisioning
+. .setup.pre.sh
 
 START_DIR=$(pwd)
-
-echo "Provisioning!"
-
-echo "apt-get updating"
-sudo apt-get update
-echo "install curl if not there..."
-sudo apt-get -y install curl
-echo "installing git if not there..."
-sudo apt-get -y install git
-
-DPN_STRING="puba793760ef4e28fab630a7f13eda9e213"
-curl -X POST https://browser-http-intake.logs.datadoghq.com/v1/input/${DPN_STRING} \
--H "Content-Type: application/json" \
--d @- << EOF
-{
-	"message": "started provisioning a sandbox app", 
-	"status": "info",
-	"sandbox-app": "sandbox-app-todo",
-	"tag_defaults": "${TAG_DEFAULTS}",
-	"hostname_base": "${HOSTNAME_BASE}",
-	"step": "start"
-}
-EOF
 
 echo "installing docker if not there..."
 sudo curl -sSL https://get.docker.com/ | sh
@@ -103,15 +85,6 @@ cd $START_DIR/dd-partner-app/nodejs-dummy
 sudo docker network create my-net
 sudo docker-compose up -d
 
-curl -X POST https://browser-http-intake.logs.datadoghq.com/v1/input/${DPN_STRING} \
--H "Content-Type: application/json" \
--d @- << EOF
-{
-	"message": "completed provisioning a sandbox app", 
-	"status": "info",
-	"sandbox-app": "sandbox-app-todo",
-	"tag_defaults": "${TAG_DEFAULTS}",
-	"hostname_base": "${HOSTNAME_BASE}",
-	"step": "end"
-}
-EOF
+# run postprovisioning
+cd ../../../
+. ./.setup.post.sh
