@@ -102,7 +102,7 @@ At this point, you should then start to data start to populate in your Datadog a
 
 ## Shutting down
 
-You can pause your virtual machine that runs your app with `vagrant halt`, or you can destroy it completely with `vagrant destroy`. Whenever you want to run it again, you can just `vagrant up` again after that.
+You can pause your virtual machine that runs your app with `vagrant halt`, or you can destroy it completely with `vagrant destroy`. Whenever you want to run it again, you can just `vagrant up --no-provision` again after that.
 
 For AWS deployments, you can tear down your application with the terraform `destroy` command, and rebuild again with the `apply` command. 
 
