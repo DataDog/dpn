@@ -1,0 +1,25 @@
+{
+	"name": "vSphere Agent Check Has Not Seen Metrics in 5+ Minutes on {{vcenter_server.name}}",
+	"type": "metric alert",
+	"query": "max(last_5m):default_zero(sum:vsphere.sys.uptime.latest{vsphere_type:host} by {vcenter_server}) <= 0",
+	"message": "{{#is_alert}}\nvSphere Agent Check Has Not Seen Metrics in 5+ Minutes on {{vcenter_server.name}} \n\nPlease verify that the vCenter API is responsive and that the vSphere agent integration is running on.\n{{/is_alert}} \n\n{{#is_recovery}}\nvSphere Agent Check is once again receiving metrics! {{vcenter_server.name}} \n{{/is_recovery}}\n\n@whitep@jostens.com",
+	"tags": [],
+	"options": {
+		"notify_audit": false,
+		"locked": false,
+		"timeout_h": 0,
+		"silenced": {},
+		"include_tags": false,
+		"no_data_timeframe": 5,
+		"require_full_window": true,
+		"notify_no_data": true,
+		"renotify_interval": 0,
+		"new_group_delay": 60,
+		"thresholds": {
+			"critical": 0
+		},
+		"escalation_message": ""
+	},
+	"priority": null,
+	"classification": "integration"
+}
