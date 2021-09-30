@@ -2,7 +2,7 @@
 	"name": "host:{{host.name}},vcenter_server:{{vcenter_server.name}} is reporting DOWN and vSphere Agent Check **IS** Running",
 	"type": "composite",
 	"query": "<insert alert id of vsphere host down monitor> && !<insert alert id of vsphere has not seen metrics in monitor>",
-	"message": "{{#is_alert}}\n{{host.name}} is DOWN.    Please verify that {{host.name}} is up and running and take the appropriate actions to restore service.  \n- **PLEASE NOTE**   \nvSphere Agent check **IS RUNNING on {{vcenter_server.name}}**\n{{/is_alert}} \n\n{{#is_alert_recovery}}{{host.name}} is once again RESPONDING!{{/is_alert_recovery}}\n\n@whitep@jostens.com",
+	"message": "{{#is_alert}}\n{{host.name}} is DOWN.    Please verify that {{host.name}} is up and running and take the appropriate actions to restore service.  \n- **PLEASE NOTE**   \nvSphere Agent check **IS RUNNING on {{vcenter_server.name}}**\n{{/is_alert}} \n\n{{#is_alert_recovery}}{{host.name}} is once again RESPONDING!{{/is_alert_recovery}}\n\n",
 	"tags": [],
 	"options": {
 		"notify_audit": false,
