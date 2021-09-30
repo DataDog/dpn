@@ -1,6 +1,6 @@
 ## vSphere Host Down Composite Monitor
 
-### Monitor Description
+### Description
 - The purpose of this monitor is to avoid false alerts for HOST DOWN situations in a vSphere environment.  To do this, we created 2 normal monitors, one to monitor the system uptime of HOSTS (ESXi) via the vSphere integration which is collected by an agent based integration that polls the vCenter server API.  The second one is to ensure that the agent based collector is still receiving metrics from the API itself and that the agent integration is functioning as expected.
 - We then created the composite alert so that if a HOST or HOSTS stop reporting uptime it will only trigger if the collector is running and collecting metrics as expected.  The composite alert becomes the means of triggering HOST DOWN notifications.
 - The *vsphere_collector_no_metrics* monitor will trigger notifications by vCenter server when Datadog sees a NO DATA condition.
