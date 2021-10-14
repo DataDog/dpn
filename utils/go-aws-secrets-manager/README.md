@@ -1,6 +1,6 @@
 # Go Secrets Manager
 
-Go Secret Manager is a tool that allows you to use encrypted secrets in Datadog agent:
+This tool allows you to get secrets from AWS secrets manager on any EC2 instance configured with the right role. It's lightweight, fast and easy to use (no config file). This documentation comes with all the necessary information to use it with the Datadog agent. For more information on this feature, you can refer to this documentation:
 
 [Secrets Management](https://docs.datadoghq.com/agent/guide/secrets-management/?tab=linux)
 
@@ -38,8 +38,6 @@ You need to associate this role to the EC2 instance:
 ![fig2](https://p-qkfgo2.t2.n0.cdn.getcloudapp.com/items/E0uK21rd/7be2f461-babc-4c10-a2cb-92a38e88e5cc.jpg?source=viewer&v=094cc30340b204b313cc64247e85e892)
 
 ### Setup
-
-> The source code is currently in a private repo on Github, but should be available soon. Build pipeline will also let you directly download the binary file for Linux and Windows.
 
 Download the executable and set the required file permissions:
 
@@ -188,3 +186,5 @@ DefaultAccount      S-1-5-21-1163014751-2161214003-1688321825-503
 Guest               S-1-5-21-1163014751-2161214003-1688321825-501
 WDAGUtilityAccount  S-1-5-21-1163014751-2161214003-1688321825-504
 ```
+
+(c) Datadog 2021
