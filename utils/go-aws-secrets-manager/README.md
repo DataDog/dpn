@@ -39,12 +39,31 @@ You need to associate this role to the EC2 instance:
 
 ### Setup
 
-Download the executable and set the required file permissions:
+In order to be able to use this tool, you need first to compile it. We provide you with quick instructions if you are already familiar with Go, otherwise you can find good startup guides in the following guides:
+
+- [Go download and install][https://golang.org/doc/install]
+- [Go compile and install an application](https://golang.org/doc/tutorial/compile-install)
+- [Go GOOS and GOARCH reference gist](https://gist.github.com/asukakenji/f15ba7e588ac42795f421b48b8aede63)
+
+Example for Linux on x86_64 host:
 
 ```sh
+cd PATH/TO/dpn/utils/go-aws-secrets-manager
+GOOS=linux GOARH=amd64 go build -o datadog-secrets-aws
+sudo mv datadog-secrets-aws /YOUR/OWN/PATH
 sudo chmod 700 <path_to_executable>
 sudo chown dd-agent <path_to_exectuable>
 ```
+
+Example for Windows on x86_64 host:
+
+```
+cd PATH\TO\dpn\utils\go-aws-secrets-manager
+GOOS=windows GOARH=amd64 go build -o datadog-secrets-aws.exe
+```
+
+Then refer to the instruction for Windows [in the Windows section](### On Windows)
+
 
 ### Store a new secret
 
