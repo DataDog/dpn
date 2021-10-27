@@ -33,7 +33,7 @@ func main() {
 	text := secrets{}
 	err = json.Unmarshal(scanner.Bytes(), &text)
 	if err != nil {
-		log.Println("failed to unmasharl the object")
+		log.Fatalf("failed to unmasharl the object")
 	}
 	data := make(map[string]output)
 	ch := make(chan output, len(text.Secrets))
