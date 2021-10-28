@@ -44,6 +44,10 @@ A collection of resources dedicated to deployments that happen in Azure.
 
 1. [Windows Secret Fetcher (Azure KeyVault)](./scripts/secrets-exe) - A guide on how to create an Azure KeyVault Secrets fetcher for use with [Datadog Secrets Management](https://docs.datadoghq.com/agent/guide/secrets-management/?tab=windows)
 
+## Utils
+A collection of compiled resources that can be used in addition to the Datadog agent
+
+1. [AWS Secret Fetcher (AWS Secret Manager)](./utils/go-aws-secrets-manager) - A guide on how to create an AWS secrets fetcher for use with [Datadog Secrets Management on Linux and Windows](https://docs.datadoghq.com/agent/guide/secrets-management/?tab=linux)
 
 # Contributing and Feedback
 Thank you for contributing! If you wish to contribute an application, dashboard, or other resources to this repo, or if you wish to share feedback on how we can make it better, please email charlie@datadoghq.com. 
