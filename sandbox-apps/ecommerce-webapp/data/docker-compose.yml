@@ -1,7 +1,7 @@
 version: '3'
 services:
   agent:
-    image: "datadog/agent:7.21.1"
+    image: "datadog/agent:7.29.0"
     environment:
       - DD_API_KEY
       - DD_APM_ENABLED=true
@@ -32,10 +32,9 @@ services:
       - DD_LOGS_INJECTION=true
       - DD_TRACE_ANALYTICS_ENABLED=true
       - DD_PROFILING_ENABLED=true
-    build: ../../discounts-service/
+      - DD_VERSION=1.1
+    image: "ddtraining/discounts-fixed:2.1.0"
     command: ddtrace-run flask run --port=5001 --host=0.0.0.0
-    volumes:
-      - "../../discounts-service:/app"
     ports:
       - "5001:5001"
     depends_on:
@@ -56,8 +55,8 @@ services:
       - DB_PASSWORD=__PG_PASS__
       - DD_CLIENT_TOKEN
       - DD_APPLICATION_ID
-    # image: "ddtraining/ecommerce-frontend:latest"
-    build: ../../store-frontend-instrumented-fixed/
+    image: "ddtraining/storefront-fixed:2.1.0"
+    # build: ../../store-frontend-instrumented-fixed/
     command: sh docker-entrypoint.sh
     ports:
       - "8000:3000"
@@ -81,7 +80,8 @@ services:
       - DD_LOGS_INJECTION=true
       - DD_TRACE_ANALYTICS_ENABLED=true
       - DD_PROFILING_ENABLED=true
-    image: "ddtraining/advertisements-service:latest"
+      - DD_VERSION=1.0
+    image: "ddtraining/advertisements-fixed:2.1.0"
     command: ddtrace-run flask run --port=5002 --host=0.0.0.0
     ports:
       - "5002:5002"
@@ -108,16 +108,18 @@ services:
       - FLASK_DEBUG=1
       - DD_SERVICE=discounts-service
       - DD_AGENT_HOST=agent
+      - POSTGRES_PASSWORD=__PG_USER__
+      - POSTGRES_USER=__PG_PASS__
       - DD_LOGS_INJECTION=true
       - DD_TRACE_ANALYTICS_ENABLED=true
       - DD_PROFILING_ENABLED=true
-      - DD_VERSION=1.0
-    image: "ddtraining/discounts-service:latest"
+      - DD_VERSION=1.0.1
+    image: "ddtraining/discounts-fixed:2.1.0"
     command: ddtrace-run flask run --port=5011 --host=0.0.0.0
     ports:
       - "5011:5011"
-    volumes:
-      - "../../discounts-service:/app"
+    # volumes:
+    #   - "../../discounts-service:/app"
     depends_on:
       - agent
       - db-broken
@@ -131,13 +133,13 @@ services:
       - DD_LOGS_INJECTION=true
       - DD_TRACE_ANALYTICS_ENABLED=true
       - DD_SERVICE=store-frontend
-      - DD_VERSION=1.0
+      - DD_VERSION=1.0.1
       - DB_USERNAME=__PG_USER__
       - DB_PASSWORD=__PG_PASS__
       - DD_CLIENT_TOKEN
       - DD_APPLICATION_ID
-    image: "ddtraining/ecommerce-frontend:latest"
-    build: ../../store-frontend-broken-instrumented/
+    image: "ddtraining/storefront-fixed:2.1.0"
+    # build: ../../store-frontend-broken-instrumented/
     command: sh docker-entrypoint.sh
     ports:
       - "8080:3000"
@@ -160,13 +162,13 @@ services:
       - DD_LOGS_INJECTION=true
       - DD_TRACE_ANALYTICS_ENABLED=true
       - DD_PROFILING_ENABLED=true
-      - DD_VERSION=1.0
+      - DD_VERSION=1.0.1
     image: "ddtraining/advertisements-service:latest"
     command: ddtrace-run flask run --port=5012 --host=0.0.0.0
     ports:
       - "5012:5012"
-    volumes:
-      - "../../ads-service:/app"
+    # volumes:
+    #   - "../../ads-service:/app"
     depends_on:
       - agent
       - db-broken
