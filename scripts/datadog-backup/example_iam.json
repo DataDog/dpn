@@ -1,0 +1,27 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "GrantLimitedS3Write",
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket",
+                "s3:PutObject*",
+                "s3:GetBucket*",
+            ],
+            "Resource": [
+                "arn:aws:s3:::YOUR-BUCKET-NAME/*",
+                "arn:aws:s3:::YOUR-BUCKET-NAME"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
