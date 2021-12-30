@@ -7,6 +7,10 @@ You can use the scripts in this directory to schedule a periodic backup of...
 
 ## Setup steps
 
+### Local Cron Job
+
+Coming soon
+
 ### AWS Lambda
 
 1. Create an [S3 Bucket](https://s3.console.aws.amazon.com/s3/home) to upload your backups to. Optionally create a directory to contain those backups. 
@@ -15,9 +19,13 @@ You can use the scripts in this directory to schedule a periodic backup of...
 4. Configure your lambda function to timeout after a sufficient amount of time. You may want to set it to 5 minutes just to be safe. The more dashboards and monitors you have, the more time it will take to run.
 5. Create an [AWS EventBridge rule](https://console.aws.amazon.com/events/home?#/rules?eventbus=default) to run your new lambda function on a schedule as you like (not more frequently than once per day)
 
-### Local Cron Job
+### Google Cloud
 
-TBD
+Coming Soon
+
+### Azure Cloud
+
+Coming Soon
 
 ## Validation
 
@@ -29,4 +37,4 @@ This script captures the configurations of monitors and dashboards to a location
 
 ## Notes
 
-* For organizations that have more than 10,000 dashboards and monitors, this script may not be able to complete execution within the 5 minute maximum timeout you can set for AWS Lambda functions.
+* For organizations that have more than 10,000 dashboards and monitors, this script may not be able to complete execution within the maximum timeout you can set from a cloud provider's serverless function. The script can be refactored to better handle those use cases in the future.
