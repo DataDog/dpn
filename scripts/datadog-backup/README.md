@@ -7,15 +7,16 @@ You can use the scripts in this directory to schedule a periodic backup of...
 
 ## Setup steps
 
-### Local Cron Job
+### Local Task / Cron Job
 
-Coming soon
+1. Save the file `local_backup.py` to a server that can make outbound HTTP calls to your Datadog account. Update the configurations at the beginning of the script.
+2. Schedule the script to run in a local task or job. For Unix systems, you can schedule a [cron job](https://askubuntu.com/questions/2368/how-do-i-set-up-a-cron-job) to run `python3 {PATH}/local_backup.py`. For Windows systems you can [schedule a task](https://www.jcchouinard.com/python-automation-using-task-scheduler/) to run your python script instead. 
 
 ### AWS Lambda
 
 1. Create an [S3 Bucket](https://s3.console.aws.amazon.com/s3/home) to upload your backups to. Optionally create a directory to contain those backups. 
 2. Create a [IAM Role](https://console.aws.amazon.com/iamv2/home?#/roles) that has (A) basic Lambda execution permissions and (B) permissions to list, read, and write on your bucket (preferably only your bucket). (An example IAM role can be found under `example_iam.json`)
-3. Create a [Lambda Function](https://console.aws.amazon.com/lambda/home?#/functions) with the Python 3 runtime and paste in the code from `lambda_function.py`
+3. Create a [Lambda Function](https://console.aws.amazon.com/lambda/home?#/functions) with the Python 3 runtime and paste in the code from `lambda_function.py`. Update the configurations at the beginning of the script. 
 4. Configure your lambda function to timeout after a sufficient amount of time. You may want to set it to 5 minutes just to be safe. The more dashboards and monitors you have, the more time it will take to run.
 5. Create an [AWS EventBridge rule](https://console.aws.amazon.com/events/home?#/rules?eventbus=default) to run your new lambda function on a schedule as you like (not more frequently than once per day)
 
