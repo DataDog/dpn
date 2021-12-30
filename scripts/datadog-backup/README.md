@@ -30,7 +30,7 @@ Coming Soon
 
 ## Validation
 
-When your scheduled script runs, it will generate a success or failure event in [your Datadog event stream](https://app.datadoghq.com/event/stream?tags_execution=and&show_private=true&per_page=30&query=tags%3Asource%3Add-backup-lambda&aggregate_up=false&use_date_happened=true&display_timeline=true&priority=normal&is_zoomed=false&is_auto=false&incident=true&only_discussed=false&no_user=false&abstraction_level=1&page=0&legacy=true&live=true&status=all). If you like, you can set up an [Event Monitor](https://app.datadoghq.com/monitors#create/event) to alert you when your backups fail. 
+When your scheduled script runs, it will generate a success or failure event in [your Datadog event stream](https://app.datadoghq.com/event/stream?tags_execution=and&show_private=true&per_page=30&query=tags%3Asource%3Adatadog-backup&aggregate_up=false&use_date_happened=true&display_timeline=true&priority=normal&is_zoomed=false&is_auto=false&incident=true&only_discussed=false&no_user=false&abstraction_level=1&page=0&legacy=true&live=true&status=all). If you like, you can set up an [Event Monitor](https://app.datadoghq.com/monitors#create/event) to alert you when your backups fail. 
 
 ## Recovering Monitors and Dashboards from Backups
 
