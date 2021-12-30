@@ -20,7 +20,7 @@ def send_status_update(http_pack, update):
 			'title': update['title'],
 			'text': update['text'],
 			'alert_type': update['status'],
-			'tags': 'source:datadog-backup-lambda'
+			'tags': 'source:datadog-backup-local'
 		})
 	)
 
