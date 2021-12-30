@@ -1,4 +1,4 @@
-# Backup Datadogh Dashboards and Monitors
+# Backup Datadog Dashboards and Monitors
 
 You can use the scripts in this directory to schedule a periodic backup of...
 
