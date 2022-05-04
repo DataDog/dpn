@@ -44,8 +44,12 @@ Assumptions:
     credential = DefaultAzureCredential()
     client = SecretClient(vault_url=KVUri, credential=credential)
 
-    secretName = "test-secret"
-    retrieved_secret = client.get_secret(secretName)
+    # Put your secret name(s) here, or use an env variable(s)
+    secret1Name = "secret1"
+    retrieved_secret1 = client.get_secret(secret1Name)
+
+    secret2Name = "secret2"
+    retrieved_secret2 = client.get_secret(secret2Name)
 
     print(json.dumps({'secret1' : retrieved_secret1.value, 'secret2' : retrieved_secret2.value}))
     ```
