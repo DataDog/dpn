@@ -44,3 +44,5 @@ terraform.rc
 
 # Ignore DS_Store
 **/.DS_Store
+utils/SecretManager/.vscode/launch.json
+utils/SecretManager/secretBackendCommand
