@@ -1,0 +1,27 @@
+.DS_Store
+.bundle
+.dotest
+.idea
+.loadpath
+.project
+.vscode
+sandbox/tmp/
+__pycache__
+
+# Terraform
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+.terraform/
+kube_config_server.yaml
+
+# HELM
+helm-values.yaml
+
+# Frontend version
+store-frontend/src/store-frontend-instrumented-fixed
+store-frontend/src/store-frontend-broken-instrumented
+
+# Vim swp files
+*.swp
+
