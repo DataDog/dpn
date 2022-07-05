@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadgenerator-v1.1
+  labels:
+    app: loadgenerator
+    version: v1
+    service: loadgenerator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loadgenerator
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: loadgenerator
+        version: v1
+      annotations:
+        sidecar.istio.io/inject: "true"
+
+    spec:
+      containers:
+      - name: loadgenerator
+        image: busybox
+        command: ["/bin/sh"]
+        args: ["-c", "TARGET=frontend.default.svc.cluster.local:3000;while true; do wget -q -O- http://$TARGET/api_tokens>>dev/null; sleep 1;wget -q -O- http://$TARGET/cart>>dev/null; sleep 1;wget -q -O- http://$TARGET/cart_link>>dev/null; sleep 1;wget -q -O- http://$TARGET/cart?variant_id=11>>dev/null; sleep 1;wget -q -O- http://$TARGET//products/datadog-ringer-t-shirt>>dev/null; sleep 1;wget -q -O- http://$TARGET//products/spree-bag>>dev/null; sleep 1;wget -q -O- http://$TARGET/discounts/get>>dev/null; sleep 1; done"]
