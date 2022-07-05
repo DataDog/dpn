@@ -30,9 +30,7 @@ func GetSecrets(secretName string, region string, secretsKeys []string) map[stri
 	// See https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
 
 	result, err := svc.GetSecretValue(input)
-	var errMSg string
 	if err != nil {
-		errMSg = err.Error()
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case secretsmanager.ErrCodeDecryptionFailure:
@@ -75,8 +73,8 @@ func GetSecrets(secretName string, region string, secretsKeys []string) map[stri
 	res := map[string]map[string]string{}
 	for _, handle := range secretsKeys {
 		res[handle] = map[string]string{
+			
 			"value": secretsData[handle],
-			"error": errMSg,
 		}
 	}
 

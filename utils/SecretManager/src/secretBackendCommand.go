@@ -16,9 +16,9 @@ func main() {
 
 	var output map[string]map[string]string
 	switch cloud := os.Args[1]; cloud {
-	case "azure":
-		output = awsSecretManager.GetSecrets(os.Args[2], os.Args[3], secrets.Secrets)
 	case "aws":
+		output = awsSecretManager.GetSecrets(os.Args[2], os.Args[3], secrets.Secrets)
+	case "azure":
 	 	output = azureSecretManager.GetSecrets(os.Args[2], secrets.Secrets)
 	}
 
@@ -34,7 +34,7 @@ func toJason(secretData map[string]map[string]string) []byte {
 	return output
 }
 
-func readSecretInput() secretsPayload {
+func readSecretInput() secretKeysPayload {
 	data, err := ioutil.ReadAll(os.Stdin)
 
 	if err != nil {
@@ -42,12 +42,12 @@ func readSecretInput() secretsPayload {
 		os.Exit(1)
 	}
 
-	secrets := secretsPayload{}
+	secrets := secretKeysPayload{}
 	json.Unmarshal(data, &secrets)
 	return secrets
 }
 
-type secretsPayload struct {
+type secretKeysPayload struct {
 	Secrets []string
 	Version int
 }

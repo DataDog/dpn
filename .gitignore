@@ -46,3 +46,4 @@ terraform.rc
 **/.DS_Store
 utils/SecretManager/.vscode/launch.json
 utils/SecretManager/secretBackendCommand
+.vscode/launch.json

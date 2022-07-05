@@ -21,10 +21,8 @@ func GetSecrets(keyVaultName string, secretsKeys []string) map[string]map[string
 
 	//Establish a connection to the Key Vault client
 	client, err := azsecrets.NewClient(keyVaultURL, cred, nil)
-	var errMSg string
 	if err != nil {
 		log.Fatalf("failed to connect to client: %v", err)
-		errMSg = err.Error()
 	}
 
 	res := map[string]map[string]string{}
@@ -36,7 +34,6 @@ func GetSecrets(keyVaultName string, secretsKeys []string) map[string]map[string
 
 		res[handle] = map[string]string{
 			"value": *resp.Value,
-			"error": errMSg,
 		}
 	}
 
