@@ -26,9 +26,9 @@ func main() {
 		output = awsSecretManager.GetSecrets(os.Args[2], os.Args[3], readSecretInput().Secrets)
 	case "azure":
 		checkArguments(3)
-	 	output = azureSecretManager.GetSecrets(os.Args[2], readSecretInput().Secrets)
+		output = azureSecretManager.GetSecrets(os.Args[2], readSecretInput().Secrets)
 	default:
-        fmt.Println("no valid secret provider is given, use -h flag for more information.")
+		fmt.Println("no valid secret provider is given, use -h flag for more information.")
 		return
 	}
 
@@ -41,7 +41,9 @@ func needHelp() {
 	flag.Parse()
 
 	if *helpPtr {
-		fmt.Print("First argument should be secret provider e.g azure or aws. Second argument should be secret name. if aws is chosen the third parameter should be the aws region.")
+		fmt.Print("First argument should be secret provider e.g azure or aws .\n"+
+		"Second argument should be secret name.\n"+
+		"if aws is chosen the third parameter should be the aws region.")
 		os.Exit(1)
 	}
 }
