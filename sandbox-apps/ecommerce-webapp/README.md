@@ -8,7 +8,7 @@
 
 This sandbox application is an online shop for clothing called 'storedog'. It consists of multiple microservices and is a good way to learn or demo the infrastructure (host/containers), log management, application performance management and real user monitoring products of Datadog.
 
-The application comes in two versions: "working" and "intact". This allows you to either just demo the Datadog products - using the 'working' version - or to demo the error-detection- and troubleshooting-process - using the 'broken' version.
+The application comes in two versions: "working" and "broken". This allows you to either just demo the Datadog products - using the 'working' version - or to demo the error-detection- and troubleshooting-process - using the 'broken' version.
 
 
 ## Prerequisites:
