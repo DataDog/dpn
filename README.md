@@ -36,15 +36,19 @@ Please consider [contributing](#Contributing-and-Feedback) to this repo, since i
 ## Product Configurations
 (Forthcoming)
 
-## Automation Tooling
-(Forthcoming)
+## Docs
+A collection of docs to get off to a good start with Datadog
 
-## Azure Collection
+1. [Datadog on Minikube](./docs/minikube.md) - A guide to configure Datadog agent on Minikube
+
+## Automation Tooling
+
+### Scripts
 A collection of resources dedicated to deployments that happen in Azure.
 
 1. [Windows Secret Fetcher (Azure KeyVault)](./scripts/secrets-exe) - A guide on how to create an Azure KeyVault Secrets fetcher for use with [Datadog Secrets Management](https://docs.datadoghq.com/agent/guide/secrets-management/?tab=windows)
 
-## Utils
+### Utils
 A collection of compiled resources that can be used in addition to the Datadog agent
 
 1. [AWS Secret Fetcher (AWS Secret Manager)](./utils/go-aws-secrets-manager) - A guide on how to create an AWS secrets fetcher for use with [Datadog Secrets Management on Linux and Windows](https://docs.datadoghq.com/agent/guide/secrets-management/?tab=linux)
