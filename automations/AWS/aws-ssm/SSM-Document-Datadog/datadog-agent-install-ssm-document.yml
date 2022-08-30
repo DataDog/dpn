@@ -1,0 +1,42 @@
+---
+schemaVersion: '2.2'
+parameters:
+  action:
+    type: String
+    allowedValues:
+    - Install
+    - Update
+    - Uninstall
+  confirmed:
+    type: String
+    allowedValues:
+    - True
+    - False
+mainSteps:
+- action: aws:runShellScript
+  name: InstallDatadogAgent
+  precondition:
+    StringEquals:
+    - "{{ action }}"
+    - "Install"
+  inputs:
+    runCommand:
+    - DD_AGENT_MAJOR_VERSION=7 DD_API_KEY=<API_KEY_PLACEHOLDER> DD_SITE="datadoghq.com" bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script.sh)"
+- action: aws:runShellScript
+  name: UpdateDatadogAgent
+  precondition:
+    StringEquals:
+    - "{{ action }} {{ confirmed }}"
+    - "Update True"
+  inputs:
+    runCommand:
+    - DD_AGENT_MAJOR_VERSION=7 DD_UPGRADE=true DD_SITE="datadoghq.com" bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script.sh)"
+- action: aws:runShellScript
+  name: UninstallDatadogAgent
+  precondition:
+    StringEquals:
+    - "{{ action }} {{ confirmed }}"
+    - "Uninstall True"
+  inputs:
+    runCommand:
+    - sudo sudo yum remove datadog-agent
