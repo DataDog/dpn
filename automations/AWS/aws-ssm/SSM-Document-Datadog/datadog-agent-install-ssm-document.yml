@@ -22,6 +22,8 @@ mainSteps:
   inputs:
     runCommand:
     - DD_AGENT_MAJOR_VERSION=7 DD_API_KEY=<API_KEY_PLACEHOLDER> DD_SITE="datadoghq.com" bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script.sh)"
+    - "systemctl start datadog-agent"
+    - "systemctl enable datadog-agent"
 - action: aws:runShellScript
   name: UpdateDatadogAgent
   precondition:
@@ -39,4 +41,4 @@ mainSteps:
     - "Uninstall True"
   inputs:
     runCommand:
-    - sudo sudo yum remove datadog-agent
+    - sudo yum remove datadog-agent

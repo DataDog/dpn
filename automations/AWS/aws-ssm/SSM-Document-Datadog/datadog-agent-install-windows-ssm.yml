@@ -1,0 +1,35 @@
+---
+description: "Installs DataDog agent on Windows"
+schemaVersion: "2.2"
+parameters:
+  apiKey:
+    type: "String"
+    description: "Your DataDog API key"
+    default: ""
+  agentVersion:
+    type: "String"
+    description: "The version of the DataDog agent to install"
+    default: "latest"
+  installPath:
+    type: "String"
+    description: "The directory to install the agent in"
+    default: "C:\\Program Files\\Datadog\\Datadog Agent\\"
+
+mainSteps:
+- action: "aws:runPowerShellScript"
+  name: "installDataDogAgent"
+  inputs:
+    runCommand:
+    - "& {"
+    - "  $url = 'https://s3.amazonaws.com/dd-agent-windows-stable/$($using:agentVersion)/ddagent-cli.msi';"
+    - "  $path = '$($using:installPath)\\ddagent-cli.msi';"
+    - "  Write-Host 'Downloading DataDog agent from ' $url;"
+    - "  Write-Host 'Installing DataDog agent to ' $path;"
+    - "  $wc = New-Object System.Net.WebClient;"
+    - "  $wc.DownloadFile($url, $path);"
+    - "  Start-Process msiexec.exe -ArgumentList '/i', $path, '/quiet', 'APIKEY=$($using:apiKey)' -Wait;"
+    - "}"
+    parameters:
+      apiKey: "{{apiKey}}"
+      agentVersion: "{{agentVersion}}"
+      installPath: "{{installPath}}"
