@@ -20,9 +20,10 @@ Please consider [contributing](#Contributing-and-Feedback) to this repo, since i
 
 ## Sandbox Applications
 
-1. [Sample-App-Todo](https://github.com/DataDog/dpn/tree/master/sandbox-apps/sample-app-todo) - A simple node todo list app with the MongoDB integration, tracing, and logs pre-configured.
-2. [Voting-App](https://github.com/DataDog/dpn/tree/master/sandbox-apps/voting-app) - A containerized app that hosts a voting session and posts the results to another endpoint. Uses Python, .NET, NodeJS, Postgresql, Redis. Includes APM tracing, log collection, and infrastructure monitoring. 
-3. [Ecommerce-Webapp](https://github.com/DataDog/dpn/tree/master/sandbox-apps/ecommerce-webapp) - A containerized application that hosts an entire ecommerce web application. You can run both a working as well as a "broken" version of the application. Includes APM tracing, Real User Monitoring, log collection and infrastructure monitoring.
+1. [Swagbot](https://github.com/DataDog/dpn/tree/master/sandbox-apps/microservices-demo-multiarch-main) - App Web-Based e-commerce app consistsing of an 12-tier microservices application where users can browse items, add them to the cart, and purchase them. There is also a load generator to generate traffic.
+2. [Sample-App-Todo](https://github.com/DataDog/dpn/tree/master/sandbox-apps/sample-app-todo) - A simple node todo list app with the MongoDB integration, tracing, and logs pre-configured.
+3. [Voting-App](https://github.com/DataDog/dpn/tree/master/sandbox-apps/voting-app) - A containerized app that hosts a voting session and posts the results to another endpoint. Uses Python, .NET, NodeJS, Postgresql, Redis. Includes APM tracing, log collection, and infrastructure monitoring. 
+4. [Ecommerce-Webapp](https://github.com/DataDog/dpn/tree/master/sandbox-apps/ecommerce-webapp) - A containerized application that hosts an entire ecommerce web application. You can run both a working as well as a "broken" version of the application. Includes APM tracing, Real User Monitoring, log collection and infrastructure monitoring.
 
 ## Dashboards
 (Forthcoming)
