@@ -1,0 +1,44 @@
+{
+    "FAQ": [
+      {
+        "question": "How do I contact customer service?",
+        "answer": "You can reach customer service at 1-800-555-1234. (Hours: 8:00 AM to 5:00 PM EST)."
+      },
+      {
+        "question": "What products are available for purchase today?",
+        "answer": "You can view our full product catalog on our website, where we list all available items, including new arrivals and bestsellers."
+      },
+      {
+        "question": "How do I track my order?",
+        "answer": "You can track your order by logging into your account and visiting the 'Orders' section. You'll find the tracking information next to your recent purchase."
+      },
+      {
+        "question": "What is the return policy?",
+        "answer": "We offer a 30-day return policy on most products. Items must be in their original condition and packaging. Visit our returns page for more details."
+      },
+      {
+        "question": "How can I apply a discount code to my order?",
+        "answer": "You can apply a discount code during checkout. Simply enter the code in the 'Discount Code' field and click 'Apply' before completing your purchase."
+      },
+      {
+        "question": "Do you offer free shipping?",
+        "answer": "Yes, we offer free standard shipping on all orders over $50. Expedited shipping options are available for an additional cost."
+      },
+      {
+        "question": "Can I change or cancel my order after it has been placed?",
+        "answer": "You can modify or cancel your order within the first 24 hours of placing it by contacting customer service. After this time, we may not be able to accommodate changes."
+      },
+      {
+        "question": "What payment methods do you accept?",
+        "answer": "We accept all major credit cards, PayPal, and Swagstore gift cards. All transactions are secure and encrypted."
+      },
+      {
+        "question": "Do you offer gift wrapping services?",
+        "answer": "Yes, we offer gift wrapping for a small additional fee. You can select this option during checkout."
+      },
+      {
+        "question": "How can I leave feedback or report an issue with a product?",
+        "answer": "You can leave feedback on the product page or contact customer service directly to report any issues. We value your input and are happy to assist."
+      }
+    ]
+}
