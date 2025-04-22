@@ -23,6 +23,7 @@ Please consider [contributing](#Contributing-and-Feedback) to this repo, since i
 1. [Sample-App-Todo](https://github.com/DataDog/dpn/tree/master/sandbox-apps/sample-app-todo) - A simple node todo list app with the MongoDB integration, tracing, and logs pre-configured.
 2. [Voting-App](https://github.com/DataDog/dpn/tree/master/sandbox-apps/voting-app) - A containerized app that hosts a voting session and posts the results to another endpoint. Uses Python, .NET, NodeJS, Postgresql, Redis. Includes APM tracing, log collection, and infrastructure monitoring. 
 3. [Ecommerce-Webapp](https://github.com/DataDog/dpn/tree/master/sandbox-apps/ecommerce-webapp) - A containerized application that hosts an entire ecommerce web application. You can run both a working as well as a "broken" version of the application. Includes APM tracing, Real User Monitoring, log collection and infrastructure monitoring.
+4. [Swagbot Chatbot](https://github.com/DataDog/dpn/tree/master/sandbox-apps/swabot/README.md) - A containerized app that host a chatbot which is fully instrumented with Datadog LLM Observability and APM. 
 
 ## Dashboards
 (Forthcoming)
