@@ -1,0 +1,26 @@
+[
+    {
+      "id": "PROMO001",
+      "code": "STEELBOTTLE10",
+      "description": "10% discount on the Dog Steel Bottle",
+      "start_date": "2024-10-01",
+      "end_date": "2024-12-31",
+      "discount_percentage": 10,
+      "applicable_product": "Dog Steel Bottle",
+      "status": "active",
+      "minimum_purchase": 0,
+      "usage_limit": 1000
+    },
+    {
+      "id": "PROMO002",
+      "code": "STOREWIDE5",
+      "description": "5% discount across the Swagstore",
+      "start_date": "2024-10-01",
+      "end_date": "2024-11-30",
+      "discount_percentage": 5,
+      "applicable_product": "storewide",
+      "status": "active",
+      "minimum_purchase": 20,
+      "usage_limit": 5000
+    }
+  ]

@@ -1,0 +1,1 @@
+DD_LOGS_INJECTION=true DD_ENV=dev DD_SERVICE=swagbot DD_VERSION=r.0.3 DD_LLMOBS_AGENTLESS_ENABLED=1 ddtrace-run python app.py
