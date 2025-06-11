@@ -1,0 +1,112 @@
+{
+    "products": [
+        {
+            "id": "0PUK6V6EV0",
+            "name": "Dog Headphones",
+            "description": "You feel it the minute you put them on. The soft, plush cushions seal you in.",
+            "picture": "/static/img/products/headphones.jpg",
+            "priceUsd": {
+                "currencyCode": "USD",
+                "units": 229,
+                "nanos": 990000000
+            },
+            "categories": ["accessories"]
+        },
+        {
+            "id": "1YMWWN1N4O",
+            "name": "Dog Steel Bottle",
+            "description": "NoLimit - robust stainless steel vacuum flask including sports lid.",
+            "picture": "/static/img/products/steel-bottle.jpg",
+            "priceUsd": {
+                "currencyCode": "USD",
+                "units": 35,
+                "nanos": 970000000
+            },
+            "categories": ["accessories"]
+        },
+        {
+            "id": "2ZYFJ3GM2N",
+            "name": "Dog T-shirt",
+            "description": "Perfectly cropped cotton t-shirt. Short sleeves.",
+            "picture": "/static/img/products/t-shirt.jpg",
+            "priceUsd": {
+                "currencyCode": "USD",
+                "units": 29,
+                "nanos": 990000000
+            },
+            "categories": ["clothing", "t-shirt"]
+        },        
+        {
+            "id": "66VCHSJNUP",
+            "name": "Dog T-shirt I love you",
+            "description": "Perfectly cropped cotton t-shirt. Short sleeves.",
+            "picture": "/static/img/products/t-shirt-i-love-u.jpg",
+            "priceUsd": {
+                "currencyCode": "USD",
+                "units": 29,
+                "nanos": 990000000
+            },
+            "categories": ["clothing", "t-shirt"]
+        },       
+        {
+            "id": "6E92ZMYYFZ",
+            "name": "Dog Sweatshirt gray",
+            "description": "Perfectly cropped cotton sweatshirt. Long sleeves.",
+            "picture": "/static/img/products/sweatshirt-gray.jpg",
+            "priceUsd": {
+                "currencyCode": "USD",
+                "units": 39,
+                "nanos": 990000000
+            },
+            "categories": ["clothing", "sweatshirt"]
+        },
+        {
+            "id": "9SIQT8TOJO",
+            "name": "Dog Sweatshirt black",
+            "description": "Perfectly cropped cotton sweatshirt. Long sleeves.",
+            "picture": "/static/img/products/sweatshirt-black.jpg",
+            "priceUsd": {
+                "currencyCode": "USD",
+                "units": 45,
+                "nanos": 990000000
+            },
+            "categories": ["clothing", "sweatshirt"]
+        },
+        {
+            "id": "OLJCESPC7Z",
+            "name": "Dog Notebook",
+            "description": "The perfect companion for taking notes during your meetings.",
+            "picture": "/static/img/products/notebook.jpg",
+            "priceUsd": {
+                "currencyCode": "USD",
+                "units": 19,
+                "nanos": 990000000
+            },
+            "categories": ["accessories","office"]
+        },                          
+        {
+            "id": "L9ECAV7KIM",
+            "name": "Dog SKO Notebook",
+            "description": "The perfect companion for taking notes during SKOs.",
+            "picture": "/static/img/products/sko-notebook.jpg",
+            "priceUsd": {
+                "currencyCode": "USD",
+                "units": 19,
+                "nanos": 990000000
+            },
+            "categories": ["accessories","office"]
+        },
+        {
+            "id": "LS4PSXUNUM",
+            "name": "Dog Mug",
+            "description": "A simple mug with a nice branding.",
+            "picture": "/static/img/products/mug.jpg",
+            "priceUsd": {
+                "currencyCode": "USD",
+                "units": 8,
+                "nanos": 990000000
+            },
+            "categories": ["kitchen"]
+        }
+    ]
+}

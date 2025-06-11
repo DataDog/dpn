@@ -1,0 +1,494 @@
+name: tsre
+services:
+  dd-agent:
+      image: gcr.io/datadoghq/agent:7.66.0
+      environment:
+        - DD_API_KEY=${DD_API_KEY}
+        - DD_ENV=tsreenv
+        - DD_SITE=datadoghq.com
+        - DD_LOGS_ENABLED=true
+        - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
+        - DD_CONTAINER_EXCLUDE=name:dd-agent name:loggenerator name:loadgenerator
+        - DD_PROCESS_CONFIG_CONTAINER_COLLECTION_ENABLED=true
+        - DD_PROCESS_CONFIG_PROCESS_COLLECTION_ENABLED=true
+        - DD_APM_ENABLED=true
+        - DD_APM_NON_LOCAL_TRAFFIC=true
+        - DD_APM_RECEIVER_SOCKET=/var/run/datadog/apm.socket
+        - DD_DOGSTATSD_SOCKET=/var/run/datadog/dsd.socket
+        - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
+        - DD_DOCKER_LABELS_AS_TAGS={"my.custom.label.team":"team"}
+        - DD_LOGS_CONFIG_AUTO_MULTI_LINE_DETECTION=true
+        - DD_SYSTEM_PROBE_NETWORK_ENABLED=true
+        # Security stuff
+        - DD_RUNTIME_SECURITY_CONFIG_ENABLED=true
+        - DD_RUNTIME_SECURITY_CONFIG_REMOTE_CONFIGURATION_ENABLED=true
+        - DD_CONTAINER_IMAGE_ENABLE=true
+        - DD_SBOM_ENABLED=true
+        - DD_SBOM_CONTAINER_IMAGE_ENABLED=true
+        - DD_SBOM_HOST_ENABLED=true
+        - HOST_ROOT=/host/root
+        - DD_COMPLIANCE_CONFIG_ENABLED=true
+        - DD_COMPLIANCE_CONFIG_HOST_BENCHMARKS_ENABLED=true
+      ports:
+        - "8126:8126/tcp"
+        - "8125:8125/udp"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - /proc/:/host/proc/:ro
+        - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+        - /var/run/datadog:/var/run/datadog
+        - /sys/kernel/debug:/sys/kernel/debug
+        - /etc/passwd:/etc/passwd:ro
+        - /etc/group:/etc/group:ro
+        - /sys/kernel/security:/host/sys/kernel/security:ro
+        - /var/lib/docker/containers:/var/lib/docker/containers:ro
+        - ./conf.d/redisdb.d:/etc/datadog-agent/conf.d/redisdb.d:ro
+        # Security stuff
+        - /:/host/root:ro
+        - /etc/os-release:/etc/os-release
+      cap_add:
+        - SYS_ADMIN
+        - SYS_RESOURCE
+        - SYS_PTRACE
+        - NET_ADMIN
+        - NET_BROADCAST
+        - NET_RAW
+        - IPC_LOCK
+        - CHOWN
+      security_opt:
+        - apparmor:unconfined
+      labels:
+        com.datadoghq.ad.logs: '[{"source": "dd-agent", "service": "dd-agent"}]'
+      depends_on:
+        - redis
+      pid: host
+      restart: unless-stopped
+  emailservice:
+    build:
+      context: ./src/emailservice
+    image: tsre/emailservice:0.1.0
+    environment:
+      - DD_ENV=tsreenv
+      - DD_SERVICE=emailservice
+      - DD_VERSION=0.5.0
+      - DD_TRACE_AGENT_URL=unix:///var/run/datadog/apm.socket
+      - PORT=8080
+      - DISABLE_PROFILER=1
+      - DISABLE_TRACING=0
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_SAMPLE_RATE=1
+      - DD_RUNTIME_METRICS_ENABLED=true
+      - DD_PROFILING_ENABLED=true
+      # Security stuff
+      - DD_APPSEC_ENABLED=true
+      - DD_IAST_ENABLED=true
+      - DD_APPSEC_SCA_ENABLED=true
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "emailservice"}]'
+    restart: unless-stopped
+  productcatalogservice:
+    build:
+      context: ./src/productcatalogservice
+    image: tsre/productcatalogservice:0.1.0
+    environment:
+      - DD_ENV=tsreenv
+      - DD_SERVICE=productcatalogservice
+      - DD_VERSION=0.5.0
+      - DD_TRACE_AGENT_URL=unix:///var/run/datadog/apm.socket
+      - PORT=3550
+      - DD_PROFILING_ENABLED=true
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_SAMPLE_RATE=1
+      # Security stuff
+      - DD_APPSEC_ENABLED=true
+      - DD_IAST_ENABLED=true
+      - DD_APPSEC_SCA_ENABLED=true
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "go", "service": "productcatalogservice"}]'
+    restart: unless-stopped
+  recommendationservice:
+    build:
+      context: ./src/recommendationservice
+    image: tsre/recommendationservice:0.1.0
+    environment:
+      - DD_ENV=tsreenv
+      - DD_SERVICE=recommendationservice
+      - DD_VERSION=0.1.0
+      - DD_TRACE_AGENT_URL=unix:///var/run/datadog/apm.socket
+      - DD_TRACE_ENABLED=true
+      - DD_APM_ENABLED=true
+      - DD_APM_NON_LOCAL_TRAFFIC=true
+      - PRODUCT_CATALOG_SERVICE_ADDR=productcatalogservice:3550
+      - PORT=8082
+      - DD_PROFILING_ENABLED=true
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_SAMPLE_RATE=1
+      # Security stuff
+      - DD_APPSEC_ENABLED=true
+      - DD_IAST_ENABLED=true
+      - DD_APPSEC_SCA_ENABLED=true
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "recommendationservice"}]'
+    restart: unless-stopped
+  shippingservice:
+    build:
+      context: ./src/shippingservice
+    image: tsre/shippingservice:0.2.1
+    environment:
+      - DD_ENV=trseenv
+      - DD_SERVICE=shippingservice
+      - DD_VERSION=0.2.1
+      - DD_TRACE_AGENT_URL=unix:///var/run/datadog/apm.socket
+      - PORT=50051
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_SAMPLE_RATE=1
+      - DD_PROFILING_ENABLED=true
+      - POOL_USER=pooluser
+      # Security stuff
+      - DD_APPSEC_ENABLED=true
+      - DD_IAST_ENABLED=true
+      - DD_APPSEC_SCA_ENABLED=true
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "go", "service": "shippingservice"}]'
+    restart: unless-stopped
+  checkoutservice:
+    build:
+      context: ./src/checkoutservice
+    image: tsre/checkoutservice:0.2.2
+    environment:
+      - DD_ENV=tsreenv
+      - DD_SERVICE=checkoutservice
+      - DD_VERSION=0.2.2
+      - DD_TRACE_AGENT_URL=unix:///var/run/datadog/apm.socket
+      - PORT=5050
+      - PAYMENT_SERVICE_ADDR=paymentservice:9090
+      - SHIPPING_SERVICE_ADDR=shippingservice:50051
+      - EMAIL_SERVICE_ADDR=emailservice:8080
+      - CURRENCY_SERVICE_ADDR=currencyservice:7000
+      - CART_SERVICE_ADDR=cartservice:7070
+      - PRODUCT_CATALOG_SERVICE_ADDR=productcatalogservice:3550
+      - DISABLE_PROFILER=1
+      - DISABLE_TRACING=1
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_SAMPLE_RATE=1
+      - DD_PROFILING_ENABLED=true
+      # Security stuff
+      - DD_APPSEC_ENABLED=true
+      - DD_IAST_ENABLED=true
+      - DD_APPSEC_SCA_ENABLED=true
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "go", "service": "checkoutservice"}]'
+    restart: unless-stopped
+  paymentservice:
+    build:
+      context: ./src/paymentservice
+    image: tsre/paymentservice:0.6.2
+    environment:
+      - DD_ENV=tsreenv
+      - DD_SERVICE=paymentservice
+      - DD_VERSION=0.6.2
+      - DD_TRACE_AGENT_URL=unix:///var/run/datadog/apm.socket
+      - PORT=9090
+      - PAYMENT_DB_HOST=paymentdbservice
+      - PAYMENT_DB_PORT=3306
+      - PAYMENT_DB_USER=swagstore
+      - PAYMENT_DB_PASSWORD=weLoveSwagAtDash2023
+      - PAYMENT_DB_NAME=paymentdb
+      - SPRING_DATASOURCE_URL=jdbc:mariadb://paymentdbservice:3306/paymentdb?useUnicode=true&characterEncoding=utf8&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=swagstore
+      - SPRING_DATASOURCE_PASSWORD=weLoveSwagAtDash2023
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MariaDBDialect
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_SAMPLE_RATE=1
+      - DD_TRACE_ENABLED=true
+      - DD_APM_ENABLED=true
+      - DD_APM_NON_LOCAL_TRAFFIC=true
+      - DD_PROFILING_ENABLED=true
+      - DD_RUNTIME_METRICS_ENABLED=true
+      - CTHULHU_URL=${CTHULHU_URL}
+      # Security stuff
+      - DD_APPSEC_ENABLED=true
+      - DD_IAST_ENABLED=true
+      - DD_APPSEC_SCA_ENABLED=true
+    ports:
+      - "8881:8881/tcp"
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+    depends_on:
+      paymentdbservice:
+        condition: service_started
+    restart: unless-stopped
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "java", "service": "paymentservice"}]'
+  currencyservice:
+    build:
+      context: ./src/currencyservice
+    image: tsre/currencyservice:0.3.4
+    environment:
+      - DD_ENV=tsreenv
+      - DD_SERVICE=currencyservice
+      - DD_VERSION=0.3.4
+      - DD_TRACE_AGENT_URL=unix:///var/run/datadog/apm.socket
+      - PORT=7000
+      - DISABLE_PROFILER=1
+      - DISABLE_DEBUGGER=1
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_SAMPLE_RATE=1
+      - DD_PROFILING_ENABLED=true
+      - DD_RUNTIME_METRICS_ENABLED=true
+      # Security stuff
+      - DD_APPSEC_ENABLED=true
+      - DD_IAST_ENABLED=true
+      - DD_APPSEC_SCA_ENABLED=true
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "java", "service": "currencyservice"}]'
+    restart: unless-stopped
+  cartservice:
+    build:
+      context: ./src/cartservice/src
+      dockerfile: Dockerfile
+    image: tsre/cartservice:0.1.4
+    environment:
+      - DD_ENV=tsreenv
+      - DD_SERVICE=cartservice
+      - DD_VERSION=0.1.4
+      - DD_TRACE_AGENT_URL=unix:///var/run/datadog/apm.socket
+      - PORT=7070
+      - REDIS_ADDR=redis:6379
+      - REDIS_POOL_SIZE=10
+      - REDIS_POOL_MIN_IDLE=2
+      - REDIS_POOL_MAX_IDLE=5
+      - REDIS_POOL_MAX_ACTIVE=10
+      - REDIS_POOL_MAX_WAIT=2000
+      - DISABLE_PROFILER=1
+      - DISABLE_TRACING=1
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_SAMPLE_RATE=1
+      - DD_PROFILING_ENABLED=true
+      # Security stuff
+      - DD_APPSEC_ENABLED=true
+      - DD_IAST_ENABLED=true
+      - DD_APPSEC_SCA_ENABLED=true
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=:7070", "-rpc-timeout=5s"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "csharp", "service": "cartservice"}]'
+  frontend:
+    build:
+      context: ./src/frontend
+    image: tsre/frontend:0.4.1
+    ports:
+      - "80:8088"
+    environment:
+      - DD_ENV=tsreenv
+      - DD_SERVICE=frontend
+      - DD_VERSION=0.4.1
+      - DD_TRACE_AGENT_URL=unix:///var/run/datadog/apm.socket
+      - PORT=8088
+      - PRODUCT_CATALOG_SERVICE_ADDR=productcatalogservice:3550
+      - CURRENCY_SERVICE_ADDR=currencyservice:7000
+      - CART_SERVICE_ADDR=cartservice:7070
+      - RECOMMENDATION_SERVICE_ADDR=recommendationservice:8082
+      - SHIPPING_SERVICE_ADDR=shippingservice:50051
+      - CHECKOUT_SERVICE_ADDR=checkoutservice:5050
+      - AD_SERVICE_ADDR=adservice:9555
+      - DISABLE_PROFILER=1
+      - DISABLE_TRACING=1
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_SAMPLE_RATE=1
+      - DD_PROFILING_ENABLED=true
+      - CART_SERVICE_RETRY_ATTEMPTS=3
+      - CART_SERVICE_RETRY_DELAY=1000
+      - CART_SERVICE_TIMEOUT=5000
+      # Security stuff
+      - DD_APPSEC_ENABLED=true
+      - DD_IAST_ENABLED=true
+      - DD_APPSEC_SCA_ENABLED=true
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "go", "service": "frontend"}]'
+    depends_on:
+      cartservice:
+        condition: service_healthy
+    restart: unless-stopped
+  adservice:
+    build:
+      context: ./src/adservice
+    image: tsre/adservice:0.3.0
+    environment:
+      - DD_ENV=tsreenv
+      - DD_SERVICE=adservice
+      - DD_VERSION=0.3.0
+      - DD_TRACE_AGENT_URL=unix:///var/run/datadog/apm.socket
+      - PORT=9555
+      - DISABLE_PROFILER=1
+      - DISABLE_TRACING=1
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_SAMPLE_RATE=1
+      - DD_PROFILING_ENABLED=true
+      # Security stuff
+      - DD_APPSEC_ENABLED=true
+      - DD_IAST_ENABLED=true
+      - DD_APPSEC_SCA_ENABLED=true
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "java", "service": "adservice"}]'
+    restart: unless-stopped
+  paymentdbservice:
+    build:
+      context: ./src/paymentdbservice
+    image: tsre/paymentdbservice:0.2.4
+    environment:
+      - MARIADB_ROOT_PASSWORD=topsecret
+      - MARIADB_ALLOW_EMPTY_ROOT_PASSWORD=0
+      - MARIADB_DATABASE=paymentdb
+      - MARIADB_USER=swagstore
+      - MARIADB_PASSWORD=weLoveSwagAtDash2023
+      - DD_ENV=tsreenv
+      - DD_SERVICE=paymentdbservice
+      - DD_VERSION=0.2.4
+    command: >
+      bash -c "
+      echo 'CREATE USER IF NOT EXISTS datadog@\"%\" IDENTIFIED BY \"datadog\";
+      GRANT REPLICATION CLIENT ON *.* TO datadog@\"%\";
+      GRANT PROCESS ON *.* TO datadog@\"%\";
+      GRANT SELECT ON performance_schema.* TO datadog@\"%\";
+      CREATE SCHEMA IF NOT EXISTS datadog;
+      GRANT EXECUTE ON datadog.* TO datadog@\"%\";
+      GRANT CREATE TEMPORARY TABLES ON datadog.* TO datadog@\"%\";
+      CREATE SCHEMA IF NOT EXISTS paymentdb;
+      CREATE USER IF NOT EXISTS swagstore@\"%\" IDENTIFIED BY \"weLoveSwagAtDash2023\";
+      CREATE USER IF NOT EXISTS chris@\"%\" IDENTIFIED BY \"chris\";
+      GRANT ALL PRIVILEGES ON paymentdb.* TO swagstore@\"%\";
+      GRANT ALL PRIVILEGES ON paymentdb.* TO chris@\"%\";
+      USE datadog;
+      DROP PROCEDURE IF EXISTS explain_statement;
+      DROP PROCEDURE IF EXISTS enable_events_statements_consumers;
+      DELIMITER //
+      CREATE PROCEDURE explain_statement(IN query TEXT)
+      SQL SECURITY DEFINER
+      BEGIN
+          SET @explain := CONCAT(\"EXPLAIN FORMAT=json \", query);
+          PREPARE stmt FROM @explain;
+          EXECUTE stmt;
+          DEALLOCATE PREPARE stmt;
+          SET @explain := NULL;
+      END //
+      CREATE PROCEDURE enable_events_statements_consumers()
+      SQL SECURITY DEFINER
+      BEGIN
+          UPDATE performance_schema.setup_consumers SET enabled=\"YES\" WHERE name LIKE \"%events_statements_%\";
+          UPDATE performance_schema.setup_consumers SET enabled=\"YES\" WHERE name=\"events_waits_current\";
+      END //
+      DELIMITER ;' > /docker-entrypoint-initdb.d/init.sql &&
+      docker-entrypoint.sh mariadbd"
+    volumes:
+      - paymentdb_data:/var/lib/mysql
+    restart: unless-stopped
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "mysql", "service": "paymentdbservice"}]'
+  redis:
+    image: redis:alpine
+    environment:
+      - DD_ENV=tsreenv
+      - DD_SERVICE=redis
+      - DD_VERSION=0.5.0
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "mysql", "service": "redis"}]'
+    restart: unless-stopped
+  loadgenerator:
+    build:
+      context: ./src/loadgenerator
+    image: tsre/loadgenerator:0.1.0
+    environment:
+      - DD_ENV=tsreenv
+      - DD_SERVICE=loadgenerator
+      - DD_VERSION=0.1.0
+      - DD_TRACE_AGENT_URL=unix:///var/run/datadog/apm.socket
+      - FRONTEND_ADDR=frontend:8088
+      - DISABLE_PROFILER=1
+      - DISABLE_TRACING=1
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_SAMPLE_RATE=1
+      - DD_PROFILING_ENABLED=true
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+    depends_on:
+      - frontend
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "loadgenerator"}]'
+    restart: unless-stopped
+  loggenerator:
+    build:
+      context: ./src/loggenerator
+    image: tsre/loggenerator:0.1.0
+    environment:
+      - DD_API_KEY
+      - DD_APP_KEY
+      - REPLAY_BATCH_SIZE=5
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+    depends_on:
+      - frontend
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "loggenerator"}]'
+    restart: unless-stopped
+  inventoryservice:
+    build:
+      context: ./src/inventoryservice
+    image: tsre/inventoryservice:0.1.0
+    environment:
+      - DD_ENV=tsreenv
+      - DD_SERVICE=inventoryservice
+      - DD_VERSION=0.1.0
+      - DD_TRACE_AGENT_URL=unix:///var/run/datadog/apm.socket
+      - DD_TRACE_ENABLED=true
+      - DD_APM_ENABLED=true
+      - DD_APM_NON_LOCAL_TRAFFIC=true
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_SAMPLE_RATE=1
+      - DD_PROFILING_ENABLED=true
+      - PORT=8081
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "inventoryservice"}]'
+    restart: unless-stopped
+volumes:
+  paymentdb_data: 
