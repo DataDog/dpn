@@ -124,15 +124,14 @@ If you're using this demo, please **★Star** this repository to show your inter
 
 | Home Page                                                                                                         | Checkout Screen                                                                                                    |
 | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| [![Screenshot of store homepage](./ctf/static/online-boutique-frontend-1.png)](./ctf/static/online-boutique-frontend-1.png) | [![Screenshot of checkout screen](./ctf/static/online-boutique-frontend-2.png)](./ctf/static/online-boutique-frontend-2.png) |
+| [![Screenshot of store homepage](./docs/img/online-boutique-frontend-1.png)](./docs/img/online-boutique-frontend-1.png) | [![Screenshot of checkout screen](./docs/img/online-boutique-frontend-2.png)](./docs/img/online-boutique-frontend-2.png) |
 
 
 ## Architecture
 
 The application is running in docker.
 
-[![Architecture of
-microservices](./ctf/static/arch.png)](./ctf/static/arch.png)
+[![Architecture of microservices](./docs/img/arch.png)](./docs/img/arch.png)
 
 
 | Service                                              | Language      | Description                                                                                                                       |
