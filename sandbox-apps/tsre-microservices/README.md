@@ -23,12 +23,41 @@ It is a fictitious e-commerce swag store, don't expect to receive swags :grinnin
 
 ## Quick Start
 
-To run the application locally:
+### Prerequisites
+
+**Auto-instrumentation Setup Required**: To get all applications to report data to Datadog, an auto-instrumentation step is required for both local Docker and production deployments.
+
+**⚠️ macOS Compatibility**: Auto-instrumentation is currently **not compatible with macOS Docker**. macOS users should use alternative monitoring setups.
+
+### Step 1: Auto-instrumentation Installation
+
+**Note:** We tested this on a Linux platform. For other platforms or the latest auto-instrumentation commands, refer to [this page](https://app.datadoghq.com/fleet/install-agent/latest).
+
+```bash
+DD_API_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
+DD_SITE="datadoghq.com" \
+DD_APM_INSTRUMENTATION_ENABLED=host \
+DD_REMOTE_UPDATES=true \
+DD_RUNTIME_SECURITY_CONFIG_ENABLED=true \
+DD_SBOM_CONTAINER_IMAGE_ENABLED=true \
+DD_SBOM_HOST_ENABLED=true \
+DD_ENV=tsreenv \
+DD_APM_INSTRUMENTATION_LIBRARIES=java:1,python:3,js:5,php:1,dotnet:3,ruby:2 \
+bash -c "$(curl -L https://install.datadoghq.com/scripts/install_script_agent7.sh)"
+```
+
+### Step 2: Run the Application (Docker)
+
+After completing the auto-instrumentation setup above:
 
 ```bash
 # Clone the repository
 git clone <repository-url>
 cd tsre-microservices
+
+# Set required environment variables
+export DD_API_KEY=your_datadog_api_key_here
+export DD_APP_KEY=your_datadog_app_key_here
 
 # Build and start all services
 docker-compose build 
@@ -44,7 +73,7 @@ The following environment variables are required to run the application:
 ### Required Variables
 
 | Variable | Description |
-|----------|-------------|---------|
+|----------|-------------|
 | `DD_API_KEY` | Your Datadog API key for monitoring and observability |
 | `DD_APP_KEY` | Your Datadog Application key (required for loggenerator service) |
 
@@ -124,27 +153,31 @@ microservices](./ctf/static/arch.png)](./ctf/static/arch.png)
 
 ## How to Use
 
-### Datadog Agent
-The Datadog Cluster Agent configuration is located in `ctf/datadog-values.yaml`.
-
 > **Note:** If you are running the Datadog Cluster Agent locally (e.g., via Docker) or on Google Cloud, ensure that certain settings, such as `datadog.networkMonitoring.enabled`, are disabled.
 
-### Running the Application
-All service configurations are available in the `docker-compose.yml` file.
+#### Service Configuration
+All service configurations are available in the `docker-compose.yml` file. You can modify individual service settings by editing the environment variables in this file.
 
-If using the [TSRE Terraform Script](https://github.com/DataDog/trse-terraform), the application will be started automatically using `start.sh`.
+### Troubleshooting
 
-If you are running TSRE Microservices locally or not using the [TSRE Terraform Script](https://github.com/DataDog/trse-terraform), run the following commands from the `tsre-microservices` repository to start the services:
+#### Common Issues
+- **Services not starting**: Ensure all required environment variables are set (see [Environment Variables](#environment-variables) section)
+- **No data in Datadog**: Verify that auto-instrumentation was completed successfully before starting Docker services
+- **macOS compatibility**: Auto-instrumentation is not compatible with macOS Docker - use alternative monitoring setups
 
+#### Accessing Services
+- **Frontend**: [http://localhost](http://localhost)
+- **Individual services**: Check the `docker-compose.yml` file for specific port mappings
+
+#### Logs
+To view logs for all services:
 ```bash
-docker-compose build 
-docker-compose up -d
+docker-compose logs -f
 ```
 
-If you want to run the pre-built images, run the following commands:
-```bash 
-docker-compose -f docker-compose-pre-built.yml build 
-docker-compose -f docker-compose-pre-built.yml up -d
+To view logs for a specific service:
+```bash
+docker-compose logs -f <service-name>
 ```
 
 ## Rebuilding the Services
