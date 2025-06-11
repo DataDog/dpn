@@ -1,0 +1,591 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith"
+      },
+      "eventTime": "2025-06-03T10:00:00Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "44.192.28.100",
+      "userAgent": "AWSConsoleSignIn",
+      "requestParameters": null,
+      "responseElements": {
+        "ConsoleLogin": "Success"
+      },
+      "additionalEventData": {
+        "LoginTo": "https://console.aws.amazon.com/console/home?state=hashArgs%23&isauthcode=true",
+        "MobileVersion": "No",
+        "MFAUsed": "No"
+      },
+      "eventID": "00000001-0000-4001-8001-000000000001",
+      "requestID": null,
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith"
+      },
+      "eventTime": "2025-06-03T10:00:15Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "130.176.223.71",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      "requestParameters": null,
+      "responseElements": {
+        "ConsoleLogin": "Success"
+      },
+      "additionalEventData": {
+        "LoginTo": "https://console.aws.amazon.com/console/home?state=hashArgs%23&isauthcode=true",
+        "MobileVersion": "No",
+        "MFAUsed": "No"
+      },
+      "eventID": "00000002-0000-4002-8002-000000000002",
+      "requestID": null,
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith"
+      },
+      "eventTime": "2025-06-03T10:00:30Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "130.176.185.232",
+      "userAgent": "AWSConsoleSignIn",
+      "requestParameters": null,
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "LoginTo": "https://console.aws.amazon.com/console/home?state=hashArgs%23&isauthcode=true",
+        "MobileVersion": "No",
+        "MFAUsed": "No"
+      },
+      "errorMessage": "Failed authentication",
+      "eventID": "00000003-0000-4003-8003-000000000003",
+      "requestID": null,
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith"
+      },
+      "eventTime": "2025-06-03T10:00:45Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "3.172.19.112",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15",
+      "requestParameters": null,
+      "responseElements": {
+        "ConsoleLogin": "Success"
+      },
+      "additionalEventData": {
+        "LoginTo": "https://console.aws.amazon.com/console/home?state=hashArgs%23&isauthcode=true",
+        "MobileVersion": "No",
+        "MFAUsed": "No"
+      },
+      "eventID": "00000004-0000-4004-8004-000000000004",
+      "requestID": null,
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith"
+      },
+      "eventTime": "2025-06-03T10:01:00Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "15.158.22.17",
+      "userAgent": "AWSConsoleSignIn",
+      "requestParameters": null,
+      "responseElements": {
+        "ConsoleLogin": "Success"
+      },
+      "additionalEventData": {
+        "LoginTo": "https://console.aws.amazon.com/console/home?state=hashArgs%23&isauthcode=true",
+        "MobileVersion": "No",
+        "MFAUsed": "No"
+      },
+      "eventID": "00000005-0000-4005-8005-000000000005",
+      "requestID": null,
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith"
+      },
+      "eventTime": "2025-06-03T10:01:15Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "44.192.28.100",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
+      "requestParameters": null,
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "LoginTo": "https://console.aws.amazon.com/console/home?state=hashArgs%23&isauthcode=true",
+        "MobileVersion": "No",
+        "MFAUsed": "No"
+      },
+      "errorMessage": "Failed authentication: Incorrect password",
+      "eventID": "00000006-0000-4006-8006-000000000006",
+      "requestID": null,
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith"
+      },
+      "eventTime": "2025-06-03T10:01:30Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "130.176.223.71",
+      "userAgent": "AWSConsoleSignIn",
+      "requestParameters": null,
+      "responseElements": {
+        "ConsoleLogin": "Success"
+      },
+      "additionalEventData": {
+        "LoginTo": "https://console.aws.amazon.com/console/home?state=hashArgs%23&isauthcode=true",
+        "MobileVersion": "No",
+        "MFAUsed": "No"
+      },
+      "eventID": "00000007-0000-4007-8007-000000000007",
+      "requestID": null,
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith"
+      },
+      "eventTime": "2025-06-03T10:01:45Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "130.176.185.232",
+      "userAgent": "AWSConsoleSignIn",
+      "requestParameters": null,
+      "responseElements": {
+        "ConsoleLogin": "Success"
+      },
+      "additionalEventData": {
+        "LoginTo": "https://console.aws.amazon.com/console/home?state=hashArgs%23&isauthcode=true",
+        "MobileVersion": "No",
+        "MFAUsed": "No"
+      },
+      "eventID": "00000008-0000-4008-8008-000000000008",
+      "requestID": null,
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith"
+      },
+      "eventTime": "2025-06-03T10:02:00Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "3.172.19.112",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      "requestParameters": null,
+      "responseElements": {
+        "ConsoleLogin": "Failure"
+      },
+      "additionalEventData": {
+        "LoginTo": "https://console.aws.amazon.com/console/home?state=hashArgs%23&isauthcode=true",
+        "MobileVersion": "No",
+        "MFAUsed": "No"
+      },
+      "errorMessage": "Failed authentication: Maximum attempts reached",
+      "eventID": "00000009-0000-4009-8009-000000000009",
+      "requestID": null,
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith"
+      },
+      "eventTime": "2025-06-03T10:02:15Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "15.158.22.17",
+      "userAgent": "AWSConsoleSignIn",
+      "requestParameters": null,
+      "responseElements": {
+        "ConsoleLogin": "Success"
+      },
+      "additionalEventData": {
+        "LoginTo": "https://console.aws.amazon.com/console/home?state=hashArgs%23&isauthcode=true",
+        "MobileVersion": "No",
+        "MFAUsed": "No"
+      },
+      "eventID": "00000010-0000-4010-8010-000000000010",
+      "requestID": null,
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.05",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith",
+        "accessKeyId": "ASIAIOSFODNN7PAULKEY",
+        "sessionContext": {
+          "attributes": {
+            "mfaAuthenticated": "false",
+            "creationDate": "2025-06-03T10:02:15Z"
+          }
+        }
+      },
+      "eventTime": "2025-06-03T10:02:30Z",
+      "eventSource": "sts.amazonaws.com",
+      "eventName": "GetCallerIdentity",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "44.192.28.100",
+      "userAgent": "console.amazonaws.com",
+      "requestParameters": null,
+      "responseElements": null,
+      "eventID": "00000011-0000-4011-8011-000000000011",
+      "requestID": "REQ0000011-0000-0000-0000-000000000011",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.04",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith",
+        "accessKeyId": "ASIAIOSFODNN7PAULKEY",
+        "sessionContext": {
+          "attributes": {
+            "mfaAuthenticated": "false",
+            "creationDate": "2025-06-03T10:02:15Z"
+          }
+        }
+      },
+      "eventTime": "2025-06-03T10:02:45Z",
+      "eventSource": "s3.amazonaws.com",
+      "eventName": "DeleteBucket",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "130.176.223.71",
+      "userAgent": "console.amazonaws.com",
+      "requestParameters": null,
+      "responseElements": null,
+      "eventID": "00000012-0000-4012-8012-000000000012",
+      "requestID": "REQ0000012-0000-0000-0000-000000000012",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.02",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith",
+        "accessKeyId": "ASIAIOSFODNN7PAULKEY",
+        "sessionContext": {
+          "attributes": {
+            "mfaAuthenticated": "false",
+            "creationDate": "2025-06-03T10:02:15Z"
+          }
+        }
+      },
+      "eventTime": "2025-06-03T10:03:00Z",
+      "eventSource": "iam.amazonaws.com",
+      "eventName": "GetAccountSummary",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "130.176.185.232",
+      "userAgent": "console.amazonaws.com",
+      "requestParameters": null,
+      "responseElements": null,
+      "eventID": "00000013-0000-4013-8013-000000000013",
+      "requestID": "REQ0000013-0000-0000-0000-000000000013",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.02",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith",
+        "accessKeyId": "ASIAIOSFODNN7PAULKEY",
+        "sessionContext": {
+          "attributes": {
+            "mfaAuthenticated": "false",
+            "creationDate": "2025-06-03T10:02:15Z"
+          }
+        }
+      },
+      "eventTime": "2025-06-03T10:03:15Z",
+      "eventSource": "iam.amazonaws.com",
+      "eventName": "ListRoles",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "3.172.19.112",
+      "userAgent": "console.amazonaws.com",
+      "requestParameters": null,
+      "responseElements": null,
+      "errorCode": "AccessDenied",
+      "errorMessage": "User: arn:aws:iam::123456789012:user/PaulSmith is not authorized to perform: iam:ListRoles on resource: arn:aws:iam::123456789012:role/",
+      "eventID": "00000014-0000-4014-8014-000000000014",
+      "requestID": "REQ0000014-0000-0000-0000-000000000014",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.05",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith",
+        "accessKeyId": "ASIAIOSFODNN7PAULKEY",
+        "sessionContext": {
+          "attributes": {
+            "mfaAuthenticated": "false",
+            "creationDate": "2025-06-03T10:02:15Z"
+          }
+        }
+      },
+      "eventTime": "2025-06-03T10:03:30Z",
+      "eventSource": "ec2.amazonaws.com",
+      "eventName": "DescribeRegions",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "15.158.22.17",
+      "userAgent": "console.amazonaws.com",
+      "requestParameters": null,
+      "responseElements": null,
+      "eventID": "00000015-0000-4015-8015-000000000015",
+      "requestID": "REQ0000015-0000-0000-0000-000000000015",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.05",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith",
+        "accessKeyId": "ASIAIOSFODNN7PAULKEY",
+        "sessionContext": {
+          "attributes": {
+            "mfaAuthenticated": "false",
+            "creationDate": "2025-06-03T10:02:15Z"
+          }
+        }
+      },
+      "eventTime": "2025-06-03T10:03:45Z",
+      "eventSource": "sts.amazonaws.com",
+      "eventName": "GetCallerIdentity",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "44.192.28.100",
+      "userAgent": "console.amazonaws.com",
+      "requestParameters": null,
+      "responseElements": null,
+      "eventID": "00000016-0000-4016-8016-000000000016",
+      "requestID": "REQ0000016-0000-0000-0000-000000000016",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.02",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith",
+        "accessKeyId": "ASIAIOSFODNN7PAULKEY",
+        "sessionContext": {
+          "attributes": {
+            "mfaAuthenticated": "false",
+            "creationDate": "2025-06-03T10:02:15Z"
+          }
+        }
+      },
+      "eventTime": "2025-06-03T10:04:00Z",
+      "eventSource": "iam.amazonaws.com",
+      "eventName": "ListUsers",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "130.176.223.71",
+      "userAgent": "console.amazonaws.com",
+      "requestParameters": null,
+      "responseElements": null,
+      "eventID": "00000017-0000-4017-8017-000000000017",
+      "requestID": "REQ0000017-0000-0000-0000-000000000017",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.05",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith",
+        "accessKeyId": "ASIAIOSFODNN7PAULKEY",
+        "sessionContext": {
+          "attributes": {
+            "mfaAuthenticated": "false",
+            "creationDate": "2025-06-03T10:02:15Z"
+          }
+        }
+      },
+      "eventTime": "2025-06-03T10:04:15Z",
+      "eventSource": "ec2.amazonaws.com",
+      "eventName": "DescribeInstances",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "130.176.185.232",
+      "userAgent": "console.amazonaws.com",
+      "requestParameters": null,
+      "responseElements": null,
+      "errorCode": "ThrottlingException",
+      "errorMessage": "Rate exceeded for operation ec2:DescribeInstances.",
+      "eventID": "00000018-0000-4018-8018-000000000018",
+      "requestID": "REQ0000018-0000-0000-0000-000000000018",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.02",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith",
+        "accessKeyId": "ASIAIOSFODNN7PAULKEY",
+        "sessionContext": {
+          "attributes": {
+            "mfaAuthenticated": "false",
+            "creationDate": "2025-06-03T10:02:15Z"
+          }
+        }
+      },
+      "eventTime": "2025-06-03T10:04:30Z",
+      "eventSource": "iam.amazonaws.com",
+      "eventName": "GetAccountPasswordPolicy",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "3.172.19.112",
+      "userAgent": "console.amazonaws.com",
+      "requestParameters": null,
+      "responseElements": null,
+      "eventID": "00000019-0000-4019-8019-000000000019",
+      "requestID": "REQ0000019-0000-0000-0000-000000000019",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.02",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJY7EK4O64PSMTH",
+        "arn": "arn:aws:iam::123456789012:user/PaulSmith",
+        "accountId": "123456789012",
+        "userName": "PaulSmith",
+        "accessKeyId": "ASIAIOSFODNN7PAULKEY",
+        "sessionContext": {
+          "attributes": {
+            "mfaAuthenticated": "false",
+            "creationDate": "2025-06-03T10:02:15Z"
+          }
+        }
+      },
+      "eventTime": "2025-06-03T10:04:45Z",
+      "eventSource": "iam.amazonaws.com",
+      "eventName": "ListMFADevices",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "15.158.22.17",
+      "userAgent": "console.amazonaws.com",
+      "requestParameters": null,
+      "responseElements": null,
+      "eventID": "00000020-0000-4020-8020-000000000020",
+      "requestID": "REQ0000020-0000-0000-0000-000000000020",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    }
+  ]
+}
