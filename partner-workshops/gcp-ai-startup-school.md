@@ -13,7 +13,6 @@ Sign up for a [free trial](https://www.datadoghq.com/free-datadog-trial/) to get
 - [LLM Observability Overview](https://docs.datadoghq.com/llm_observability)
 - [AI Agentic Monitoring](https://docs.datadoghq.com/llm_observability/agent_monitoring)
 - [Datasets & Experiments](https://docs.datadoghq.com/llm_observability/experiments_preview)
-- [Best Practices for LLM Monitoring](https://docs.datadoghq.com/llm_observability/best_practices)
 
 ### 2. Getting Started with LLM Observability
 - [LLM Observability Quickstart Guide](https://docs.datadoghq.com/llm_observability/quickstart/?tab=python)
