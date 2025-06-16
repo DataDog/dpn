@@ -29,10 +29,10 @@ Sign up for a [free trial](https://www.datadoghq.com/free-datadog-trial/) to get
 - [Detect hallucinations in your RAG LLM applications with Datadog LLM Observability](https://www.datadoghq.com/blog/llm-observability-hallucination-detection/)
 
 ### Self-Paced Learning
-- [Datadog Learning Platform](https://learn.datadoghq.com/pages/learning-paths) - Self Paced & Hands On
+- [Datadog Learning Platform](https://learn.datadoghq.com/pages/learning-paths) - Self paced & hands On learning courses
 
 ## Get Involved
-- [Datadog Partner Program](https://partners.datadoghq.com/s/login/?ec=302&startURL=%2Fs%2F) - Join our partner ecosystem
+- [Datadog Partner Program](https://partners.datadoghq.com/s/login/?ec=302&startURL=%2Fs%2F) - Join our partner ecosystem!
 - [Datadog Events](https://www.datadoghq.com/events/) - Stay updated on upcoming webinars and conferences
 
 ---
