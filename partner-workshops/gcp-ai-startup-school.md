@@ -1,4 +1,4 @@
-# Google AI Startup School - Observing LLM Applications with Datadog
+# Google AI Startup School - Observing LLM Applications with Datadog <img src="./resources/dd_icon.png" alt="Datadog Logo" width="50"/>
 
 Thank you for attending our session on LLM Observability with Datadog! This page contains all the resources and links we discussed, plus additional materials to help you implement LLM monitoring in your applications.
 
@@ -34,5 +34,7 @@ Sign up for a [free Datadog trial](https://www.datadoghq.com/free-datadog-trial/
 ## Get Involved
 - [Datadog Partner Program](https://partners.datadoghq.com/s/login/?ec=302&startURL=%2Fs%2F) - Join our partner ecosystem!
 - [Datadog Events](https://www.datadoghq.com/events/) - Stay updated on upcoming webinars and conferences
+
+
 
 ---
