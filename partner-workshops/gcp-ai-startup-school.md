@@ -6,7 +6,7 @@ Thank you for attending our session on LLM Observability with Datadog! This page
 In this session, we explored how to observe, troubleshoot, and optimize LLM-based applications using Datadog's LLM Observability features, built to support production workloads with Google Vertex AI's Gemini models. Through our live demo of Swagbot, we demonstrated how Datadog surfaces key insights across performance, reliability, and security.
 
 ## Quick Start
-Sign up for a [free trial](https://www.datadoghq.com/free-datadog-trial/) to get started with Datadog!
+Sign up for a [free Datadog trial](https://www.datadoghq.com/free-datadog-trial/) to get access to our platform and try out LLM Observability features and more!
 
 ## Implementation Guide
 ### 1. Core Documentation
