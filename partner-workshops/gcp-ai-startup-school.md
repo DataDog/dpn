@@ -32,7 +32,7 @@ Sign up for a [free Datadog trial](https://www.datadoghq.com/free-datadog-trial/
 
 ## Datadog for Startups - [Sign up here](https://www.datadoghq.com/partner/datadog-for-startups/)
 For Serie A startups who are not existing Datadog customers and looking to scale with Datadog:
-- Access to the full platform (usage limit may apply)
+- Access to the full platform (up to $100K in credits)
 - Personalized support and guidance
 - Access to Datadog's technical resources
 - Ongoing customer success support
