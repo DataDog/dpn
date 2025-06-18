@@ -30,14 +30,12 @@ Sign up for a [free Datadog trial](https://www.datadoghq.com/free-datadog-trial/
 ### Self-Paced Learning
 - [Datadog Learning Platform](https://learn.datadoghq.com/pages/learning-paths) - Self paced & hands On learning courses
 
-## Datadog for Startups
+## Datadog for Startups - [Sign up here](https://www.datadoghq.com/partner/datadog-for-startups/)
 For Serie A startups who are not existing Datadog customers and looking to scale with Datadog:
 - Access to the full platform (usage limit may apply)
 - Personalized support and guidance
 - Access to Datadog's technical resources
 - Ongoing customer success support
-
-[Sign up here](https://www.datadoghq.com/partner/datadog-for-startups/)
 
 ## Get Involved
 - [Datadog Partner Program](https://partners.datadoghq.com/s/login/?ec=302&startURL=%2Fs%2F) - Join our partner ecosystem!
