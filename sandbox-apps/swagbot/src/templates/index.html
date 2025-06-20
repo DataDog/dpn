@@ -8,17 +8,34 @@
     <title>{{ bot_name}}</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
+
     <style>
+        :root {
+            --primary-color: #4F46E5;
+            --secondary-color: #818CF8;
+            --background-color: #F9FAFB;
+            --message-bg: #FFFFFF;
+            --user-message-bg: #4F46E5;
+            --bot-message-bg: #F3F4F6;
+        }
+
+        body {
+            background-color: var(--background-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
         .container {
             display: flex;
             justify-content: center;
             align-items: center;
+            padding-bottom: 120px;
         }
 
         .box {
             width: min(95%, 800px);
             height: 100vh;
             margin-top: 85px;
+            position: relative;
         }
 
         .bottom {
@@ -27,10 +44,18 @@
             padding-bottom: 5%;
             background-color: white;
             width: min(95%, 800px);
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 100;
         }
 
         .message {
             margin: 20px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .usermessagediv {
@@ -41,10 +66,12 @@
         }
 
         .usermessage {
-            background-color: #097df1;
+            background-color: var(--user-message-bg);
             color: #fff;
-            padding: 0.5rem .875rem;
-            border-radius: 20px;
+            padding: 0.75rem 1.25rem;
+            border-radius: 18px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 80%;
         }
 
         .appmessagediv {
@@ -55,25 +82,44 @@
         }
 
         .appmessage {
-            background-color: #e5e5ea;
-            color: #000;
-            padding: 0.5rem .875rem;
-            border-radius: 20px;
+            background-color: var(--bot-message-bg);
+            color: #1F2937;
+            padding: 0.75rem 1.25rem;
+            border-radius: 18px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 80%;
+            line-height: 1.5;
         }
 
         .upper {
-            max-height: 100%;
+            max-height: calc(100vh - 200px);
             padding-top: 40px;
-            padding-bottom: 170px;
+            padding-bottom: 20px;
             overflow: auto;
+            scroll-behavior: smooth;
         }
 
         .upper::-webkit-scrollbar {
-            width: 0 !important
+            width: 6px;
+        }
+
+        .upper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .upper::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .upper::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
 
         #sendbtn:disabled {
             opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .downwarning {
@@ -81,36 +127,92 @@
             justify-content: center;
             margin-top: 5px;
             font-size: 90%;
-            color: gray;
+            color: #6B7280;
         }
 
         nav {
             position: fixed;
             width: 100%;
             padding: 3px;
-            box-shadow: 1px 1px 5px #80808057;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            z-index: 1000;
+        }
+
+        .input-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        #userinput {
+            border: 1px solid #E5E7EB;
+            transition: all 0.2s ease;
+        }
+
+        #userinput:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+        }
+
+        #sendbtn {
+            transition: all 0.2s ease;
+        }
+
+        #sendbtn:hover {
+            background-color: rgba(79, 70, 229, 0.1);
         }
 
         ul {
-            list-style-type: disc !important;  /* Ensures bullet points are shown */
-            margin-left: 20px;                 /* Adds indentation for the list */
+            list-style-type: disc !important;
+            margin-left: 20px;
         }
 
         li {
-            margin-bottom: 10px;               /* Adds some space between list items */
-            display: list-item !important;     /* Ensures the <li> is rendered as a list item */
+            margin-bottom: 10px;
+            display: list-item !important;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.25rem;
+            background-color: var(--bot-message-bg);
+            border-radius: 18px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            margin-right: 20%;
+            width: fit-content;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            margin: 0 2px;
+            background-color: #6B7280;
+            border-radius: 50%;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
         }
     </style>
 </head>
 
 <body>
 
-    <nav class="bg-white border-gray-200 dark:bg-gray-900">
+    <nav class="bg-white border-gray-200">
         <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
             <a href="#" class="flex items-center">
-                <img src="{{ logo_path }}" class="h-8 mr-3"
-                    alt="Flowbite Logo" />
-                <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">{{ bot_name }}</span>
+                <img src="{{ logo_path }}" class="h-8 mr-3" alt="Swagbot Logo" />
+                <span class="self-center text-2xl font-semibold whitespace-nowrap text-gray-800">{{ bot_name }}</span>
             </a>
         </div>
     </nav>
@@ -126,28 +228,29 @@
                         </div>
                     </div>
                 </div>
-                <span class="downwarning">Type your message in the box below.</span>
+                <span class="downwarning">Type your message in the box below....</span>
             </div>
 
             <div class="bottom">
                  <form id="userinputform">
                     <label for="chat" class="sr-only">Your message</label>
-                    <div class="flex items-center px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700">
-
-                        <textarea id="userinput" rows="1"
-                            class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="Your message..." required></textarea>
-                        <button type="submit"
-                            class="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600"
-                            id="sendbtn">
-                            <svg aria-hidden="true" class="w-6 h-6 rotate-90" fill="currentColor" viewBox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z">
-                                </path>
-                            </svg>
-                            <span class="sr-only">Send message</span>
-                        </button>
+                    <div class="input-container">
+                        <div class="flex items-center px-3 py-2">
+                            <textarea id="userinput" rows="1"
+                                class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="What would you like to buy today?..." required></textarea>
+                            <button type="submit"
+                                class="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100"
+                                id="sendbtn">
+                                <svg aria-hidden="true" class="w-6 h-6 rotate-90" fill="currentColor" viewBox="0 0 20 20"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z">
+                                    </path>
+                                </svg>
+                                <span class="sr-only">Send message</span>
+                            </button>
+                        </div>
                     </div>
                 </form>
               
@@ -183,6 +286,7 @@
             let userinputarea = document.getElementById('userinput')
             let upperdiv = document.getElementById('upperid')
            
+            // Add user message
             upperdiv.innerHTML = upperdiv.innerHTML + `<div class="message">
                 <div class="usermessagediv">
                         <div class="usermessage">
@@ -190,80 +294,83 @@
                         </div>
                 </div>
             </div>`
+
+            // Add typing indicator
+            upperdiv.innerHTML = upperdiv.innerHTML + `
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>`
+
             sendbtn.disabled = true
             userinputarea.disabled = true
             scrollToBottom()
             document.getElementById('userinput').value = ""
             document.getElementById('userinput').placeholder = "Wait . . ."
 
-            const response = await fetch("/data", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ data: userinput })
-            });
+            try {
+                const response = await fetch("/data", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ data: userinput })
+                });
 
-            if (response.ok) {
-                let json = await response.json();
-                document.getElementById('userinput').placeholder = "Your message..."
-                let message = json.message
-                //message = message.toString()
+                // Remove typing indicator
+                document.getElementById('typingIndicator').remove();
 
-                console.log("Data returned by LLM:" + message);
+                if (response.ok) {
+                    let json = await response.json();
+                    document.getElementById('userinput').placeholder = "What would you like to buy today?..."
+                    let message = json.message
 
-                // Example LLM response sanitization to remove leading/trailing quotes
-                function sanitizeMessage(message) {
-                    // Remove leading/trailing quotes (if any)
-                    if (message.startsWith('"') && message.endsWith('"')) {
-                        message = message.slice(1, -1);
+                    console.log("Data returned by LLM:" + message);
+
+                    // Example LLM response sanitization to remove leading/trailing quotes
+                    function sanitizeMessage(message) {
+                        if (message.startsWith('"') && message.endsWith('"')) {
+                            message = message.slice(1, -1);
+                        }
+                        return message;
                     }
-                    return message;
-                }
-                sanitized_message = sanitizeMessage(message);
+                    sanitized_message = sanitizeMessage(message);
 
-                upperdiv.innerHTML += `<div class="message">
-                    <div class="appmessagediv">
-                        <div class="appmessage">${sanitized_message}</div>  <!-- Using innerHTML to render the HTML -->
-                    </div>
-                </div>`;
-                /*
-                upperdiv.innerHTML = upperdiv.innerHTML + `<div class="message">
-                <div class="appmessagediv">
-                    <div class="appmessage" id="temp">
-                        
-                    </div>
-                </div>
-                </div>`;
-                let temp = document.getElementById('temp')
-                let index = 0
-                function displayNextLetter() {
+                    upperdiv.innerHTML += `<div class="message">
+                        <div class="appmessagediv">
+                            <div class="appmessage">${sanitized_message}</div>
+                        </div>
+                    </div>`;
+
                     scrollToBottom()
-                    if (index < message.length) {
-                        temp.innerHTML = temp.innerHTML + message[index];
-                        index++;
-                        setTimeout(displayNextLetter, 1)
-                    } else {
-                        temp.removeAttribute('id')
-                        sendbtn.disabled = false
-                        userinputarea.disabled = false
-                    }
+                    sendbtn.disabled = false
+                    userinputarea.disabled = false
                 }
-                displayNextLetter()*/
-                scrollToBottom()
-                sendbtn.disabled = false
-                userinputarea.disabled = false
-
-            }
-            else {
+                else {
+                    upperdiv.innerHTML = upperdiv.innerHTML +
+                        `<div class="message">
+                            <div class="appmessagediv">
+                                <div class="appmessage" style="border: 1px solid red;">
+                                    Sorry I had trouble processing your request. Please try again.
+                                </div>
+                            </div>
+                        </div>`
+                    sendbtn.disabled = false
+                    userinputarea.disabled = false
+                }
+            } catch (error) {
+                // Remove typing indicator in case of error
+                document.getElementById('typingIndicator').remove();
+                
                 upperdiv.innerHTML = upperdiv.innerHTML +
                     `<div class="message">
-                <div class="appmessagediv">
-                    <div class="appmessage"  style="border: 1px solid red;">
-                      Sorry I had trouble processing your request. Please try again.
-                    </div>
-                </div>
-            </div>`
+                        <div class="appmessagediv">
+                            <div class="appmessage" style="border: 1px solid red;">
+                                Sorry I had trouble processing your request. Please try again.
+                            </div>
+                        </div>
+                    </div>`
                 sendbtn.disabled = false
                 userinputarea.disabled = false
             }

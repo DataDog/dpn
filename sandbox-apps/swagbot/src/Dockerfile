@@ -1,9 +1,5 @@
 FROM python:3.11
 
-# Setting up LLMObs Env Var
-ENV DD_LLMBOS_ENABLED=1 
-ENV DD_LLMOBS_ML_APP=swagbot
-
 # Install curl and required packages for Google Cloud SDK
 RUN apt-get update && apt-get install -y curl apt-transport-https ca-certificates gnupg
 
@@ -28,4 +24,4 @@ COPY ./requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 3000
-CMD ["ddtrace-run", "python", "app.py"]
+
