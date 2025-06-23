@@ -38,7 +38,6 @@ interactions=(
     # Failed to Answer
     "echo 'Generating Failed to Answer'"
     "curl -s -o /dev/null http://localhost:3000"
-    "curl -X POST http://localhost:3000/data -H 'Content-Type: application/json' -d '{\"data\": \"Hello\"}'"
     "curl -X POST http://localhost:3000/data -H 'Content-Type: application/json' -d '{\"data\": \"How much is the Dog Steel Bottle?\"}'"
 
     # Language Mismatch
@@ -76,7 +75,6 @@ interactions=(
     # Failed to Answer
     "echo 'Generating Failed to Answer'"
     "curl -s -o /dev/null http://localhost:3000"
-    "curl -X POST http://localhost:3000/data -H 'Content-Type: application/json' -d '{\"data\": \"Hello\"}'"
     "curl -X POST http://localhost:3000/data -H 'Content-Type: application/json' -d '{\"data\": \"How much is the Dog Steel Bottle?\"}'"
 
     # Inquiring About Store Hours
@@ -118,6 +116,6 @@ while true; do
         echo "Executing: $interaction"
         eval $interaction
     done
-    echo "Sleeping for 10 seconds..."
-    sleep 10
+    echo "Sleeping for 10 minutes..."
+    sleep 600
 done

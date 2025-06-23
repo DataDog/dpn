@@ -5,67 +5,76 @@ services:
       dockerfile: Dockerfile
     environment:
       # Datadog related variables:
-    - DD_SOURCE=python
-    - DD_ENV=dev
-    - DD_SERVICE=swagbot
-    - DD_VERSION=0.5
-    - DD_API_KEY
-    - DD_LOGS_INJECTION=true
-    - DD_TRACE_SAMPLE_RATE=1
-    - DD_AGENT_HOST=agent
+      - DD_SITE=datadoghq.com
+      - DD_API_KEY
+      - DD_APPLICATION_ID
+      - DD_CLIENT_TOKEN
+      - DD_ENV=dev
+      - DD_SERVICE=swagbot
+      - DD_VERSION=0.6
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_SAMPLE_RATE=1
+      - DD_AGENT_HOST=agent
+      - DD_RUNTIME_METRICS_ENABLED=true
+      - DD_LLMOBS_ML_APP=swagbot
+      - DD_LLMOBS_ENABLED=1
       ## FLASK Configs:
-    - FLASK_HOST=0.0.0.0
-    - FLASK_PORT=3000
-      # Technology selector (OPENAI or GEMINI, default(OPENAI))
-    - LLM_TYPE
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=3000
+      # Technology selector (OPENAI or GEMINI, default(GEMINI))
+      - LLM_TYPE=GEMINI
+      # Model Configs:
+      # Options: gemini-2.0-flash-lite-001, gemini-1.5-pro-002, gemini-2.5-pro-preview-05-06
+      - MODEL_ID
+      # If Categorization model is not set, will use default MODEL_ID
+      - CATEGORIZATION_MODEL_ID=gemini-2.0-flash-lite-001 
+      - MODEL_SYS_INSTRUCTIONS=/usr/src/server/resources/gemini-system-prompt.txt
       # Open AI configs (Optional):
-    - OPENAI_SYS_INSTRUCTIONS=/usr/src/server/resources/openai-system-prompt.txt
-    - OPENAI_API_KEY
-    - MODEL
+      - OPENAI_API_KEY
       # Vertex AI Gemini Configs:
-    - GOOGLE_APPLICATION_CREDENTIALS=/usr/src/server/resources/key.json
-    - GCP_SYS_INSTRUCTIONS=/usr/src/server/resources/gemini-system-prompt.txt
-    - GCP_LLM_LOCATION
-    - GCP_MODEL_ID
-    - GCP_PROJECT_ID=datadog-partner-network
+      - GOOGLE_APPLICATION_CREDENTIALS=/usr/src/server/resources/key.json
+      - GCP_LLM_LOCATION
+      - GCP_PROJECT_ID
       # Resources
-    - PRODUCTS_JSON=/usr/src/server/resources/products.json
+      - PRODUCTS_JSON=/usr/src/server/resources/products.json
     labels:
       com.datadoghq.ad.logs: '[{"source": "python", "service": "swagbot"}]'
       com.datadoghq.tags.env: "dev"
       com.datadoghq.tags.service: "swagbot"
-      com.datadoghq.tags.version: "0.5"
+      com.datadoghq.tags.version: "0.6"
     volumes:
-    - ./gcp_json_key.json:/usr/src/server/resources/key.json
-    - ./src/resources/openai-system-prompt.txt:/usr/src/server/resources/openai-system-prompt.txt
-    - ./src/resources/gemini-system-prompt.txt:/usr/src/server/resources/gemini-system-prompt.txt
-    - ./src/resources/products.json:/usr/src/server/resources/products.json
+      - /var/run/datadog:/var/run/datadog
+      - ./gcp_json_key.json:/usr/src/server/resources/key.json
+      - ./src/resources/openai-system-prompt.txt:/usr/src/server/resources/openai-system-prompt.txt
+      - ./src/resources/gemini-system-prompt.txt:/usr/src/server/resources/gemini-system-prompt.txt
+      - ./src/resources/products.json:/usr/src/server/resources/products.json
     ports:
-    - 3000:3000
+      - 3000:3000
     entrypoint: >
       /bin/bash -c "gcloud auth activate-service-account --key-file=/usr/src/server/resources/key.json
-      && ddtrace-run python app.py & python replay.py"
+      && ddtrace-run python app.py"
   agent:
     image: gcr.io/datadoghq/agent:7.56.0
     environment:
-    - DD_API_KEY
-    - DD_ENV=dev
-    - DD_LOGS_ENABLED=true
-    - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
-    - DD_PROCESS_AGENT_ENABLED=true
-    - DD_APM_ENABLED=true
-    - DD_APM_NON_LOCAL_TRAFFIC=true
-    - DD_APM_RECEIVER_SOCKET=/var/run/datadog/apm.socket
-    - DD_DOGSTATSD_SOCKET=/var/run/datadog/dsd.socket
-    - DD_HOSTNAME=dockeragent
-    - DD_TAGS='env:dd-llm'
-    - DD_DOCKER_LABELS_AS_TAGS={"my.custom.label.team":"team"}
+      - DD_API_KEY
+      - DD_ENV=dev
+      - DD_LOGS_ENABLED=true
+      - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
+      - DD_PROCESS_AGENT_ENABLED=true
+      - DD_APM_ENABLED=true
+      - DD_APM_NON_LOCAL_TRAFFIC=true
+      - DD_APM_RECEIVER_SOCKET=/var/run/datadog/apm.socket
+      - DD_DOGSTATSD_SOCKET=/var/run/datadog/dsd.socket
+      - DD_HOSTNAME=dockeragent
+      - DD_TAGS='env:dd-llm'
+      - DD_DOCKER_LABELS_AS_TAGS={"my.custom.label.team":"team"}
+      - DD_LOGS_CONFIG_AUTO_MULTI_LINE_DETECTION=true
+      - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
     ports:
-    - 127.0.0.1:8126:8126/tcp
+      - 127.0.0.1:8126:8126/tcp
     volumes:
-    - /var/run/docker.sock:/var/run/docker.sock:ro
-    - /proc/:/host/proc/:ro
-    - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
     labels:
-      com.datadoghq.ad.logs: '[{"source": "agent", "service": "agent", "auto_multi_line_detection":
-        true}]'
+      com.datadoghq.ad.logs: '[{"source": "agent", "service": "agent"}]'
