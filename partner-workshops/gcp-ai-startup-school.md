@@ -7,6 +7,12 @@ In this session, we explored how to observe, troubleshoot, and optimize LLM-base
 ## Get Started with LLM Observability
 Visit [this page](https://www.datadoghq.com/product/llm-observability/) to start a **free trial** of LLM Observability and explore the full capabilities of the Datadog platform!
 
+## Preview Links
+### Dataset & Experiments
+Visit [this](https://docs.datadoghq.com/llm_observability/experiments_preview) page.
+### Agentic Workflow Monitoring
+Visit [this](https://docs.datadoghq.com/llm_observability/agent_monitoring) page.
+
 ## Implementation Guide
 ### 1. Core Documentation
 - [LLM Observability Overview](https://docs.datadoghq.com/llm_observability)
@@ -23,6 +29,8 @@ Visit [this page](https://www.datadoghq.com/product/llm-observability/) to start
 
 ## Learning Resources
 ### Featured Articles
+- [Monitor your Google Gemini apps with Datadog LLM Observability](https://www.datadoghq.com/blog/monitor-google-gemini-datadog-llm-observability/)
+- [Datadog's broader Google Cloud Monitoring capabilities](https://www.datadoghq.com/solutions/googlecloud/)
 - [Monitor, troubleshoot, and improve agentic systems with Datadog](https://www.datadoghq.com/blog/monitor-ai-agents/)
 - [Create and monitor LLM experiments with Datadog](https://www.datadoghq.com/blog/llm-experiments/)
 - [Detect hallucinations in your RAG LLM applications with Datadog LLM Observability](https://www.datadoghq.com/blog/llm-observability-hallucination-detection/)
@@ -31,7 +39,7 @@ Visit [this page](https://www.datadoghq.com/product/llm-observability/) to start
 - [Datadog Learning Platform](https://learn.datadoghq.com/pages/learning-paths) - Self paced & hands On learning courses
 
 ## Datadog for Startups - [Sign up here](https://www.datadoghq.com/partner/datadog-for-startups/)
-For Serie A startups who are not existing Datadog customers and looking to scale with Datadog:
+For Series A startups who are not existing Datadog customers and looking to scale with Datadog:
 - Access to the full platform (up to $100K in credits)
 - Personalized support and guidance
 - Access to Datadog's technical resources
