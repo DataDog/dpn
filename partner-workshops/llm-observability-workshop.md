@@ -35,7 +35,9 @@ Visit [this](https://docs.datadoghq.com/llm_observability/agent_monitoring) page
 - [Detect hallucinations in your RAG LLM applications with Datadog LLM Observability](https://www.datadoghq.com/blog/llm-observability-hallucination-detection/)
 
 ### Self-Paced Learning
-- [Datadog Learning Platform](https://learn.datadoghq.com/pages/learning-paths) - Self paced & hands On learning courses
+Self paced & hands On learning courses available on our [Learning Center](https://learn.datadoghq.com/).
+- [Getting Started with LLM Observability](https://learn.datadoghq.com/courses/llm-obs-getting-started)
+- [Tracing an LLM Application](https://learn.datadoghq.com/courses/llm-obs-tracing-llm-applications)
 
 ## Get Involved
 - [Datadog Partner Program](https://partners.datadoghq.com/s/login/?ec=302&startURL=%2Fs%2F) - Join our partner ecosystem!
