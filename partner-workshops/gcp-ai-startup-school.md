@@ -37,13 +37,6 @@ Visit [this](https://docs.datadoghq.com/llm_observability/agent_monitoring) page
 ### Self-Paced Learning
 - [Datadog Learning Platform](https://learn.datadoghq.com/pages/learning-paths) - Self paced & hands On learning courses
 
-## Datadog for Startups - [Sign up here](https://www.datadoghq.com/partner/datadog-for-startups/)
-For Series A startups who are not existing Datadog customers and looking to scale with Datadog:
-- Access to the full platform (up to $100K in credits)
-- Personalized support and guidance
-- Access to Datadog's technical resources
-- Ongoing customer success support
-
 ## Get Involved
 - [Datadog Partner Program](https://partners.datadoghq.com/s/login/?ec=302&startURL=%2Fs%2F) - Join our partner ecosystem!
 - [Datadog Events](https://www.datadoghq.com/events/) - Stay updated on upcoming webinars and conferences
