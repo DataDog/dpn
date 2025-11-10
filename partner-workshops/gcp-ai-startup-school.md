@@ -7,7 +7,6 @@ In this session, we explored how to observe, troubleshoot, and optimize LLM-base
 ## Get Started with LLM Observability
 Visit [this page](https://www.datadoghq.com/product/llm-observability/) to start a **free trial** of LLM Observability and explore the full capabilities of the Datadog platform!
 
-## Preview Links
 ### Dataset & Experiments
 Visit [this](https://docs.datadoghq.com/llm_observability/experiments_preview) page.
 ### Agentic Workflow Monitoring
