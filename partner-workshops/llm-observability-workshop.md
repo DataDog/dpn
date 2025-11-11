@@ -1,5 +1,5 @@
 # Observing LLM Applications with Datadog <img src="./resources/dd_icon.png" alt="Datadog Logo" width="50"/>
-Thank you for attending our session on LLM Observability with Datadog! This page contains all the resources and links we discussed, plus additional materials to help you implement LLM monitoring in your applications.
+Thank you for attending our [Partner Enablement](https://www.datadoghq.com/partner-enablement/) session on LLM Observability with Datadog! This page contains all the resources and links we discussed, plus additional materials to help you implement LLM monitoring in your applications.
 
 ## Session Recap
 In this session, we explored how to observe, troubleshoot, and optimize LLM-based applications using Datadog's LLM Observability features, built to support production workloads with Google Vertex AI's Gemini models. Through our live demo of Swagbot, we demonstrated how Datadog surfaces key insights across performance, reliability, and security.
