@@ -61,7 +61,7 @@ export DD_API_KEY="your-datadog-api-key"
 
 ### **For OpenAI (if you want to use OpenAI instead of Gemini):**
 ```bash
-export LLM_TYPE="OPENAI"                    # Override default (GEMINI)
+export LLM_TYPE="OPEN_AI"                    # Override default (GEMINI)
 export OPENAI_API_KEY="your-openai-key"    # Required for OpenAI
 export MODEL_ID="gpt-4o"                    # Override default model
 ```
