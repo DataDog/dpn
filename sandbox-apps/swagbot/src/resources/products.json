@@ -102,6 +102,54 @@
                 "nanos": 990000000
             },
             "categories": ["kitchen"]
+        },
+        {
+            "id": "H7D9F3K1L0",
+            "name": "Dog Hoodie",
+            "description": "Stay warm and stylish with this cozy fleece-lined hoodie.",
+            "picture": "/static/images/hoodie.png",
+            "priceUsd": {
+                "currencyCode": "USD",
+                "units": 49,
+                "nanos": 990000000
+            },
+            "categories": ["clothing", "hoodie"]
+        },
+        {
+            "id": "W4B8G2N5P1",
+            "name": "Dog Plastic Bottle",
+            "description": "Lightweight and durable plastic bottle for your daily hydration.",
+            "picture": "/static/images/plastic-bottle.png",
+            "priceUsd": {
+                "currencyCode": "USD",
+                "units": 15,
+                "nanos": 990000000
+            },
+            "categories": ["accessories", "kitchen"]
+        },
+        {
+            "id": "S9T3C7R5V2",
+            "name": "Dog Sticker Pack",
+            "description": "A pack of 5 high-quality vinyl stickers for your laptop or water bottle.",
+            "picture": "/static/images/sticker-pack.png",
+            "priceUsd": {
+                "currencyCode": "USD",
+                "units": 9,
+                "nanos": 990000000
+            },
+            "categories": ["accessories", "office"]
+        },
+        {
+            "id": "B3N1E8F4K6",
+            "name": "Dog Beanie",
+            "description": "A soft, warm beanie to keep you comfortable during the colder months.",
+            "picture": "/static/images/beanie.png",
+            "priceUsd": {
+                "currencyCode": "USD",
+                "units": 24,
+                "nanos": 990000000
+            },
+            "categories": ["clothing", "accessories"]
         }
     ]
 }

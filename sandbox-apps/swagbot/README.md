@@ -1,215 +1,207 @@
-# Swagbot Chatbot
+# Swagbot
 
-A demonstration chatbot for **LLM Observability** with Datadog integration, supporting both OpenAI and Google Gemini models.
+Demo e-commerce assistant (**Swagstore**) with Datadog **LLM Observability** (`ddtrace`). Supports **Google Vertex AI (Gemini)** or **OpenAI**, Flask web UI, and optional **LLM Experiments** to compare models on a dataset.
 
-## 🎯 **Purpose**
+## What you get
 
-This chatbot provides:
-- Simple integration with OpenAI or Gemini APIs
-- Web UI that can be embedded via iFrame
-- Automatic Datadog instrumentation using `ddtrace`
-- LLM observability metrics and traces
+- Categorized replies (`Help-Customer-Service`, `Product-Information`, `Promotion`, `Feedback`, `Other`, `Final`) using a strict `category":"reply":"reason` line format (see `src/resources/gemini-system-prompt.txt`).
+- APM and LLM Observability traces via the **Datadog Agent** (default in Compose).
+- Optional **replay** scripts and CSV exports for building evaluation datasets.
+- **`swagbot_experiment_utils.py`** — pull/create datasets and run multi-model Vertex experiments in Datadog.
 
-## 📋 **Prerequisites**
+## Prerequisites
 
 - Docker and Docker Compose
-- Datadog account and API key
-- Either OpenAI API key OR Google Cloud Platform account with Vertex AI enabled
+- Datadog **API key**; for Experiments you also need an **Application key** (`DD_APP_KEY`)
+- For Gemini: GCP project with Vertex AI, service account JSON (e.g. `gcp_json_key.json` → mounted as `key.json` in the container)
+- For OpenAI: `OPENAI_API_KEY` and `LLM_TYPE=OPENAI`
 
-## 🚀 **Quick Start**
-
-1. **Clone and navigate to the directory:**
-   ```bash
-   cd AIOps_LLM/swagbot
-   ```
-
-2. **Set up your environment variables** (see configuration sections below)
-
-3. **Run the application:**
-   ```bash
-   docker-compose build
-   docker-compose up -d
-   ```
-
-4. **Access the UI:**
-   - Default: http://127.0.0.1:3000
-   - Or use your custom `HOST:PORT` if configured
-
-## 🚀 **Alternative: Showcasing Agentless Setup**
-
-You can run Swagbot without the Datadog agent container using the agentless mode:
+## Quick start (Docker)
 
 ```bash
-cd AIOps_LLM/swagbot/src
+cd AIOps_LLM/swagbot
 export DD_API_KEY="your-datadog-api-key"
-export GCP_PROJECT_ID="your-project-id"  # If using Gemini
+# Recommended for LLM Experiments:
+export DD_APP_KEY="your-datadog-application-key"
 
-# Run agentless (no Docker needed)
-DD_LLMOBS_ENABLED=1 DD_LLMOBS_ML_APP="swagbot" DD_API_KEY=<YOUR_DATADOG_API_KEY> DD_LOGS_INJECTION=true DD_ENV=dev DD_SERVICE=swagbot DD_VERSION=v0.6 DD_LLMOBS_AGENTLESS_ENABLED=1 ddtrace-run python app.py
+docker compose up -d
 ```
 
-## ⚙️ **Configuration**
+- **UI:** http://127.0.0.1:3000 (port from `FLASK_PORT`, mapped in Compose)
+- **Compose** runs `swagbot` + **`agent`**; LLM Observability is intended to use the Agent (`DD_AGENT_HOST=agent`), not agentless mode.
 
-### **Required Environment Variables**
-
-**Only these variables need to be exported** (everything else has defaults in `docker-compose.yml`):
+To build the app image from this repo (includes `experiments/`), uncomment the `build:` section for `swagbot` in `docker-compose.yml` (pointing at `./src`) and run:
 
 ```bash
-# REQUIRED: Datadog API key
-export DD_API_KEY="your-datadog-api-key"
+docker compose build swagbot
 ```
 
-### **For OpenAI (if you want to use OpenAI instead of Gemini):**
+The sample Compose file may use a prebuilt image; if `experiments/` is missing in the container, mount it:
+
+```yaml
+# Under swagbot.volumes, add for local dev:
+- ./src/experiments:/usr/src/server/experiments
+```
+
+## Configuration
+
+### Always required for the running app
+
+| Variable | Notes |
+|----------|--------|
+| `DD_API_KEY` | Datadog API key |
+
+### Required for LLM Experiments (`swagbot_experiment_utils.py`)
+
+| Variable | Notes |
+|----------|--------|
+| `DD_API_KEY` | Same as above |
+| `DD_APP_KEY` | Datadog **Application** key (Organization Settings → API Keys → Application Keys) |
+
+### Gemini (default: `LLM_TYPE=GEMINI`)
+
+| Variable | Default (see `config.py` / Compose) |
+|----------|--------------------------------------|
+| `GCP_PROJECT_ID` | `datadog-partner-network` |
+| `GCP_LLM_LOCATION` | `us-central1` |
+| `GOOGLE_APPLICATION_CREDENTIALS` | In Compose: `/usr/src/server/resources/key.json` (from `./gcp_json_key.json`) |
+| `MODEL_ID` | `gemini-2.5-pro` |
+| `CATEGORIZATION_MODEL_ID` | If unset, falls back to `MODEL_ID` (Compose often sets e.g. `gemini-2.5-flash-lite`) |
+| `MODEL_SYS_INSTRUCTIONS` | Path to system prompt file; Compose example: `/usr/src/server/resources/gemini-system-prompt.txt` |
+
+In `config.py`, `MODEL_SYS_INSTRUCTIONS` is read from env `GCP_SYS_INSTRUCTIONS` if set, otherwise defaults to `resources/gemini-system-prompt.txt`.
+
+### OpenAI
+
 ```bash
-export LLM_TYPE="OPENAI"                    # Override default (GEMINI)
-export OPENAI_API_KEY="your-openai-key"    # Required for OpenAI
-export MODEL_ID="gpt-4o"                    # Override default model
+export LLM_TYPE=OPENAI
+export OPENAI_API_KEY=...
+export MODEL_ID=gpt-4o
 ```
 
-### **For Google Gemini (default setup):**
+### LLM Observability Experiments (env)
 
-1. **GCP Project (if different from default):**
-   ```bash
-   export GCP_PROJECT_ID="your-project-id"  # Override default: datadog-partner-network
-   export CATEGORIZATION_MODEL_ID="gemini-2.0-flash-lite-001" # (Optional) - Recommended to have different models used.
-   ```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DD_LLMOBS_PROJECT_NAME` | `swagbot_model_optimization` | Project name in LLM Observability |
+| `DD_LLMOBS_DATASET_NAME` | `swagbot_dataset` | Dataset to pull for runs |
+| `DD_LLMOBS_EXPERIMENT_MAX_RECORDS` | `12` | First *N* rows per experiment (`sample_size`) |
+| `DD_SWAGBOT_RESPONSE_EVAL_MODEL` | `gemini-2.5-flash` | Vertex model for the Gemini-based evaluator |
+| `DD_SITE` | `datadoghq.com` | Datadog site |
 
-2. **Configure Service Account:**
-   - Go to the [Google Cloud Console](https://console.cloud.google.com/)
-   - Navigate to **IAM & Admin > Service Accounts**
-   - Click **Create Service Account** and follow the instructions to create a new service account
-   - Assign the **"Vertex AI Custom Code Service Agent"** role
-   - After creating the service account, go to **Manage Keys** and create a new JSON key
-   - This will download a `key.json` file to your machine
-   - Copy the JSON content to `./gcp_json_key.json` in the Swagbot directory
+### Optional
 
-## 🔧 **Optional Overrides**
+- `DD_APPLICATION_ID`, `DD_CLIENT_TOKEN`, `DD_ENV` — RUM / tagging
+- `PRODUCTS_JSON`, `REPLAY_PATH` — data paths
+- `FLASK_HOST`, `FLASK_PORT`
 
-**Only export these if you want to change the defaults:**
+## LLM Observability experiments
+
+Script: **`src/experiments/swagbot_experiment_utils.py`** (in the container: `/usr/src/server/experiments/swagbot_experiment_utils.py`).
+
+Run inside the `swagbot` container with the same env as the app (keys, GCP, prompt file). The script:
+
+1. Ensures the LLM Observability **project** exists (creates it if missing).
+2. Can **list** projects/datasets, **create** a dataset from a CSV export, or **run** experiments over `MODELS_TO_RUN` (Vertex Gemini IDs in the script).
+
+### Examples
 
 ```bash
-# Model Selection (defaults in docker-compose.yml)
-export MODEL_ID="gemini-model-id" # Default: gemini-1.5-pro-002 
-export CATEGORIZATION_MODEL_ID="gemini-model-id" # Default: If not set, will use MODEL_ID
+# List projects and datasets (names must match Datadog exactly)
+docker compose exec swagbot \
+  python /usr/src/server/experiments/swagbot_experiment_utils.py --list-datasets
 
-# Datadog RUM (optional)
-export DD_APPLICATION_ID="your-app-id"
-export DD_CLIENT_TOKEN="your-client-token"
+# Create a dataset from a CSV (default file: bundled export next to the script)
+docker compose exec swagbot \
+  python /usr/src/server/experiments/swagbot_experiment_utils.py \
+    --create-dataset-from-csv \
+    --new-dataset-name swagbot_dataset \
+    --project YOUR_PROJECT_NAME
 
-# Server settings (already set in docker-compose)
-export FLASK_HOST="127.0.0.1"                         # Default: 0.0.0.0
-export FLASK_PORT="8080"                               # Default: 3000
+# Run model comparison experiments (uses DD_LLMOBS_PROJECT_NAME / DD_LLMOBS_DATASET_NAME)
+docker compose exec swagbot \
+  python /usr/src/server/experiments/swagbot_experiment_utils.py
+
+# Override project/dataset for one run
+docker compose exec swagbot \
+  python /usr/src/server/experiments/swagbot_experiment_utils.py \
+    --project swagbot_model_optimization \
+    --dataset swagbot_dataset
 ```
 
-## 📋 **What's Already Configured**
+Docs: [LLM Observability Experiments](https://docs.datadoghq.com/llm_observability/experiments)
 
-These are **already set** in `docker-compose.yml` with sensible defaults:
+### Evaluators (per dataset row)
 
-| Variable | Default Value | Description |
-|----------|---------------|-------------|
-| `LLM_TYPE` | `GEMINI` | Using Gemini by default |
-| `MODEL_ID` | `gemini-1.5-pro-002` | Primary model |
-| `FLASK_HOST` | `0.0.0.0` | Accept connections from any IP |
-| `FLASK_PORT` | `3000` | Default port |
-| `GCP_LLM_LOCATION` | `us-central1` | GCP region |
-| `GCP_PROJECT_ID` | `datadog-partner-network` | Default project |
+High level:
 
-## 📁 **Project Structure**
+1. **Format and category** — Output is a valid `category":"reply":"reason` line and the category is one of the six allowed names in the system prompt.
+2. **Category matches expected** — Parsed category matches the reference from the dataset’s `expected_output` when a reference exists; otherwise skipped (pass).
+3. **Response anchors match expected** (name kept for Datadog) — A **Vertex Gemini** judge scores the user-visible (middle) segment: align with the reference when present; otherwise a stricter check against unsupported claims vs. the user message.
+
+Optional OpenAI-based judges are added only if `OPENAI_API_KEY` is set and the ddtrace LLM judge helpers are available.
+
+### Dataset CSV format (for `--create-dataset-from-csv`)
+
+Expects columns including **`input`**, **`expected_output`**, and optional metadata columns (`id`, `metadata`, `tags`, etc.) as produced by Datadog project export. The experiment task uses the **last user message** from `input` when it is a JSON chat transcript.
+
+## Project structure
+
 ```
 AIOps_LLM/swagbot/
-├── docker-compose.yml
-├── gcp_json_key.json      # GCP service account key (if using Gemini)
-├── src/                   # Application source code
-│   ├── app.py            # Main Flask application
-│   ├── config.py         # Configuration management
-│   └── resources/        # System prompts and data files
+├── docker-compose.yml       # swagbot + datadog agent
+├── gcp_json_key.json        # Service account JSON (Gemini); gitignored in real use
+├── src/
+│   ├── app.py               # Flask app
+│   ├── config.py            # Environment-based config
+│   ├── replay.py            # Replay helpers (if used)
+│   ├── experiments/
+│   │   ├── swagbot_experiment_utils.py   # Experiments CLI
+│   │   └── *.csv            # Example exports (optional)
+│   ├── resources/           # Prompts, products.json, etc.
+│   ├── scripts/             # Shell helpers for interactions / replay
+│   └── Dockerfile
 └── README.md
 ```
 
-## 🛠️ **Troubleshooting**
+## Datadog integration
 
-### **Common Issues**
-- **Port already in use**: Change the `FLASK_PORT` environment variable
-- **GCP authentication**: Ensure your service account has the correct permissions
-- **Datadog not connected**: Verify your `DD_API_KEY` is correct
-- **Model not found**: Check if your `MODEL_ID` is supported in your GCP region
+With Agent + `ddtrace-run`:
 
-### **Environment Variable Reference**
-Based on the actual source code, here are ALL the supported variables:
+- **APM** — Requests and workflows
+- **LLM Observability** — LLM spans, evaluations when configured
+- **Experiments** — Compare models on a dataset (requires `DD_APP_KEY`)
 
-| Variable | Required | Default | Description |
-|---------|----------|---------|-------------|
-| `DD_API_KEY` | ✅ | - | Datadog API key |
-| `LLM_TYPE` | ❌ | `GEMINI` | `OPENAI` or `GEMINI` |
-| `MODEL_ID` | ❌ | `gemini-1.5-pro-002` | Primary model ID |
-| `CATEGORIZATION_MODEL_ID` | ❌ | Uses `MODEL_ID` | Separate model for categorization |
-| `OPENAI_API_KEY` | ✅* | - | Required if `LLM_TYPE=OPENAI` |
-| `GCP_PROJECT_ID` | ✅* | `datadog-sandbox` | Required if `LLM_TYPE=GEMINI` |
-| `GCP_LLM_LOCATION` | ❌ | `us-central1` | GCP region |
-| `FLASK_HOST` | ❌ | `127.0.0.1` | Server host |
-| `FLASK_PORT` | ❌ | `3000` | Server port |
+## Agentless (optional)
 
-### **Logs**
+Not the default for this Compose stack. For a local agentless trial you must set the flags your org documents (e.g. `DD_LLMOBS_AGENTLESS_ENABLED`) and run `ddtrace-run python app.py` with `DD_API_KEY` set. Prefer Agent mode for parity with production experiments.
+
+## Troubleshooting
+
+| Issue | What to check |
+|-------|----------------|
+| Port in use | Change host mapping or `FLASK_PORT` |
+| Vertex / GCP errors | Service account roles (Vertex AI), `GCP_PROJECT_ID`, region, `key.json` mount |
+| No Datadog data | `DD_API_KEY`, Agent running, `DD_AGENT_HOST` |
+| Experiments fail to pull dataset | `DD_APP_KEY`, exact `--project` / `--dataset` names (`--list-datasets`) |
+| Experiments script missing | Mount `./src/experiments` or build image from `src/` |
+
+## Logs
+
 ```bash
-# View application logs
-docker-compose logs -f
-
-# View specific service logs
-docker-compose logs -f swagbot
-
-# Follow logs in real-time
-docker-compose logs -f --tail=100 swagbot
+docker compose logs -f swagbot
+docker compose logs -f agent
 ```
 
-### **Testing Configuration**
+## Cleanup
+
 ```bash
-# Test your configuration
-docker-compose config
-
-# Check if containers are running
-docker-compose ps
-
-# Restart if needed
-docker-compose restart swagbot
+docker compose down
+docker compose down -v   # remove volumes if any
 ```
 
-## 🧹 **Cleanup**
-```bash
-# Stop and remove containers
-docker-compose down
+## Development tips
 
-# Remove volumes (optional)
-docker-compose down -v
-
-# Remove all unused Docker resources
-docker system prune -a
-```
-
-## 📊 **Datadog Integration**
-
-Once running, you can view:
-- **APM Traces**: Application performance and LLM calls
-- **Logs**: Application and error logs  
-- **Metrics**: Custom LLM observability metrics
-- **RUM**: Real User Monitoring (if configured)
-
-Access your Datadog dashboard to see the instrumentation in action.
-
-## 🔬 **Development Tips**
-
-### **Testing Different Models**
-```bash
-# Test with different Gemini models
-export MODEL_ID="gemini-2.0-flash-lite-001"
-docker-compose restart swagbot
-
-# Use separate models for different workflows
-export CATEGORIZATION_MODEL_ID="gemini-2.0-flash-lite-001"  # Fast for categorization
-export MODEL_ID="gemini-1.5-pro-002"                        # Comprehensive for main chat
-```
-
-### **Custom System Prompts**
-```bash
-# Create custom prompts
-export MODEL_SYS_INSTRUCTIONS="resources/my-custom-prompt.txt"
-```
+- **Models:** Set `MODEL_ID` / `CATEGORIZATION_MODEL_ID` in Compose or env; restart `swagbot`.
+- **System prompt:** Edit `src/resources/gemini-system-prompt.txt` or point `MODEL_SYS_INSTRUCTIONS` / `GCP_SYS_INSTRUCTIONS` at another file.
+- **Experiments model list:** Edit `MODELS_TO_RUN` in `swagbot_experiment_utils.py`.

@@ -7,11 +7,12 @@ services:
       # Datadog related variables:
       - DD_SITE=datadoghq.com
       - DD_API_KEY
+      - DD_APP_KEY
       - DD_APPLICATION_ID
       - DD_CLIENT_TOKEN
       - DD_ENV=dev
       - DD_SERVICE=swagbot
-      - DD_VERSION=0.6
+      - DD_VERSION=0.9
       - DD_LOGS_INJECTION=true
       - DD_TRACE_SAMPLE_RATE=1
       - DD_AGENT_HOST=agent
@@ -24,10 +25,11 @@ services:
       # Technology selector (OPENAI or GEMINI, default(GEMINI))
       - LLM_TYPE=GEMINI
       # Model Configs:
-      # Options: gemini-2.0-flash-lite-001, gemini-1.5-pro-002, gemini-2.5-pro-preview-05-06
-      - MODEL_ID
+      # Options: gemini-2.5-flash-lite,
+      - MODEL_ID=gemini-2.5-pro
       # If Categorization model is not set, will use default MODEL_ID
-      - CATEGORIZATION_MODEL_ID=gemini-2.0-flash-lite-001 
+      - CATEGORIZATION_MODEL_ID=gemini-2.5-flash-lite 
+      - DD_SWAGBOT_RESPONSE_EVAL_MODEL
       - MODEL_SYS_INSTRUCTIONS=/usr/src/server/resources/gemini-system-prompt.txt
       # Open AI configs (Optional):
       - OPENAI_API_KEY
@@ -41,7 +43,8 @@ services:
       com.datadoghq.ad.logs: '[{"source": "python", "service": "swagbot"}]'
       com.datadoghq.tags.env: "dev"
       com.datadoghq.tags.service: "swagbot"
-      com.datadoghq.tags.version: "0.6"
+      com.datadoghq.tags.version: "0.9"
+      com.datadoghq.tags.team: "engineering"
     volumes:
       - /var/run/datadog:/var/run/datadog
       - ./gcp_json_key.json:/usr/src/server/resources/key.json
@@ -54,7 +57,7 @@ services:
       /bin/bash -c "gcloud auth activate-service-account --key-file=/usr/src/server/resources/key.json
       && ddtrace-run python app.py"
   agent:
-    image: gcr.io/datadoghq/agent:7.56.0
+    image: gcr.io/datadoghq/agent:7.72.0
     environment:
       - DD_API_KEY
       - DD_ENV=dev

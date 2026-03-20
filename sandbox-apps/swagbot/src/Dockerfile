@@ -1,27 +1,27 @@
-FROM python:3.11
+FROM python:3.11-slim
 
-# Install curl and required packages for Google Cloud SDK
-RUN apt-get update && apt-get install -y curl apt-transport-https ca-certificates gnupg
-
-# Add Google Cloud SDK public key
-RUN curl -sSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor | tee /usr/share/keyrings/cloud.google.gpg > /dev/null
-
-# Add Google Cloud SDK repository
-RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee /etc/apt/sources.list.d/google-cloud-sdk.list
-
-# Install Google Cloud SDK
-RUN apt-get update && apt-get install -y google-cloud-sdk
+# Install minimal Google Cloud CLI only (not full SDK)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    gnupg \
+    && curl -sSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee /etc/apt/sources.list.d/google-cloud-sdk.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends google-cloud-cli \
+    # Clean up apt cache (saves ~100MB)
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Create the application directory
-RUN mkdir -p /usr/src/server
 WORKDIR /usr/src/server
+
+# Copy and install Python dependencies first (better layer caching)
+COPY ./requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
 COPY ./ /usr/src/server
-
-# Install Python dependencies
-COPY ./requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 3000
 
