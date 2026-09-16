@@ -61,13 +61,10 @@ These already have a dedicated public Datadog repo — go there directly instead
 2. [LLM Observability Workshop](partner-workshops/llm-observability-workshop.md) - Guide for a partner-led LLM Observability enablement session.
 
 ## Monitors
-See [monitors/](monitors) — currently includes a [vSphere host-down composite monitor](monitors/vsphere).
+The [monitors](monitors) folder holds sample monitor definitions that demonstrate best practices for specific integrations — right now, a vSphere host-down composite monitor.
 
 ## Automation Tooling
-See [scripts/](scripts):
-
-1. [Datadog Backup](scripts/datadog-backup) - Schedule periodic backups of your Datadog dashboards and monitors, as a local cron job or an AWS Lambda function.
-2. [Windows Secrets-Fetcher (Azure KeyVault)](scripts/secrets-exe) - A guide on building a Windows `.exe` that fetches secrets from Azure KeyVault, for use with [Datadog Secrets Management](https://docs.datadoghq.com/agent/guide/secrets-management/?tab=windows). (There's currently no equivalent AWS Secrets Manager fetcher in this repo — an earlier one existed but was removed as no longer maintained; happy to take a contribution here.)
+The [scripts](scripts) folder holds automation a partner would frequently find useful: a Datadog dashboard/monitor backup utility, and a guide for building a Windows secrets-fetcher for Azure KeyVault. (There's no AWS Secrets Manager equivalent right now — an earlier one existed but was removed as unmaintained; contributions welcome.)
 
 # Partner resources
 
