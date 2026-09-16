@@ -17,7 +17,9 @@ If you have your own app that you like to use to demo Datadog to your prospects 
 
 ## In this repo, or its own repo?
 
-Most sample apps live directly under `sandbox-apps/`. But if your app is going to be actively maintained on its own (its own CI, its own release cadence, its own contributors), consider giving it a dedicated `DataDog/<app-name>` repo instead, and just linking to it from this repo's `README.md` — that's how apps like Bank of Anthos, Storedog, and the TSRE microservices demo are handled. When in doubt, start it here; it's easy to split out into its own repo later if it grows.
+Add your app under `sandbox-apps/` here — that's the only option available to external contributors, since creating a new `DataDog/<app-name>` repo requires a Datadog employee.
+
+If it takes off and ends up being actively maintained on its own (its own CI, its own release cadence, its own contributors), it can be split out into a dedicated `DataDog/<app-name>` repo later, linked from this repo's `README.md` instead of vendored — that's how apps like Bank of Anthos, Storedog, and the TSRE microservices demo ended up with their own repos. If you think your app has reached that point, raise it with your Datadog contact (charlie@datadoghq.com) rather than trying to create the repo yourself.
 
 ## What we look for in new sample apps
 
