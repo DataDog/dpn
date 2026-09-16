@@ -10,13 +10,13 @@ Most partners only need one sample app, not the whole repo. Point them at the `g
 
 | Path | What it is |
 |---|---|
-| `sandbox-apps/datadog-sample-finance/` | Finance domain sample app (Python/FastAPI, Java/Spring Boot, Node.js, Go), pre-wired for APM/Logs/Metrics/Profiler/DBM/DSM/Data Jobs |
+| `sandbox-apps/datadog-sample-finance/` | Finance domain sample app (Python/FastAPI, Java/Spring Boot, Node.js, Go), pre-wired for APM/Logs/Metrics/Profiler/DBM/DSM/Data Jobs. `docs/` holds a full 9-module "DPN Implementation Training" workshop curriculum + printable booklet — see `docs/README.md` |
 | `sandbox-apps/swagbot/` | Chatbot demo instrumented for LLM Observability + APM |
-| `sandbox-apps/microservices-demo-multiarch-main/` | Google's "Online Boutique" demo, base version |
-| `sandbox-apps/aws-microservices-demo-multiarch-main/` | Same demo, AWS EC2/EKS deployment variant |
+| `sandbox-apps/online-boutique/` | Google's "Online Boutique" demo, base version |
+| `sandbox-apps/online-boutique-aws/` | Same demo, AWS EC2/EKS deployment variant |
 | `partner-workshops/` | Workshop guides (e.g. LLM Observability workshop) |
 | `monitors/` | Sample monitor definitions (e.g. vSphere host-down composite) |
-| `scripts/` | Automation tooling (Datadog backup/export, Azure/AWS secrets fetchers) |
+| `scripts/` | Automation tooling (Datadog backup/export, Azure KeyVault secrets fetcher — no AWS equivalent currently, an older one was removed as unmaintained) |
 
 Some sample apps referenced from the root `README.md` live in their **own dedicated Datadog repo** instead of here (`DataDog/dpn-bank-of-anthos`, `DataDog/storedog`, `DataDog/tsre-microservices`). Don't vendor a copy of those into `dpn` — link to them. This is the convention across Datadog's demo repos: an app gets its own repo once it's actively maintained on its own, and `dpn` either holds it directly (for smaller/less-active apps) or links out to it.
 

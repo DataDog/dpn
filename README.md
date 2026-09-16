@@ -8,16 +8,15 @@ This repo is a collection of resources for authorized members of the Datadog Par
 In this repo, you will find things like:
 
   - Sandbox applications you can easily deploy to show how to monitor modern environments and services
-  - Sample dashboards and monitors that demonstrate best-practices or are useful for specific integrations and use-cases
-  - Example runbooks for how to conduct common investigations
-  - Configurations of different products that are frequently helpful
+  - Partner-led workshop curricula and guides
+  - Sample monitors that demonstrate best-practices or are useful for specific integrations and use-cases
   - Automation scripts and tooling that a partner would frequently find useful
 
 Please consider [contributing](#contributing-and-feedback) to this repo, since it'll get much more useful with the input of our partners!
 
 # Pulling just what you need
 
-This repo has grown to hold a lot of sample apps and workshop content — you usually only need one. Use a sparse checkout so you only download the files for the app(s) you actually want:
+This repo holds a lot of sample apps and workshop content — you usually only need one. Use a sparse checkout so you only download the files for the app(s) you actually want:
 
 ```sh
 git clone --filter=blob:none --sparse https://github.com/DataDog/dpn.git
@@ -27,10 +26,12 @@ git sparse-checkout set sandbox-apps/swagbot
 
 This fetches all commit/tree metadata but skips downloading file contents up front, then materializes just `sandbox-apps/swagbot/` (plus the top-level repo files) into your working tree — full git history and remote tracking stay intact.
 
-Need more than one app? Add paths any time:
+Need more than one app, or something outside `sandbox-apps/`? Add any path any time:
 
 ```sh
 git sparse-checkout add sandbox-apps/datadog-sample-finance
+git sparse-checkout add partner-workshops
+git sparse-checkout add monitors scripts
 ```
 
 # Table of Contents
@@ -39,10 +40,10 @@ git sparse-checkout add sandbox-apps/datadog-sample-finance
 
 In-repo apps (clone/sparse-checkout this repo to get these):
 
-1. [Sample Finance App](sandbox-apps/datadog-sample-finance) - A multi-service finance domain app (Python/FastAPI, Java/Spring Boot, Node.js, Go) pre-wired for Datadog APM, Logs, Metrics, Profiler, DBM, DSM, and Data Jobs.
+1. [Datadog Sample Finance App](sandbox-apps/datadog-sample-finance) - A multi-service finance domain app (Python/FastAPI, Java/Spring Boot, Node.js, Go) pre-wired for Datadog APM, Logs, Metrics, Profiler, DBM, DSM, and Data Jobs. Includes a full **9-module DPN Implementation Training workshop** (see [Partner Workshops](#partner-workshops) below) with a printable attendee booklet.
 2. [Swagbot Chatbot](sandbox-apps/swagbot) - A containerized chatbot app fully instrumented with Datadog LLM Observability and APM.
-3. [Online Boutique (base)](sandbox-apps/microservices-demo-multiarch-main) - Google's multi-language microservices demo ("swagstore"), instrumented for Datadog APM/infra/logs.
-4. [Online Boutique (AWS variant)](sandbox-apps/aws-microservices-demo-multiarch-main) - Same demo as above, packaged for AWS EC2/EKS deployment specifically.
+3. [Online Boutique](sandbox-apps/online-boutique) - Google's multi-language microservices demo ("swagstore"), instrumented for Datadog APM/infra/logs.
+4. [Online Boutique (AWS variant)](sandbox-apps/online-boutique-aws) - Same demo as above, packaged for AWS EC2/EKS deployment specifically.
 
 Apps that already have their own dedicated public Datadog repo — go there directly instead of cloning this one:
 
@@ -50,19 +51,19 @@ Apps that already have their own dedicated public Datadog repo — go there dire
 6. [Storedog](https://github.com/DataDog/storedog) - eCommerce demo app used in observability and code-security workshops.
 7. [TSRE Microservices](https://github.com/DataDog/tsre-microservices) - Swagstore-based 12-microservice demo used for TSRE-led workshops.
 
+## Partner Workshops
+
+1. [LLM Observability Workshop](partner-workshops/llm-observability-workshop.md) - Guide for a partner-led LLM Observability enablement session.
+2. [DPN Implementation Training](sandbox-apps/datadog-sample-finance/docs/README.md) - 9-module hands-on curriculum (Meridian Financial curriculum) built around the [Datadog Sample Finance App](sandbox-apps/datadog-sample-finance), covering Unified Service Tagging, DBM, APM/DSM/DJM, RUM, Security, dashboards/monitors, and an AWS/EKS deployment track. Includes a printable attendee booklet.
+
 ## Monitors
-See [monitors/](monitors) — currently includes a vSphere host-down composite monitor.
+See [monitors/](monitors) — currently includes a [vSphere host-down composite monitor](monitors/vsphere).
 
 ## Automation Tooling
-See [scripts/](scripts) - includes a Datadog backup/export script and a Windows secrets-fetcher build.
+See [scripts/](scripts):
 
-## Partner Workshops
-See [partner-workshops/](partner-workshops) - workshop guides for partner-led enablement sessions (e.g. LLM Observability).
-
-## Azure Collection
-A collection of resources dedicated to deployments that happen in Azure.
-
-1. [Windows Secret Fetcher (Azure KeyVault)](./scripts/secrets-exe) - A guide on how to create an Azure KeyVault Secrets fetcher for use with [Datadog Secrets Management](https://docs.datadoghq.com/agent/guide/secrets-management/?tab=windows)
+1. [Datadog Backup](scripts/datadog-backup) - Schedule periodic backups of your Datadog dashboards and monitors, as a local cron job or an AWS Lambda function.
+2. [Windows Secrets-Fetcher (Azure KeyVault)](scripts/secrets-exe) - A guide on building a Windows `.exe` that fetches secrets from Azure KeyVault, for use with [Datadog Secrets Management](https://docs.datadoghq.com/agent/guide/secrets-management/?tab=windows). (There's currently no equivalent AWS Secrets Manager fetcher in this repo — an earlier one existed but was removed as no longer maintained; happy to take a contribution here.)
 
 # Partner resources
 

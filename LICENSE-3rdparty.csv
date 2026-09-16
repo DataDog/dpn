@@ -1,3 +1,4 @@
 Component,Origin,License
-sample-app:sample-app-todo,"https://github.com/benc-uk/nodejs-demoapp",MIT
-sample-app:voting-app,"https://github.com/dockersamples/example-voting-app",Apache-2.0
+sample-app:online-boutique,"https://github.com/GoogleCloudPlatform/microservices-demo",Apache-2.0
+sample-app:online-boutique-aws,"https://github.com/GoogleCloudPlatform/microservices-demo",Apache-2.0
+sample-app:datadog-sample-finance,"https://github.com/kepicorp/datadog-sample-finance",Unspecified upstream; included with author's permission
