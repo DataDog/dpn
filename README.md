@@ -57,8 +57,8 @@ These already have a dedicated public Datadog repo — go there directly instead
 
 ## Partner Workshops
 
-1. [LLM Observability Workshop](partner-workshops/llm-observability-workshop.md) - Guide for a partner-led LLM Observability enablement session.
-2. [DPN Implementation Training](sandbox-apps/datadog-sample-finance/docs/README.md) - 9-module hands-on curriculum (Meridian Financial curriculum) built around the [Datadog Sample Finance App](sandbox-apps/datadog-sample-finance), covering Unified Service Tagging, DBM, APM/DSM/DJM, RUM, Security, dashboards/monitors, and an AWS/EKS deployment track. Includes a printable attendee booklet.
+1. [DPN Implementation Training](sandbox-apps/datadog-sample-finance/docs/README.md) - 9-module hands-on curriculum (Meridian Financial curriculum) built around the [Datadog Sample Finance App](sandbox-apps/datadog-sample-finance), covering Unified Service Tagging, DBM, APM/DSM/DJM, RUM, Security, dashboards/monitors, and an AWS/EKS deployment track. Includes a printable attendee booklet.
+2. [LLM Observability Workshop](partner-workshops/llm-observability-workshop.md) - Guide for a partner-led LLM Observability enablement session.
 
 ## Monitors
 See [monitors/](monitors) — currently includes a [vSphere host-down composite monitor](monitors/vsphere).
