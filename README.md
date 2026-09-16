@@ -55,8 +55,8 @@ These already have a dedicated public Datadog repo — go there directly instead
 
 ## Partner Workshops
 
-1. [DPN Implementation Training](partner-workshops/datadog-sample-finance/docs/README.md) - 9-module hands-on curriculum (the Meridian Financial curriculum), built around a full sample app in [partner-workshops/datadog-sample-finance](partner-workshops/datadog-sample-finance) (Python/FastAPI, Java/Spring Boot, Node.js, Go; pre-wired for APM, Logs, Metrics, Profiler, DBM, DSM, and Data Jobs). Covers Unified Service Tagging, DBM, APM/DSM/DJM, RUM, Security, dashboards/monitors, and an AWS/EKS deployment track. Includes a printable attendee booklet.
-2. [LLM Observability Workshop](partner-workshops/llm-observability-workshop.md) - Guide for a partner-led LLM Observability enablement session.
+1. DPN Implementation Training ([`partner-workshops/datadog-sample-finance/docs/README.md`](partner-workshops/datadog-sample-finance/docs/README.md)) - 9-module hands-on curriculum (the Meridian Financial curriculum), built around a full sample app in [`partner-workshops/datadog-sample-finance`](partner-workshops/datadog-sample-finance) (Python/FastAPI, Java/Spring Boot, Node.js, Go; pre-wired for APM, Logs, Metrics, Profiler, DBM, DSM, and Data Jobs). Covers Unified Service Tagging, DBM, APM/DSM/DJM, RUM, Security, dashboards/monitors, and an AWS/EKS deployment track. Includes a printable attendee booklet.
+2. LLM Observability Workshop ([`partner-workshops/llm-observability-workshop.md`](partner-workshops/llm-observability-workshop.md)) - Guide for a partner-led LLM Observability enablement session.
 
 Most workshops here are a single guide (like #2 above). If yours ships with a full runnable app and curriculum (like #1), give it its own `partner-workshops/<name>/` directory rather than a single file — that's the pattern to follow for future contributions like this.
 

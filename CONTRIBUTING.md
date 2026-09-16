@@ -19,7 +19,7 @@ If you've found and fixed a bug yourself, open a [pull request](https://github.c
 
 ### Sample apps
 
-See the [sample app contributing guide](https://github.com/DataDog/dpn/blob/master/CONTRIBUTING-sample-apps.md) for the checklist, what we look for, and what to do if you'd rather not write the code yourself.
+See [`CONTRIBUTING-sample-apps.md`](https://github.com/DataDog/dpn/blob/master/CONTRIBUTING-sample-apps.md) for the checklist, what we look for, and what to do if you'd rather not write the code yourself.
 
 ### Dashboards, monitors, and other resources
 
