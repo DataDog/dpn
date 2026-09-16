@@ -26,15 +26,22 @@ git sparse-checkout set sandbox-apps/swagbot
 
 This fetches all commit/tree metadata but skips downloading file contents up front, then materializes just `sandbox-apps/swagbot/` (plus the top-level repo files) into your working tree — full git history and remote tracking stay intact.
 
-Need more than one app, or something outside `sandbox-apps/`? Add any path any time:
+Need more than one thing, or something outside `sandbox-apps/`? Add any path any time:
 
 ```sh
-git sparse-checkout add sandbox-apps/datadog-sample-finance
+git sparse-checkout add datadog-sample-finance
 git sparse-checkout add partner-workshops
 git sparse-checkout add monitors scripts
 ```
 
 # Table of Contents
+
+## DPN Implementation Training
+
+[Datadog Sample Finance App](datadog-sample-finance) is both a runnable sample app and a full **9-module hands-on training curriculum** (the Meridian Financial curriculum), with a printable attendee booklet. It's more than a sandbox app, so it gets its own place at the repo root rather than living under `sandbox-apps/`.
+
+- The app: a multi-service finance domain app (Python/FastAPI, Java/Spring Boot, Node.js, Go) pre-wired for Datadog APM, Logs, Metrics, Profiler, DBM, DSM, and Data Jobs.
+- The curriculum: see [`docs/README.md`](datadog-sample-finance/docs/README.md) — covers Unified Service Tagging, DBM, APM/DSM/DJM, RUM, Security, dashboards/monitors, and an AWS/EKS deployment track.
 
 ## Sandbox Applications
 
@@ -42,10 +49,9 @@ git sparse-checkout add monitors scripts
 
 Clone or sparse-checkout this repo to get these:
 
-1. [Datadog Sample Finance App](sandbox-apps/datadog-sample-finance) - A multi-service finance domain app (Python/FastAPI, Java/Spring Boot, Node.js, Go) pre-wired for Datadog APM, Logs, Metrics, Profiler, DBM, DSM, and Data Jobs. Includes a full **9-module DPN Implementation Training workshop** (see [Partner Workshops](#partner-workshops) below) with a printable attendee booklet.
-2. [Swagbot Chatbot](sandbox-apps/swagbot) - A containerized chatbot app fully instrumented with Datadog LLM Observability and APM.
-3. [Swagstore](sandbox-apps/microservices-demo-multiarch-main) - Datadog's fork of Google's Online Boutique multi-language microservices demo, instrumented for Datadog APM/infra/logs.
-4. [Swagstore (AWS variant)](sandbox-apps/aws-microservices-demo-multiarch-main) - Same demo as above, packaged for AWS EC2/EKS deployment specifically.
+1. [Swagbot Chatbot](sandbox-apps/swagbot) - A containerized chatbot app fully instrumented with Datadog LLM Observability and APM.
+2. [Swagstore](sandbox-apps/microservices-demo-multiarch-main) - Datadog's fork of Google's Online Boutique multi-language microservices demo, instrumented for Datadog APM/infra/logs.
+3. [Swagstore (AWS variant)](sandbox-apps/aws-microservices-demo-multiarch-main) - Same demo as above, packaged for AWS EC2/EKS deployment specifically.
 
 ### In their own repo
 
@@ -57,8 +63,9 @@ These already have a dedicated public Datadog repo — go there directly instead
 
 ## Partner Workshops
 
-1. [DPN Implementation Training](sandbox-apps/datadog-sample-finance/docs/README.md) - 9-module hands-on curriculum (Meridian Financial curriculum) built around the [Datadog Sample Finance App](sandbox-apps/datadog-sample-finance), covering Unified Service Tagging, DBM, APM/DSM/DJM, RUM, Security, dashboards/monitors, and an AWS/EKS deployment track. Includes a printable attendee booklet.
-2. [LLM Observability Workshop](partner-workshops/llm-observability-workshop.md) - Guide for a partner-led LLM Observability enablement session.
+1. [LLM Observability Workshop](partner-workshops/llm-observability-workshop.md) - Guide for a partner-led LLM Observability enablement session.
+
+See also [DPN Implementation Training](#dpn-implementation-training) above.
 
 ## Monitors
 The [monitors](monitors) folder holds sample monitor definitions that demonstrate best practices for specific integrations — right now, a vSphere host-down composite monitor.
