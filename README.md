@@ -2,7 +2,7 @@
 > Unless explicitly stated otherwise all files in this repository are licensed under the Apache 2.0 License.
 > This product includes software developed at Datadog (https://www.datadoghq.com/). Copyright 2020 Datadog, Inc.
 
-# dpn
+# Datadog Partner Network Repository
 This repo is a collection of resources for authorized members of the Datadog Partner Network, and is intended to help partners show and deliver the value of the Datadog platform.
 
 In this repo, you will find things like:

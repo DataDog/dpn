@@ -14,7 +14,7 @@ Demo e-commerce assistant (**Swagstore**) with Datadog **LLM Observability** (`d
 - Docker and Docker Compose
 - Datadog **API key**; for Experiments you also need an **Application key** (`DD_APP_KEY`)
 - For Gemini: GCP project with Vertex AI, service account JSON (e.g. `gcp_json_key.json` → mounted as `key.json` in the container)
-- For OpenAI: `OPENAI_API_KEY` and `LLM_TYPE=OPENAI`
+- For OpenAI: `OPENAI_API_KEY` and `LLM_TYPE=OPEN_AI`
 
 ## Quick start (Docker)
 
@@ -74,7 +74,7 @@ In `config.py`, `MODEL_SYS_INSTRUCTIONS` is read from env `GCP_SYS_INSTRUCTIONS`
 ### OpenAI
 
 ```bash
-export LLM_TYPE=OPENAI
+export LLM_TYPE=OPEN_AI
 export OPENAI_API_KEY=...
 export MODEL_ID=gpt-4o
 ```
