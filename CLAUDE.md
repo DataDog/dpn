@@ -12,7 +12,7 @@ Most partners only need one sample app, not the whole repo. Point them at the `g
 |---|---|
 | `sandbox-apps/datadog-sample-finance/` | Finance domain sample app (Python/FastAPI, Java/Spring Boot, Node.js, Go), pre-wired for APM/Logs/Metrics/Profiler/DBM/DSM/Data Jobs. `docs/` holds a full 9-module "DPN Implementation Training" workshop curriculum + printable booklet — see `docs/README.md` |
 | `sandbox-apps/swagbot/` | Chatbot demo instrumented for LLM Observability + APM |
-| `sandbox-apps/microservices-demo-multiarch-main/` | Google's "Online Boutique" demo, base version |
+| `sandbox-apps/microservices-demo-multiarch-main/` | "Swagstore" — Datadog's fork of Google's Online Boutique demo |
 | `sandbox-apps/aws-microservices-demo-multiarch-main/` | Same demo, AWS EC2/EKS deployment variant |
 | `partner-workshops/` | Workshop guides (e.g. LLM Observability workshop) |
 | `monitors/` | Sample monitor definitions (e.g. vSphere host-down composite) |

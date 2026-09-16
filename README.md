@@ -44,8 +44,8 @@ Clone or sparse-checkout this repo to get these:
 
 1. [Datadog Sample Finance App](sandbox-apps/datadog-sample-finance) - A multi-service finance domain app (Python/FastAPI, Java/Spring Boot, Node.js, Go) pre-wired for Datadog APM, Logs, Metrics, Profiler, DBM, DSM, and Data Jobs. Includes a full **9-module DPN Implementation Training workshop** (see [Partner Workshops](#partner-workshops) below) with a printable attendee booklet.
 2. [Swagbot Chatbot](sandbox-apps/swagbot) - A containerized chatbot app fully instrumented with Datadog LLM Observability and APM.
-3. [Online Boutique](sandbox-apps/microservices-demo-multiarch-main) - Google's multi-language microservices demo ("swagstore"), instrumented for Datadog APM/infra/logs.
-4. [Online Boutique (AWS variant)](sandbox-apps/aws-microservices-demo-multiarch-main) - Same demo as above, packaged for AWS EC2/EKS deployment specifically.
+3. [Swagstore](sandbox-apps/microservices-demo-multiarch-main) - Datadog's fork of Google's Online Boutique multi-language microservices demo, instrumented for Datadog APM/infra/logs.
+4. [Swagstore (AWS variant)](sandbox-apps/aws-microservices-demo-multiarch-main) - Same demo as above, packaged for AWS EC2/EKS deployment specifically.
 
 ### In their own repo
 
