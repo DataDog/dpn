@@ -4,7 +4,7 @@
 
 # **I want to make a sample app of my own, how do I do that?**
 
-If you have your own app that you like to use to demo Datadog to your prospects or clients, adding it here makes it easy for other partners to find and run it too.
+If you have your own app that you like to use to demo Datadog to your prospects or clients, adding it here makes it easy to find and run.
 
 ## New Sandbox App Checklist
 
