@@ -1,0 +1,35 @@
+{
+  "name": "transaction-service",
+  "version": "1.0.0",
+  "description": "Finance sample app \u2014 payment initiation, ledger write, fraud-queue producer",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.3",
+    "pg": "^8.13.0",
+    "pino": "^8.21.0",
+    "pino-http": "^9.0.0",
+    "stompit": "^1.0.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "_dd_trace_install_note": [
+    "\u2500\u2500 DATADOG INSTRUMENTATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "Step 3 \u2014 install dd-trace before enabling APM:",
+    "  npm install dd-trace --save",
+    "dd-trace MUST be the very first require() in src/index.js.",
+    "Requiring it after express or pino will miss auto-instrumentation",
+    "of already-loaded modules (http, net, dns).",
+    "Docs: https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/nodejs/",
+    "",
+    "Step 6 \u2014 install hot-shots for DogStatsD custom metrics:",
+    "  npm install hot-shots --save",
+    "Docs: https://docs.datadoghq.com/developers/dogstatsd/",
+    "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
+  ]
+}

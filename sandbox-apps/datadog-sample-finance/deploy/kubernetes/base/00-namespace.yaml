@@ -1,0 +1,23 @@
+# =============================================================================
+# Finance Sample App — Namespace
+# =============================================================================
+# All application resources live in the `finance` namespace.
+# Apply first before any other manifest in this directory.
+#
+# Usage:
+#   kubectl apply -f deploy/kubernetes/base/00-namespace.yaml
+# =============================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: finance
+  labels:
+    name: finance
+  annotations:
+    # Enable Datadog Admission Controller single-step instrumentation.
+    # The Operator's mutating webhook will automatically inject the Datadog
+    # tracer library (ddtrace, dd-trace, dd-java-agent) into every pod in
+    # this namespace at startup — no code changes or image rebuilds needed.
+    # Docs: https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/
+    admission.datadoghq.com/enabled: "true"

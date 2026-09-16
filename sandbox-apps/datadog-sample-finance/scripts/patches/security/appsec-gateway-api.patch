@@ -1,0 +1,13 @@
+--- a/deploy/kubernetes/base/services/gateway-api.yaml
++++ b/deploy/kubernetes/base/services/gateway-api.yaml
+@@ -151,8 +151,8 @@
+             # business-logic attacks at runtime.
+             # Docs: https://docs.datadoghq.com/security/application_security/
+             #
+-            # - name: DD_APPSEC_ENABLED
+-            #   value: "true"
++            - name: DD_APPSEC_ENABLED
++              value: "true"
+             # ─────────────────────────────────────────────────────────────────
+             # ── CONTINUOUS PROFILER ──────────────────────────────────────────
+             # Uncomment via 'make instrument' to enable Continuous Profiler for

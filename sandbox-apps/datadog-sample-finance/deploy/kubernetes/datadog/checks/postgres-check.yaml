@@ -1,0 +1,116 @@
+# ── DATADOG DATABASE MONITORING — PostgreSQL Agent Check ConfigMap ────────────
+# This ConfigMap is mounted into the Datadog Agent DaemonSet at:
+#   /etc/datadog-agent/conf.d/postgres.d/conf.yaml
+#
+# Mount it via the DatadogAgent CRD override or Helm values:
+#
+#   agents:
+#     volumes:
+#       - name: postgres-check-config
+#         configMap:
+#           name: datadog-postgres-check
+#     volumeMounts:
+#       - name: postgres-check-config
+#         mountPath: /etc/datadog-agent/conf.d/postgres.d/conf.yaml
+#         subPath: conf.yaml
+#
+# Requires the DBM PostgreSQL role to exist first — run 'make dbm-setup'
+# (auto-run by 'make deploy-k8s-dd'). See INSTRUMENTATION.md Step 9.
+#
+# Docs: https://docs.datadoghq.com/database_monitoring/setup_postgres/selfhosted/
+# Docs: https://docs.datadoghq.com/database_monitoring/
+# ─────────────────────────────────────────────────────────────────────────────
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: datadog-postgres-check
+  namespace: datadog
+  labels:
+    app.kubernetes.io/name: datadog-postgres-check
+    app.kubernetes.io/part-of: finance-sample-app
+data:
+  conf.yaml: |
+    # ── DATADOG DBM AGENT CONFIG ────────────────────────────────────────────
+    # Database Monitoring — enabled. The 'datadog' PostgreSQL role and
+    # pg_stat_statements extension are provisioned by 'make dbm-setup'
+    # (auto-run by 'make deploy-k8s-dd'). The password is injected into the
+    # Agent container as DD_DBM_POSTGRES_PASSWORD (see datadog-agent.yaml's
+    # override.nodeAgent.containers.agent.env) and referenced below via
+    # %%env_%% templating — no ENC[]/secrets-backend script required.
+    # Docs: https://docs.datadoghq.com/database_monitoring/setup_postgres/selfhosted/
+
+    init_config: {}
+
+    instances:
+      # Fully-qualified Service DNS name required: the Agent pod runs in the
+      # 'datadog' namespace, so the short name 'postgres-ledger' only resolves
+      # via the pod's own-namespace search domain and won't reach the
+      # 'finance' namespace's Service. Cross-namespace lookups need the FQDN.
+      - host: postgres-ledger.finance.svc.cluster.local
+        port: 5432
+        username: datadog
+        password: "%%env_DD_DBM_POSTGRES_PASSWORD%%"
+
+        # ── Core DBM features ─────────────────────────────────────────────
+        dbm: true                     # Enables query metrics, samples, explain plans
+        # NOTE: the Postgres integration's database-selection parameter is
+        # 'dbname', not 'database' — an invalid key here is silently ignored
+        # and the check falls back to connecting to the default 'postgres'
+        # database instead of 'ledger' (breaks pg_stat_statements lookups and
+        # any custom_queries against application tables like 'transactions').
+        dbname: ledger
+
+        # ── Query metrics (pg_stat_statements) ────────────────────────────
+        # Requires shared_preload_libraries = 'pg_stat_statements' in PostgreSQL.
+        query_metrics:
+          enabled: true
+          run_sync: false             # Async collection — reduces Agent CPU overhead
+
+        # ── Query samples (live session snapshots) ────────────────────────
+        query_samples:
+          enabled: true
+          collections_per_second: 1   # Increase to max 10 for busy OLTP workloads
+          explain_parameterized_queries: true  # Capture plans for parameterized SQL
+
+        # ── Schema monitoring (table structure, indexes, bloat) ───────────
+        schema_monitoring:
+          enabled: true
+
+        # ── Custom Finance-specific query metrics ─────────────────────────
+        # These run as custom queries against the ledger DB and emit gauges.
+        # ⚠ HIGH CARDINALITY WARNING: do not tag with transaction IDs or user IDs.
+        # Docs: https://docs.datadoghq.com/tagging/assigning_tags/#defining-tags
+        custom_queries:
+          - metric_prefix: finance.db.ledger
+            query: >
+              SELECT count(*) AS pending_count
+              FROM transactions
+              WHERE status = 'pending'
+              AND created_at < NOW() - INTERVAL '5 minutes'
+            columns:
+              - name: pending_count
+                type: gauge
+            tags:
+              - "table:transactions"
+              - "check:stuck_pending"
+
+          - metric_prefix: finance.db.ledger
+            query: >
+              SELECT count(*) AS failed_count
+              FROM transactions
+              WHERE status = 'failed'
+              AND created_at > NOW() - INTERVAL '1 hour'
+            columns:
+              - name: failed_count
+                type: gauge
+            tags:
+              - "table:transactions"
+              - "check:recent_failures"
+
+        # ── Tagging ───────────────────────────────────────────────────────
+        tags:
+          - "db:ledger"
+          - "env:staging"
+          - "service:postgres-ledger"
+    # ────────────────────────────────────────────────────────────────────────

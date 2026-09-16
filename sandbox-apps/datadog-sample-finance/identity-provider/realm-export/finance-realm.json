@@ -1,0 +1,359 @@
+{
+  "realm": "finance",
+  "displayName": "Finance Platform",
+  "displayNameHtml": "<b>Finance Platform</b>",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "defaultSignatureAlgorithm": "RS256",
+  "offlineSessionMaxLifespanEnabled": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "finance-analyst",
+        "description": "Read-only access \u2014 view accounts, balances, and transaction history"
+      },
+      {
+        "name": "finance-trader",
+        "description": "Initiate payments and transfers; view own transaction history"
+      },
+      {
+        "name": "finance-admin",
+        "description": "Full access \u2014 manage accounts, approve high-value transactions"
+      },
+      {
+        "name": "finance-auditor",
+        "description": "Compliance / read-only access \u2014 view all transactions for audit trail"
+      },
+      {
+        "name": "finance-compliance",
+        "description": "Approve or reject pending payments \u2014 cannot initiate new payments"
+      }
+    ]
+  },
+  "groups": [
+    {
+      "name": "analysts",
+      "path": "/analysts",
+      "realmRoles": [
+        "finance-analyst"
+      ]
+    },
+    {
+      "name": "traders",
+      "path": "/traders",
+      "realmRoles": [
+        "finance-trader"
+      ]
+    },
+    {
+      "name": "admins",
+      "path": "/admins",
+      "realmRoles": [
+        "finance-admin"
+      ]
+    },
+    {
+      "name": "auditors",
+      "path": "/auditors",
+      "realmRoles": [
+        "finance-auditor"
+      ]
+    },
+    {
+      "name": "compliance",
+      "path": "/compliance",
+      "realmRoles": [
+        "finance-compliance"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "alice.analyst",
+      "email": "alice.analyst@finance.local",
+      "firstName": "Alice",
+      "lastName": "Analyst",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Finance@2025!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "finance-analyst"
+      ],
+      "groups": [
+        "/analysts"
+      ]
+    },
+    {
+      "username": "bob.trader",
+      "email": "bob.trader@finance.local",
+      "firstName": "Bob",
+      "lastName": "Trader",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Finance@2025!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "finance-trader"
+      ],
+      "groups": [
+        "/traders"
+      ]
+    },
+    {
+      "username": "carol.admin",
+      "email": "carol.admin@finance.local",
+      "firstName": "Carol",
+      "lastName": "Admin",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Finance@2025!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "finance-admin"
+      ],
+      "groups": [
+        "/admins"
+      ]
+    },
+    {
+      "username": "dave.auditor",
+      "email": "dave.auditor@finance.local",
+      "firstName": "Dave",
+      "lastName": "Auditor",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Finance@2025!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "finance-auditor"
+      ],
+      "groups": [
+        "/auditors"
+      ]
+    },
+    {
+      "username": "eve.compliance",
+      "email": "eve.compliance@finance.local",
+      "firstName": "Eve",
+      "lastName": "Compliance",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Finance@2025!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "finance-compliance"
+      ],
+      "groups": [
+        "/compliance"
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "finance-gateway",
+      "name": "Finance Gateway API",
+      "description": "OIDC client for gateway-api JWT validation. Enables per-request user identity context in APM traces and logs.",
+      "protocol": "openid-connect",
+      "enabled": true,
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
+      "secret": "FuX1ZIddFs02LzJT-s5MZufplT7SzGmflb42_6P8VcI",
+      "redirectUris": [
+        "http://localhost:30080/*",
+        "https://localhost:30443/*",
+        "http://gateway-api:8080/*"
+      ],
+      "webOrigins": [
+        "http://localhost:30080",
+        "https://localhost:30443",
+        "http://gateway-api:8080"
+      ],
+      "defaultClientScopes": [
+        "openid",
+        "profile",
+        "email",
+        "roles"
+      ],
+      "protocolMappers": [
+        {
+          "name": "realm-roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "groups",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "datadog-saml",
+      "name": "Datadog SSO (SAML 2.0)",
+      "description": "SAML 2.0 Service Provider client for Datadog Organization SSO. See identity-provider/README.md for the full setup guide.",
+      "protocol": "saml",
+      "enabled": true,
+      "adminUrl": "https://app.datadoghq.com",
+      "baseUrl": "https://app.datadoghq.com",
+      "redirectUris": [
+        "https://app.datadoghq.com/account/saml/assertion"
+      ],
+      "attributes": {
+        "saml.authnstatement": "true",
+        "saml.server.signature": "true",
+        "saml.server.signature.keyinfo.ext": "false",
+        "saml.assertion.signature": "false",
+        "saml.multivalued.roles": "false",
+        "saml.force.post.binding": "true",
+        "saml.client.signature": "false",
+        "saml.encrypt": "false",
+        "saml_force_name_id_format": "true",
+        "saml.name.id.format": "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress",
+        "saml.allow.ecp.flow": "false",
+        "login_theme": "",
+        "saml.signing.certificate": ""
+      },
+      "fullScopeAllowed": true,
+      "protocolMappers": [
+        {
+          "name": "email",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "email",
+            "friendly.name": "email",
+            "attribute.name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+            "attribute.nameformat": "URI Reference"
+          }
+        },
+        {
+          "name": "firstName",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "firstName",
+            "friendly.name": "givenName",
+            "attribute.name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+            "attribute.nameformat": "URI Reference"
+          }
+        },
+        {
+          "name": "lastName",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "lastName",
+            "friendly.name": "surname",
+            "attribute.name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+            "attribute.nameformat": "URI Reference"
+          }
+        },
+        {
+          "name": "roles",
+          "protocol": "saml",
+          "protocolMapper": "saml-role-list-mapper",
+          "consentRequired": false,
+          "config": {
+            "attribute.name": "http://schemas.xmlsoap.org/claims/Group",
+            "attribute.nameformat": "URI Reference",
+            "friendly.name": "groups",
+            "single": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "openid",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true"
+      }
+    },
+    {
+      "name": "profile",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true"
+      }
+    },
+    {
+      "name": "email",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true"
+      }
+    },
+    {
+      "name": "roles",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true"
+      }
+    }
+  ]
+}

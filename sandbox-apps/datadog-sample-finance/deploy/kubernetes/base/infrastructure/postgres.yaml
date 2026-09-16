@@ -1,0 +1,152 @@
+# =============================================================================
+# Finance Sample App — PostgreSQL (Ledger Database)
+# =============================================================================
+# StatefulSet is used (over Deployment) because PostgreSQL is a stateful
+# workload: the pod identity and stable storage claim must survive pod restarts
+# and rescheduling.
+#
+# pg_stat_statements is loaded at startup (via the `command` override) so that
+# the Datadog Database Monitoring agent check can collect query-level metrics
+# without any application-side changes.
+#
+# PVC storage class is intentionally left as the cluster default.
+# Override `storageClassName` for production (e.g. `gp3` on EKS).
+# =============================================================================
+
+# ── Service ───────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-ledger
+  namespace: finance
+  labels:
+    app: postgres-ledger
+    component: infrastructure
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres-ledger
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+
+---
+# ── StatefulSet ───────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-ledger
+  namespace: finance
+  labels:
+    app: postgres-ledger
+    component: infrastructure
+spec:
+  serviceName: postgres-ledger
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-ledger
+  template:
+    metadata:
+      labels:
+        app: postgres-ledger
+        component: infrastructure
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          imagePullPolicy: IfNotPresent
+
+          # In Kubernetes, `args` appends to the image ENTRYPOINT (docker-entrypoint.sh),
+          # which handles permission setup and user switching before starting postgres.
+          # Using `command` instead would bypass docker-entrypoint.sh and cause
+          # postgres to start as root, which it rejects.
+          args:
+            - postgres
+            - -c
+            - shared_preload_libraries=pg_stat_statements
+            - -c
+            - pg_stat_statements.track=all
+            - -c
+            - pg_stat_statements.max=10000
+            - -c
+            - track_activity_query_size=4096
+
+          ports:
+            - name: postgres
+              containerPort: 5432
+
+          env:
+            - name: POSTGRES_DB
+              value: "ledger"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: postgres-password
+
+          # ── Health checks ──────────────────────────────────────────────────
+          # pg_isready exits 0 only when the server is ready to accept connections.
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U "$POSTGRES_USER" -d ledger
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U "$POSTGRES_USER" -d ledger
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+              subPath: pgdata # subPath prevents the mount from masking the directory
+            # Runs automatically on first init of an empty data directory —
+            # creates the transactions / account_transactions tables that
+            # batch-processor's Spring Batch jobs read from. See
+            # postgres-init.yaml for the full explanation.
+            - name: postgres-init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+
+      volumes:
+        - name: postgres-init-scripts
+          configMap:
+            name: postgres-init-scripts
+
+  # ── Persistent storage ─────────────────────────────────────────────────────
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 2Gi
+        # storageClassName: gp3   # Uncomment and set for your cluster (EKS: gp3)

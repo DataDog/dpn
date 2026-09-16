@@ -1,0 +1,12 @@
+--- a/deploy/kubernetes/base/services/notification-service.yaml
++++ b/deploy/kubernetes/base/services/notification-service.yaml
+@@ -141,7 +141,7 @@
+             # Docs: https://docs.datadoghq.com/data_streams/
+             #
+-            # - name: DD_DATA_STREAMS_ENABLED
+-            #   value: "true"
++            - name: DD_DATA_STREAMS_ENABLED
++              value: "true"
+             # ─────────────────────────────────────────────────────────────────
+           livenessProbe:
+             exec:

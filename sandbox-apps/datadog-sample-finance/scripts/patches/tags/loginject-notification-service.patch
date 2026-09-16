@@ -1,0 +1,53 @@
+--- a/notification-service/main.go
++++ b/notification-service/main.go
+@@ -242,15 +242,7 @@
+ 			"account_id", alert.AccountID,
+ 			"correlation_id", alert.CorrelationID,
+ 		}
+-		// ── Datadog Log Injection (enable via 'make tags') ──────────────
+-		// Uncomment to stitch this log line to the 'alert.send' span above.
+-		// Requires 'make instrument' to be applied first (the 'span'
+-		// variable above must exist). Go has no automatic MDC-style log
+-		// injection — dd.trace_id / dd.span_id must be added manually.
+-		// Docs: https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/?tab=go
+-		//
+-		// fields = append(fields, "dd.trace_id", span.Context().TraceID(), "dd.span_id", span.Context().SpanID())
+-		// ─────────────────────────────────────────────────────────────
++		fields = append(fields, "dd.trace_id", span.Context().TraceID(), "dd.span_id", span.Context().SpanID())
+ 		slog.Info("alert.send", fields...)
+ 		// TODO: integrate with SMTP relay (e.g. SendGrid, SES)
+ 	case "sms":
+@@ -260,15 +252,7 @@
+ 			"account_id", alert.AccountID,
+ 			"correlation_id", alert.CorrelationID,
+ 		}
+-		// ── Datadog Log Injection (enable via 'make tags') ──────────────
+-		// Uncomment to stitch this log line to the 'alert.send' span above.
+-		// Requires 'make instrument' to be applied first (the 'span'
+-		// variable above must exist). Go has no automatic MDC-style log
+-		// injection — dd.trace_id / dd.span_id must be added manually.
+-		// Docs: https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/?tab=go
+-		//
+-		// fields = append(fields, "dd.trace_id", span.Context().TraceID(), "dd.span_id", span.Context().SpanID())
+-		// ─────────────────────────────────────────────────────────────
++		fields = append(fields, "dd.trace_id", span.Context().TraceID(), "dd.span_id", span.Context().SpanID())
+ 		slog.Info("alert.send", fields...)
+ 		// TODO: integrate with SMS gateway (e.g. Twilio, SNS)
+ 	default:
+@@ -287,15 +271,7 @@
+ 		"duration_ms", duration,
+ 		"correlation_id", alert.CorrelationID,
+ 	}
+-	// ── Datadog Log Injection (enable via 'make tags') ──────────────────
+-	// Uncomment to stitch this log line to the 'alert.send' span above.
+-	// Requires 'make instrument' to be applied first (the 'span' variable
+-	// above must exist). Go has no automatic MDC-style log injection —
+-	// dd.trace_id / dd.span_id must be added manually.
+-	// Docs: https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/?tab=go
+-	//
+-	// completeFields = append(completeFields, "dd.trace_id", span.Context().TraceID(), "dd.span_id", span.Context().SpanID())
+-	// ─────────────────────────────────────────────────────────────────────
++	completeFields = append(completeFields, "dd.trace_id", span.Context().TraceID(), "dd.span_id", span.Context().SpanID())
+ 	slog.Info("alert.send.complete", completeFields...)
+ 
+ 	// Metrics (finance.notification.sent / .dispatch_time) are generated from

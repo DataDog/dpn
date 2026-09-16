@@ -1,0 +1,120 @@
+--- a/notification-service/main.go
++++ b/notification-service/main.go
+@@ -10,16 +10,9 @@
+ 	"syscall"
+ 	"time"
+ 
+-	// ── DATADOG INSTRUMENTATION ──────────────────────────────────────────
+-	// Uncomment to enable APM tracing + Continuous Profiling for this
+-	// service (tracer.Start() / profiler.Start() below).
+-	// Requires: DD_ENV, DD_SERVICE, DD_VERSION, DD_AGENT_HOST env vars.
+-	// Docs: https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/go/
+-	//       https://docs.datadoghq.com/profiler/enabling/go/
+ 	//
+-	// "github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
+-	// "github.com/DataDog/dd-trace-go/v2/profiler"
+-	// ─────────────────────────────────────────────────────────────────────
++	"github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
++	"github.com/DataDog/dd-trace-go/v2/profiler"
+ 	"github.com/go-stomp/stomp/v3"
+ )
+ 
+@@ -57,39 +50,30 @@
+ 	}))
+ 	slog.SetDefault(logger)
+ 
+-	// ── DATADOG INSTRUMENTATION ──────────────────────────────────────────
+-	// Uncomment to enable APM tracing for this service.
+-	// Requires: DD_ENV, DD_SERVICE, DD_VERSION, DD_AGENT_HOST env vars.
+-	// Docs: https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/go/
+ 	//
+-	// tracer.Start(
+-	// 	tracer.WithService(getEnv("DD_SERVICE", "notification-service")),
+-	// 	tracer.WithEnv(getEnv("DD_ENV", "local")),
+-	// 	tracer.WithServiceVersion(getEnv("DD_VERSION", "dev")),
+-	// 	tracer.WithAgentAddr(getEnv("DD_AGENT_HOST", "datadog-agent")+":8126"),
+-	// 	tracer.WithRuntimeMetrics(),
+-	// )
+-	// defer tracer.Stop()
+-	// ─────────────────────────────────────────────────────────────────────
++	tracer.Start(
++		tracer.WithService(getEnv("DD_SERVICE", "notification-service")),
++		tracer.WithEnv(getEnv("DD_ENV", "local")),
++		tracer.WithServiceVersion(getEnv("DD_VERSION", "dev")),
++		tracer.WithAgentAddr(getEnv("DD_AGENT_HOST", "datadog-agent")+":8126"),
++		tracer.WithRuntimeMetrics(),
++	)
++	defer tracer.Stop()
+ 
+-	// ── DATADOG INSTRUMENTATION ──────────────────────────────────────────
+-	// Uncomment to enable Continuous Profiling for this service.
+-	// Docs: https://docs.datadoghq.com/profiler/enabling/go/
+ 	//
+-	// if err := profiler.Start(
+-	// 	profiler.WithService(getEnv("DD_SERVICE", "notification-service")),
+-	// 	profiler.WithEnv(getEnv("DD_ENV", "staging")),
+-	// 	profiler.WithVersion(getEnv("DD_VERSION", "dev")),
+-	// 	profiler.WithProfileTypes(
+-	// 		profiler.CPUProfile,
+-	// 		profiler.HeapProfile,
+-	// 		profiler.GoroutineProfile,
+-	// 	),
+-	// ); err != nil {
+-	// 	slog.Error("profiler failed to start", "error", err)
+-	// }
+-	// defer profiler.Stop()
+-	// ─────────────────────────────────────────────────────────────────────
++	if err := profiler.Start(
++		profiler.WithService(getEnv("DD_SERVICE", "notification-service")),
++		profiler.WithEnv(getEnv("DD_ENV", "staging")),
++		profiler.WithVersion(getEnv("DD_VERSION", "dev")),
++		profiler.WithProfileTypes(
++			profiler.CPUProfile,
++			profiler.HeapProfile,
++			profiler.GoroutineProfile,
++		),
++	); err != nil {
++		slog.Error("profiler failed to start", "error", err)
++	}
++	defer profiler.Stop()
+ 
+ 	brokerURL := getEnv("ACTIVEMQ_URL", defaultBrokerURL)
+ 
+@@ -210,27 +194,18 @@
+ // sendNotification stubs the email / SMS dispatch logic.
+ // In production this would call an SMTP relay or SMS gateway API.
+ func sendNotification(alert AlertMessage) {
+-	// ── DATADOG INSTRUMENTATION ──────────────────────────────────────────
+-	// Uncomment to wrap notification dispatch in a custom 'alert.send' span.
+-	// Finance tags below let you slice notification latency/failures by
+-	// channel and event type in APM.
+-	// Docs: https://docs.datadoghq.com/tracing/trace_collection/custom_instrumentation/go/
+ 	//
+-	// HIGH-CARDINALITY WARNING: account.id and jms.correlation_id are bounded
+-	// per-message IDs — fine on spans, do not use as metric tags.
+-	// See: https://docs.datadoghq.com/tagging/assigning_tags/
+ 	//
+-	// 	span, _ := tracer.StartSpanFromContext(
+-	// 	context.Background(), "alert.send",
+-	// 	tracer.ResourceName(alert.EventType),
+-	// 	tracer.Tag("notification.channel", alert.Channel),
+-	// 	tracer.Tag("notification.event_type", alert.EventType),
+-	// 	tracer.Tag("account.id", alert.AccountID),
+-	// 	tracer.Tag("jms.correlation_id", alert.CorrelationID),
+-	// 	tracer.Tag("messaging.destination", "alert.queue"),
+-	// )
+-	// defer span.Finish()
+-	// ─────────────────────────────────────────────────────────────────────
++		span, _ := tracer.StartSpanFromContext(
++		context.Background(), "alert.send",
++		tracer.ResourceName(alert.EventType),
++		tracer.Tag("notification.channel", alert.Channel),
++		tracer.Tag("notification.event_type", alert.EventType),
++		tracer.Tag("account.id", alert.AccountID),
++		tracer.Tag("jms.correlation_id", alert.CorrelationID),
++		tracer.Tag("messaging.destination", "alert.queue"),
++	)
++	defer span.Finish()
+ 
+ 	start := time.Now()
+ 

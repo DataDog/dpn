@@ -1,0 +1,244 @@
+# =============================================================================
+# Finance Sample App — account-service (Java / Spring Boot)
+# =============================================================================
+# Core account management service. Responsibilities:
+#   - Account CRUD and balance enquiry
+#   - Produces JMS messages to ActiveMQ (OpenWire / JMS 2.0)
+#   - Persists account and ledger data to PostgreSQL
+#
+# Health endpoint: GET /actuator/health  →  200 OK
+# Main API:        GET/POST /v1/accounts/*
+# =============================================================================
+
+# ── Service ───────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: account-service
+  namespace: finance
+  labels:
+    app: account-service
+    component: service
+spec:
+  type: ClusterIP
+  selector:
+    app: account-service
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081
+
+---
+# ── Deployment ────────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: account-service
+  namespace: finance
+  labels:
+    app: account-service
+    component: service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: account-service
+  template:
+    metadata:
+      annotations:
+        # Datadog single-step instrumentation — inject java tracer at pod startup.
+        # Pinned to the tracer's MAJOR version (Datadog publishes floating vN
+        # init-image tags). More reproducible than "latest" (no surprise major
+        # bumps) while still receiving patches; always resolvable — unlike exact
+        # patch tags, which don't reliably exist as init-image tags.
+        # ── DATADOG INSTRUMENTATION (Single Step library version) ────────
+        # Uncomment via 'make instrument' together with the
+        # admission.datadoghq.com/enabled label below — tells the Admission
+        # Controller webhook which tracer library to inject into this pod.
+        # Docs: https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/
+        #
+        # admission.datadoghq.com/java-lib.version: "v1"
+        # ─────────────────────────────────────────────────────────────────
+        # ── DATADOG LOG COLLECTION (autodiscovery annotation) ────────────
+        # Uncomment via 'make tags' to tell the Agent which log source and
+        # service to tag this pod's stdout/stderr logs with — required for
+        # correct parsing/faceting in Log Management.
+        # Docs: https://docs.datadoghq.com/containers/kubernetes/log/
+        #
+        # ad.datadoghq.com/account-service.logs: '[{"source":"java","service":"account-service"}]'
+        # ─────────────────────────────────────────────────────────────────
+      labels:
+        app: account-service
+        component: service
+        # ── DATADOG INSTRUMENTATION (Single Step Instrumentation) ────────
+        # Uncomment via 'make instrument' to opt this pod into the Admission
+        # Controller webhook — injects the Datadog tracer at pod startup
+        # (APM traces, log-trace correlation, runtime metrics; no code
+        # changes, no rebuild required).
+        # Docs: https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/
+        #
+        # admission.datadoghq.com/enabled: "true"
+        # ─────────────────────────────────────────────────────────────────
+        # ── DATADOG UST (Unified Service Tagging) ────────────────────────
+        # Uncomment via 'make tags' to set the tags.datadoghq.com/* pod
+        # labels used for Deployment Tracking / trace-log-metric correlation.
+        # Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+        #
+        # tags.datadoghq.com/env: "staging"
+        # tags.datadoghq.com/service: "account-service"
+        # tags.datadoghq.com/version: "latest"
+        # ─────────────────────────────────────────────────────────────────
+    spec:
+      # Wait for both PostgreSQL and ActiveMQ before starting.
+      # account-service's Spring Actuator health check includes JMS, so
+      # the readiness probe would fail until ActiveMQ accepts connections.
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command:
+            [
+              "sh",
+              "-c",
+              'until nc -z postgres-ledger 5432; do echo "waiting for postgres..."; sleep 3; done',
+            ]
+        - name: wait-for-activemq
+          image: busybox:1.36
+          command:
+            [
+              "sh",
+              "-c",
+              'until nc -z activemq-artemis 61616; do echo "waiting for activemq..."; sleep 3; done',
+            ]
+      containers:
+        - name: account-service
+          image: finance-sample-app-account-service:latest
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8081
+
+          env:
+            # ── PostgreSQL ───────────────────────────────────────────────────
+            - name: POSTGRES_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: POSTGRES_URL
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: postgres-password
+            # ── ActiveMQ (OpenWire / JMS) ────────────────────────────────────
+            - name: ACTIVEMQ_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: ACTIVEMQ_URL
+            - name: ACTIVEMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: artemis-user
+            - name: ACTIVEMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: artemis-password
+
+            # ── DATADOG INSTRUMENTATION (Unified Service Tagging) ───────────
+            # Uncomment via 'make tags' to set DD_ENV/DD_SERVICE/DD_VERSION —
+            # required for APM/logs/metrics correlation and Deployment
+            # Tracking. Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+            #
+            # - name: DD_ENV
+            #   value: "staging"
+            # - name: DD_SERVICE
+            #   value: "account-service"
+            # - name: DD_VERSION
+            #   value: "latest"
+            # ─────────────────────────────────────────────────────────────────
+            # DD_AGENT_HOST uses the node's IP so the pod sends traces/metrics
+            # to the DaemonSet agent running on the same node.
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            # ── DATADOG INSTRUMENTATION (log injection) ─────────────────────
+            # Uncomment via 'make tags' to inject dd.trace_id / dd.span_id
+            # into Logback/Log4j2 logs via dd-trace-java's MDC integration —
+            # stitches JSON logs to APM traces ("View in APM" from Logs).
+            # Java has no source-level patch_logging() equivalent — this is
+            # the only switch needed.
+            # Docs: https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/?tab=java
+            #
+            # - name: DD_LOGS_INJECTION
+            #   value: "true"
+            # ─────────────────────────────────────────────────────────────────
+            # ── DATADOG INSTRUMENTATION (Application Security Management) ───
+            # Uncomment via 'make security' to enable AppSec threat detection
+            # in the tracer. Works alongside the Agent-side asm.threats
+            # feature in datadog-agent.yaml. Detects SQLi, XSS, SSRF and
+            # business-logic attacks at runtime.
+            # Docs: https://docs.datadoghq.com/security/application_security/
+            #
+            # - name: DD_APPSEC_ENABLED
+            #   value: "true"
+            # ─────────────────────────────────────────────────────────────────
+            # ── DATA STREAMS MONITORING (DSM) ───────────────────────────────
+            # Uncomment via 'make instrument' to enable end-to-end JMS pipeline
+            # visibility (producer → consumer latency, queue lag) in Data
+            # Streams. dd-trace-java auto-instruments JMS.
+            # Docs: https://docs.datadoghq.com/data_streams/
+            #
+            # - name: DD_DATA_STREAMS_ENABLED
+            #   value: "true"
+            # ─────────────────────────────────────────────────────────────────
+            # ── CONTINUOUS PROFILER ──────────────────────────────────────────
+            # Uncomment via 'make instrument' to enable Continuous Profiler for
+            # this service — correlate CPU flame graphs with slow traces.
+            # Single Step Instrumentation already injects dd-java-agent for
+            # Java APM; dd-java-agent honors DD_PROFILING_ENABLED as a plain
+            # env var, no JVM flag / Dockerfile changes needed.
+            # Docs: https://docs.datadoghq.com/profiler/
+            #
+            # - name: DD_PROFILING_ENABLED
+            #   value: "true"
+            # ─────────────────────────────────────────────────────────────────
+          # ── Health checks ──────────────────────────────────────────────
+          # Use the custom /health endpoint (not /actuator/health) because Spring
+          # Actuator includes the JMS health indicator which would report DOWN
+          # if ActiveMQ has a transient hiccup, causing unnecessary pod restarts.
+          # /health is the hand-rolled endpoint in AccountController that only
+          # checks the service itself.
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"

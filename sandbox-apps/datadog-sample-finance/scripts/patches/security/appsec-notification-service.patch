@@ -1,0 +1,13 @@
+--- a/deploy/kubernetes/base/services/notification-service.yaml
++++ b/deploy/kubernetes/base/services/notification-service.yaml
+@@ -131,8 +131,8 @@
+             # business-logic attacks at runtime.
+             # Docs: https://docs.datadoghq.com/security/application_security/
+             #
+-            # - name: DD_APPSEC_ENABLED
+-            #   value: "true"
++            - name: DD_APPSEC_ENABLED
++              value: "true"
+             # ─────────────────────────────────────────────────────────────────
+             # ── DATA STREAMS MONITORING (DSM) ───────────────────────────────
+             # JMS consumer on alert.queue. Enabling the flag turns DSM on; for

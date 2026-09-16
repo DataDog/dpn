@@ -1,0 +1,26 @@
+apiVersion: v3
+kind: service
+metadata:
+  name: transaction-service
+  displayName: Transaction Service
+  tags:
+    - env:staging
+    - language:nodejs
+    - team:finance-platform
+  links:
+    - name: Source
+      type: repo
+      provider: github
+      url: https://github.com/your-org/finance-sample-app/tree/main/transaction-service
+  contacts:
+    - name: Finance Platform
+      type: email
+      contact: finance-platform@example.com
+spec:
+  lifecycle: staging
+  tier: High
+  type: service
+  languages:
+    - nodejs
+  description: |
+    Payment initiation and ledger write. Publishes to ActiveMQ via STOMP.

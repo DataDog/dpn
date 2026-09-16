@@ -1,0 +1,57 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: account-service
+
+  # ── ActiveMQ Artemis (JMS 2.0 broker) ─────────────────────────────────
+  # Connection URL read from ACTIVEMQ_URL env var.
+  # In docker-compose: activemq://activemq-artemis:61616
+  # In Kubernetes:     activemq://activemq-artemis.messaging.svc.cluster.local:61616
+  artemis:
+    broker-url: ${ACTIVEMQ_URL:tcp://localhost:61616}
+    user: ${ACTIVEMQ_USER:admin}
+    password: ${ACTIVEMQ_PASSWORD:admin}
+    # NOTE: Never hardcode credentials. Use Docker secrets, K8s Secret,
+    # or AWS Secrets Manager in production.
+
+  # ── PostgreSQL (Ledger database) ────────────────────────────────────────
+  # Datasource is read entirely from environment variables — no values here.
+  # Datadog DBM (Step 9) connects at the Agent level; no code changes needed.
+  # Docs: https://docs.datadoghq.com/database_monitoring/setup_postgres/selfhosted/
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/ledger}
+    username: ${POSTGRES_USER:finance}
+    password: ${POSTGRES_PASSWORD:changeme}
+    # NOTE: In production, inject POSTGRES_PASSWORD from K8s Secret / AWS Secrets Manager.
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+# ── Logging ──────────────────────────────────────────────────────────────
+# Structured JSON logging via logstash-logback-encoder.
+# Datadog log pipeline can parse the JSON schema out of the box.
+# Step 4 — When dd-java-agent is active, dd.trace_id and dd.span_id are
+# automatically injected into the MDC and appear in every log line.
+# Docs: https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/java/
+logging:
+  config: classpath:logback-spring.xml
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# ── Datadog Unified Service Tagging ───────────────────────────────────────
+# These are read by the JVM agent at startup — set them as environment variables.
+# See .env.example for the full list.
+# Step 2 — Set DD_ENV, DD_SERVICE, DD_VERSION before enabling APM.
+# Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/

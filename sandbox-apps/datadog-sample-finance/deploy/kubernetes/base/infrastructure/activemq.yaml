@@ -1,0 +1,167 @@
+# =============================================================================
+# Finance Sample App — Apache ActiveMQ Artemis
+# =============================================================================
+# ActiveMQ Artemis is a JMS 2.0-compliant message broker used to decouple:
+#   - account-service / transaction-service  →  producers
+#   - fraud-detection (fraud.score.queue)    →  consumer
+#   - notification-service (alert.queue)     →  consumer
+#
+# Exposed ports:
+#   61616 — OpenWire (JMS) — used by Java services via spring-boot-starter-artemis
+#   61613 — STOMP          — used by Node.js, Python, and Go services
+#   8161  — Web console    — Artemis management UI (admin / ARTEMIS_PASSWORD)
+#   1099  — JMX            — required for the Datadog ActiveMQ agent check
+#
+# NOTE: Port 1099 (JMX) must be exposed to allow the Datadog Agent to collect
+# broker-level metrics (queue depth, consumer count, memory usage).
+# See deploy/kubernetes/base/../configmaps/activemq-check.yaml for the check config.
+# =============================================================================
+
+# ── Service ───────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: activemq-artemis
+  namespace: finance
+  labels:
+    app: activemq-artemis
+    component: infrastructure
+spec:
+  type: ClusterIP
+  selector:
+    app: activemq-artemis
+  ports:
+    - name: openwire
+      port: 61616
+      targetPort: 61616
+    - name: stomp
+      port: 61613
+      targetPort: 61613
+    - name: webconsole
+      port: 8161
+      targetPort: 8161
+    - name: jmx
+      port: 1099
+      targetPort: 1099
+
+---
+# ── Deployment ────────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: activemq-artemis
+  namespace: finance
+  labels:
+    app: activemq-artemis
+    component: infrastructure
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: activemq-artemis
+  template:
+    metadata:
+      labels:
+        app: activemq-artemis
+        component: infrastructure
+    spec:
+      containers:
+        - name: activemq-artemis
+          image: apache/activemq-artemis:latest
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: openwire
+              containerPort: 61616
+            - name: stomp
+              containerPort: 61613
+            - name: webconsole
+              containerPort: 8161
+            - name: jmx
+              containerPort: 1099
+
+          env:
+            - name: ARTEMIS_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: artemis-user
+            - name: ARTEMIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: artemis-password
+            # Expose JMX for the Datadog ActiveMQ agent check.
+            #
+            # java.rmi.server.hostname MUST be a real, remotely-routable address,
+            # not 0.0.0.0. JMX/RMI is a two-step protocol: the client first
+            # connects to jmxremote.port (1099) to reach the RMI registry, which
+            # then hands back a stub telling the client to reconnect to
+            # java.rmi.server.hostname:jmxremote.rmi.port for the actual JMX
+            # object. If that hostname is 0.0.0.0, a remote client (e.g. the
+            # Datadog Agent in a different pod) tries to connect to 0.0.0.0
+            # itself and gets "Connection refused". Using the pod's own IP
+            # (via the Downward API) works identically on local k3s/Colima and
+            # on EKS, since pod IPs are always routable within the cluster
+            # network in both cases.
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: JAVA_ARGS
+              value: >-
+                -Dcom.sun.jndi.rmiregistry.registrySocket.timeout=15000
+                -Djava.rmi.server.hostname=$(POD_IP)
+                -Dcom.sun.management.jmxremote=true
+                -Dcom.sun.management.jmxremote.port=1099
+                -Dcom.sun.management.jmxremote.rmi.port=1099
+                -Dcom.sun.management.jmxremote.authenticate=false
+                -Dcom.sun.management.jmxremote.ssl=false
+
+          # ── Health checks ──────────────────────────────────────────────
+          # TCP probes are used instead of HTTP because the Jolokia/console
+          # endpoint returns 302 redirects that K8s marks as failures.
+          # Port 61616 (OpenWire) opens when the broker is ready to accept JMS.
+          # Port 61613 (STOMP) opens at the same time, used by Python/Node/Go.
+          livenessProbe:
+            tcpSocket:
+              port: 61616
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            tcpSocket:
+              port: 61613
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+
+          volumeMounts:
+            - name: artemis-data
+              mountPath: /var/lib/artemis-instance
+            # etc-override: files here are copied over the freshly generated
+            # etc/broker.xml on every container start (see docker-run.sh in
+            # the apache/activemq-artemis image). Used to fix the STOMP
+            # anycastPrefix/multicastPrefix bug — see
+            # activemq-broker-config.yaml for the full explanation.
+            - name: broker-config-override
+              mountPath: /var/lib/artemis-instance/etc-override/broker.xml
+              subPath: broker.xml
+
+      volumes:
+        - name: artemis-data
+          emptyDir: {} # Replace with a PVC for durable message storage in production
+        - name: broker-config-override
+          configMap:
+            name: activemq-broker-config

@@ -1,0 +1,51 @@
+--- a/deploy/kubernetes/datadog/agent/datadog-agent.yaml
++++ b/deploy/kubernetes/datadog/agent/datadog-agent.yaml
+@@ -240,36 +240,24 @@
+       image:
+         jmxEnabled: true
+       volumes:
+-        # ── DATADOG INSTRUMENTATION (Database Monitoring) ───────────────────
+-        # Uncomment via 'make dbm'.
+-        #
+-        # - name: postgres-check-config
+-        #   configMap:
+-        #     name: datadog-postgres-check
+-        # ─────────────────────────────────────────────────────────────────────
++        - name: postgres-check-config
++          configMap:
++            name: datadog-postgres-check
+         - name: activemq-check-config
+           configMap:
+             name: datadog-activemq-check
+       containers:
+         agent:
+-          # ── DATADOG INSTRUMENTATION (Database Monitoring) ─────────────────
+-          # Uncomment via 'make dbm' (adds the 'env:' key back with this entry).
+-          #
+-          # env:
+-          #   - name: DD_DBM_POSTGRES_PASSWORD
+-          #     valueFrom:
+-          #       secretKeyRef:
+-          #         name: datadog-secret
+-          #         key: dbm-password
+-          # ─────────────────────────────────────────────────────────────────
++          env:
++            - name: DD_DBM_POSTGRES_PASSWORD
++              valueFrom:
++                secretKeyRef:
++                  name: datadog-secret
++                  key: dbm-password
+           volumeMounts:
+-            # ── DATADOG INSTRUMENTATION (Database Monitoring) ───────────────────
+-            # Uncomment via 'make dbm'.
+-            #
+-            # - name: postgres-check-config
+-            #   mountPath: /etc/datadog-agent/conf.d/postgres.d/conf.yaml
+-            #   subPath: conf.yaml
+-            # ─────────────────────────────────────────────────────────────────────
++            - name: postgres-check-config
++              mountPath: /etc/datadog-agent/conf.d/postgres.d/conf.yaml
++              subPath: conf.yaml
+             - name: activemq-check-config
+               mountPath: /etc/datadog-agent/conf.d/activemq.d/conf.yaml
+               subPath: conf.yaml

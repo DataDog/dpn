@@ -1,0 +1,26 @@
+apiVersion: v3
+kind: service
+metadata:
+  name: fraud-detection
+  displayName: Fraud Detection
+  tags:
+    - env:staging
+    - language:python
+    - team:finance-platform
+  links:
+    - name: Source
+      type: repo
+      provider: github
+      url: https://github.com/your-org/finance-sample-app/tree/main/fraud-detection
+  contacts:
+    - name: Finance Platform
+      type: email
+      contact: finance-platform@example.com
+spec:
+  lifecycle: staging
+  tier: High
+  type: service
+  languages:
+    - python
+  description: |
+    Async fraud-scoring consumer on fraud.score.queue via STOMP.

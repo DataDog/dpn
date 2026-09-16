@@ -48,11 +48,11 @@ Here are a few things we like to look for in new sample apps:
 
 That said, chances are that if the sample app would be useful to you, it'll be useful to other partners too, so if it's something you'd use and value, please feel free to make a PR!
 
-When you have [created your own sample app in your repo](https://github.com/DataDog/dpn/blob/master/CONTRIBUTING-sample-apps.md) and are ready to create a PR for it, here are some extra steps you will want to take:
+When you have [followed the sample app checklist](https://github.com/DataDog/dpn/blob/master/CONTRIBUTING-sample-apps.md) and are ready to create a PR for it, here are some extra steps you will want to take:
 
 1. Redact any sensitive strings like API keys, etc.
-2. Change your `setup.env` file to a `setup.env.example` file with all the values replaced with "REPLACE_ME"
-3. Add a README.md file to your sample app's directory to help other partners understand what the new app is good for and how to use it. [Here's an example of what a README.md may look like.](https://github.com/DataDog/dpn/blob/master/sandbox-apps/voting-app/README.md)
+2. Change any real `.env` (or similar config) file to a `.env.example` file with all the values replaced with placeholders.
+3. Add a README.md file to your sample app's directory to help other partners understand what the new app is good for and how to use it. [Here's an example of what a README.md may look like.](https://github.com/DataDog/dpn/blob/master/sandbox-apps/swagbot/README.md)
 
 
 ### **Do you have a new sample app that you want added but that you don't want to write the code for?**

@@ -1,0 +1,26 @@
+apiVersion: v3
+kind: service
+metadata:
+  name: notification-service
+  displayName: Notification Service
+  tags:
+    - env:staging
+    - language:go
+    - team:finance-platform
+  links:
+    - name: Source
+      type: repo
+      provider: github
+      url: https://github.com/your-org/finance-sample-app/tree/main/notification-service
+  contacts:
+    - name: Finance Platform
+      type: email
+      contact: finance-platform@example.com
+spec:
+  lifecycle: staging
+  tier: Medium
+  type: service
+  languages:
+    - go
+  description: |
+    Async alert consumer on alert.queue. Sends email/SMS stubs.

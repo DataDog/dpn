@@ -1,0 +1,26 @@
+# ── RUNTIME DEPENDENCIES ─────────────────────────────────────────────
+# Core dependencies — always required, no Datadog config needed.
+
+stomp.py==8.1.1
+python-json-logger==2.0.7
+
+# ── DATADOG INSTRUMENTATION DEPENDENCIES ─────────────────────────────
+# ddtrace is intentionally NOT a pip dependency of this service. Step 3-7
+# (APM tracing, log injection, profiler, custom spans) are all provided
+# by Single Step Instrumentation: the Datadog Admission Controller
+# injects the ddtrace library into the pod at startup via
+# 'make instrument' + 'make deploy-k8s-dd', with no image rebuild and no
+# pip install here. Baking ddtrace into this file as well would shadow
+# that injected copy (`import ddtrace` resolves to site-packages before
+# the SSI-mounted volume), defeating the point of using SSI here.
+# Docs: https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/
+#
+# Data Streams Monitoring (DSM) — the [data_streams] extra is the one
+# exception that DOES need to be pip-installed (SSI's injected library
+# doesn't include DSM's low-level checkpoint API). Uncomment via
+# 'make instrument' together with DD_DATA_STREAMS_ENABLED in
+# deploy/kubernetes/base/services/fraud-detection.yaml. Requires an image
+# rebuild + redeploy (not just a redeploy) since it's baked into the
+# image, unlike the other services' plain env-var DSM toggle.
+# ddtrace[data_streams]==2.21.12
+# ─────────────────────────────────────────────────────────────────────

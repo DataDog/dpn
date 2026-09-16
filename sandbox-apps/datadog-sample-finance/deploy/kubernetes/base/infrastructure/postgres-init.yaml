@@ -1,0 +1,209 @@
+# =============================================================================
+# Finance Sample App — PostgreSQL ledger schema (init script)
+# =============================================================================
+# BUG FIX: batch-processor's ReconciliationJob and StatementJob are real,
+# uncommented Spring Batch jobs that query `transactions` and
+# `account_transactions` via JDBC — but nothing ever created these tables.
+# transaction-service's ledger.js was a pure stub (simulated delay, no real
+# INSERT), so the tables were never needed until the batch jobs were wired up
+# with real business logic. Result: every reconciliation run failed with
+# "ERROR: relation "transactions" does not exist" (72+ failures/hour observed
+# in Datadog Log Explorer), and the underlying JdbcCursorItemReader threw
+# "Failed to initialize the reader" for every batch.job span.
+#
+# This ConfigMap is mounted into the official postgres image's
+# /docker-entrypoint-initdb.d/ directory, which the entrypoint runs
+# automatically — but ONLY the first time the data directory is empty (i.e.
+# on a brand-new PVC). It will NOT retroactively apply to an
+# already-initialized database; run the DDL manually via psql for that case
+# (see the fix notes / README).
+#
+# Docs: https://hub.docker.com/_/postgres (see "Initialization scripts")
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts
+  namespace: finance
+  labels:
+    app: postgres-ledger
+    component: infrastructure
+data:
+  01-schema.sql: |
+    -- ── transactions ──────────────────────────────────────────────────────
+    -- Written by transaction-service (ledger.js) on every payment.
+    -- Read by batch-processor's ReconciliationJob (end-of-day settlement
+    -- reconciliation) via reconciliationItemReader.
+    --
+    -- NOTE ON "settled": transaction-service currently has no multi-day
+    -- clearing workflow — payments are settled near-instantly for demo
+    -- purposes (see ledger.js). In a real deployment, `settled_at` would be
+    -- populated asynchronously by a settlement/clearing integration instead
+    -- of being set at insert time.
+    CREATE TABLE IF NOT EXISTS transactions (
+        id           VARCHAR(64) PRIMARY KEY,
+        account_id   VARCHAR(64) NOT NULL,
+        amount       NUMERIC(18, 2) NOT NULL,
+        currency     VARCHAR(3) NOT NULL,
+        status       VARCHAR(20) NOT NULL DEFAULT 'pending',
+        created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+        settled_at   TIMESTAMPTZ
+    );
+
+    -- Matches ReconciliationJob's WHERE status = 'settled' AND settled_at >= ...
+    CREATE INDEX IF NOT EXISTS idx_transactions_status_settled_at
+        ON transactions (status, settled_at);
+
+    CREATE INDEX IF NOT EXISTS idx_transactions_account_id
+        ON transactions (account_id);
+
+    -- ── account_transactions ─────────────────────────────────────────────
+    -- Read by batch-processor's StatementJob (monthly statement generation).
+    -- Not currently populated by any producer in this sample app — the
+    -- traffic generator only triggers the reconciliation job (see
+    -- scripts/generate-traffic.py scenario_batch_job). Created here so the
+    -- schema exists and StatementJob doesn't fail with
+    -- "relation does not exist" if/when it's triggered manually or wired
+    -- into the traffic generator later.
+    CREATE TABLE IF NOT EXISTS account_transactions (
+        id                BIGSERIAL PRIMARY KEY,
+        account_id        VARCHAR(64) NOT NULL,
+        account_tier      VARCHAR(20) NOT NULL,
+        currency          VARCHAR(3) NOT NULL,
+        transaction_date  TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_account_transactions_date
+        ON account_transactions (transaction_date);
+
+    CREATE INDEX IF NOT EXISTS idx_account_transactions_account_id
+        ON account_transactions (account_id);
+
+  02-spring-batch-schema.sql: |
+    -- ── Spring Batch metadata tables (BATCH_JOB_*, BATCH_STEP_*) ────────────
+    -- BUG FIX: batch-processor's application.yml used to set
+    -- `spring.batch.jdbc.initialize-schema: always`, which makes Spring Boot
+    -- re-run this exact DDL (without "IF NOT EXISTS") on EVERY pod
+    -- start/restart — not just the first one. Spring's own schema-postgresql.sql
+    -- has no existence guards, so every restart after the first logged 9 real
+    -- Postgres "ERROR: relation ... already exists" lines (visible in Log
+    -- Management, and counted by the finance.logs.errors / error-rate monitor
+    -- as if something were actually broken).
+    --
+    -- Fix: create the schema exactly once here (same pattern as 01-schema.sql
+    -- above — only runs on a brand-new PVC), and set
+    -- `initialize-schema: never` in batch-processor/src/main/resources/application.yml
+    -- so Spring Batch never attempts to (re)create these tables itself.
+    --
+    -- Schema is the stock Spring Batch 5.1.x PostgreSQL schema (matches
+    -- spring-boot-starter-batch 3.2.5 used by batch-processor), with
+    -- IF NOT EXISTS added for defense-in-depth/idempotency.
+    -- Source: https://github.com/spring-projects/spring-batch/blob/5.1.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-postgresql.sql
+    CREATE TABLE IF NOT EXISTS BATCH_JOB_INSTANCE (
+        JOB_INSTANCE_ID BIGINT NOT NULL PRIMARY KEY,
+        VERSION BIGINT,
+        JOB_NAME VARCHAR(100) NOT NULL,
+        JOB_KEY VARCHAR(32) NOT NULL,
+        constraint JOB_INST_UN unique (JOB_NAME, JOB_KEY)
+    );
+
+    CREATE TABLE IF NOT EXISTS BATCH_JOB_EXECUTION (
+        JOB_EXECUTION_ID BIGINT NOT NULL PRIMARY KEY,
+        VERSION BIGINT,
+        JOB_INSTANCE_ID BIGINT NOT NULL,
+        CREATE_TIME TIMESTAMP NOT NULL,
+        START_TIME TIMESTAMP DEFAULT NULL,
+        END_TIME TIMESTAMP DEFAULT NULL,
+        STATUS VARCHAR(10),
+        EXIT_CODE VARCHAR(2500),
+        EXIT_MESSAGE VARCHAR(2500),
+        LAST_UPDATED TIMESTAMP,
+        constraint JOB_INST_EXEC_FK foreign key (JOB_INSTANCE_ID)
+        references BATCH_JOB_INSTANCE(JOB_INSTANCE_ID)
+    );
+
+    CREATE TABLE IF NOT EXISTS BATCH_JOB_EXECUTION_PARAMS (
+        JOB_EXECUTION_ID BIGINT NOT NULL,
+        PARAMETER_NAME VARCHAR(100) NOT NULL,
+        PARAMETER_TYPE VARCHAR(100) NOT NULL,
+        PARAMETER_VALUE VARCHAR(2500),
+        IDENTIFYING CHAR(1) NOT NULL,
+        constraint JOB_EXEC_PARAMS_FK foreign key (JOB_EXECUTION_ID)
+        references BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
+    );
+
+    CREATE TABLE IF NOT EXISTS BATCH_STEP_EXECUTION (
+        STEP_EXECUTION_ID BIGINT NOT NULL PRIMARY KEY,
+        VERSION BIGINT NOT NULL,
+        STEP_NAME VARCHAR(100) NOT NULL,
+        JOB_EXECUTION_ID BIGINT NOT NULL,
+        CREATE_TIME TIMESTAMP NOT NULL,
+        START_TIME TIMESTAMP DEFAULT NULL,
+        END_TIME TIMESTAMP DEFAULT NULL,
+        STATUS VARCHAR(10),
+        COMMIT_COUNT BIGINT,
+        READ_COUNT BIGINT,
+        FILTER_COUNT BIGINT,
+        WRITE_COUNT BIGINT,
+        READ_SKIP_COUNT BIGINT,
+        WRITE_SKIP_COUNT BIGINT,
+        PROCESS_SKIP_COUNT BIGINT,
+        ROLLBACK_COUNT BIGINT,
+        EXIT_CODE VARCHAR(2500),
+        EXIT_MESSAGE VARCHAR(2500),
+        LAST_UPDATED TIMESTAMP,
+        constraint JOB_EXEC_STEP_FK foreign key (JOB_EXECUTION_ID)
+        references BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
+    );
+
+    CREATE TABLE IF NOT EXISTS BATCH_STEP_EXECUTION_CONTEXT (
+        STEP_EXECUTION_ID BIGINT NOT NULL PRIMARY KEY,
+        SHORT_CONTEXT VARCHAR(2500) NOT NULL,
+        SERIALIZED_CONTEXT TEXT,
+        constraint STEP_EXEC_CTX_FK foreign key (STEP_EXECUTION_ID)
+        references BATCH_STEP_EXECUTION(STEP_EXECUTION_ID)
+    );
+
+    CREATE TABLE IF NOT EXISTS BATCH_JOB_EXECUTION_CONTEXT (
+        JOB_EXECUTION_ID BIGINT NOT NULL PRIMARY KEY,
+        SHORT_CONTEXT VARCHAR(2500) NOT NULL,
+        SERIALIZED_CONTEXT TEXT,
+        constraint JOB_EXEC_CTX_FK foreign key (JOB_EXECUTION_ID)
+        references BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
+    );
+
+    CREATE SEQUENCE IF NOT EXISTS BATCH_STEP_EXECUTION_SEQ MAXVALUE 9223372036854775807 NO CYCLE;
+    CREATE SEQUENCE IF NOT EXISTS BATCH_JOB_EXECUTION_SEQ MAXVALUE 9223372036854775807 NO CYCLE;
+    CREATE SEQUENCE IF NOT EXISTS BATCH_JOB_SEQ MAXVALUE 9223372036854775807 NO CYCLE;
+
+  03-seed-data.sql: |
+    -- ── Historical transaction volume (for Scenario 1 — missing index) ────
+    -- Scenario 1 (make scenario-1) drops idx_transactions_account_id to turn
+    -- ledger.js's ledger.velocity_check query into a full table scan. On a
+    -- freshly-deployed cluster with only the traffic-generator's live volume
+    -- (a couple hundred rows after a few minutes), that scan is still
+    -- sub-millisecond — too fast to show up as a visibly slow span in APM.
+    -- This seeds ~300k backdated rows (server-side, via generate_series, so
+    -- it's fast — a few seconds, not a large ConfigMap) so the full scan
+    -- Scenario 1 induces is actually observable (tens of milliseconds).
+    --
+    -- Backdated 1–180 days so this does NOT get picked up by
+    -- ReconciliationJob's WHERE settled_at >= CURRENT_DATE - INTERVAL '1 day'
+    -- (Scenario 2) — this seed data is for Scenario 1 only, and must not
+    -- inflate the "today's settlements" count Scenario 2 depends on.
+    --
+    -- account_id derived from gs % 3000 so ~100 rows share each of ~3000
+    -- synthetic accounts (id format matches the app's own acc-<8 hex chars>
+    -- convention, so seeded and live rows are indistinguishable).
+    INSERT INTO transactions (id, account_id, amount, currency, status, created_at, settled_at)
+    SELECT
+        'seed-' || md5(gs::text) AS id,
+        'acc-' || substr(md5((gs % 3000)::text), 1, 8) AS account_id,
+        round((random() * 5000 + 10)::numeric, 2) AS amount,
+        (ARRAY['EUR', 'USD', 'GBP', 'JPY', 'CHF'])[floor(random() * 5 + 1)] AS currency,
+        'settled' AS status,
+        now() - (random() * interval '180 days' + interval '1 day') AS created_at,
+        now() - (random() * interval '180 days') AS settled_at
+    FROM generate_series(1, 300000) AS gs
+    ON CONFLICT (id) DO NOTHING;

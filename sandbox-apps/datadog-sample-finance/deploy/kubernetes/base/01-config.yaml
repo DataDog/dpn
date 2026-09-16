@@ -1,0 +1,51 @@
+# =============================================================================
+# Finance Sample App — Application ConfigMap
+# =============================================================================
+# Non-sensitive configuration shared across all services.
+# Sensitive values (passwords, secrets) belong in 02-secrets.yaml.
+#
+# Usage:
+#   kubectl apply -f deploy/kubernetes/base/01-config.yaml
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: finance
+data:
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  # JDBC URL used by account-service and batch-processor (Spring Boot / JDBC).
+  POSTGRES_URL: "jdbc:postgresql://postgres-ledger:5432/ledger"
+
+  # ── ActiveMQ Artemis — OpenWire (JMS) ──────────────────────────────────────
+  # Used by account-service (Spring Boot / JMS) and transaction-service.
+  ACTIVEMQ_URL: "tcp://activemq-artemis:61616"
+
+  # ── ActiveMQ Artemis — STOMP ────────────────────────────────────────────────
+  # Used by transaction-service (Node.js), fraud-detection (Python),
+  # and notification-service (Go) — languages without native JMS support.
+  ACTIVEMQ_STOMP_URL: "stomp://activemq-artemis:61613"
+
+  # ── Internal service URLs ───────────────────────────────────────────────────
+  # gateway-api calls these to fan out to backend services.
+  ACCOUNT_SERVICE_URL: "http://account-service:8081"
+  TRANSACTION_SERVICE_URL: "http://transaction-service:8082"
+
+  # ── Redis ───────────────────────────────────────────────────────────────────
+  # Session store and cache used by gateway-api.
+  REDIS_URL: "redis://redis:6379"
+
+  # ── Keycloak / OIDC ─────────────────────────────────────────────────────
+  # gateway-api validates bearer tokens against this issuer.
+  # The `finance` realm is imported via the keycloak-realm-import ConfigMap.
+  KEYCLOAK_ISSUER: "http://keycloak:8080/realms/finance"
+  KEYCLOAK_JWKS_URI: "http://keycloak:8080/realms/finance/protocol/openid-connect/certs"
+
+  # ── Keycloak public URL ────────────────────────────────────────────────
+  # The URL browsers use to reach Keycloak.
+  # Local: https://localhost:30443 (nginx HTTPS NodePort — self-signed cert)
+  # EKS:   patched by the Kustomize overlay to the HTTPS NLB/frontend hostname.
+  # Used by KC_HOSTNAME_URL on the Keycloak pod and KEYCLOAK_BASE in the
+  # frontend dashboard ConfigMap (injected at deploy time by make deploy-k8s).
+  KEYCLOAK_PUBLIC_URL: "https://localhost:30443"

@@ -1,0 +1,93 @@
+# ── DATADOG SYNTHETIC API TEST — Finance Health Check ─────────────────
+# Tests that the gateway-api /health endpoint is reachable and returns a
+# valid response. One test definition covers all downstream services because
+# gateway-api propagates health-check probes to each internal service.
+#
+# Import options:
+#   1. Datadog UI  → UX Monitoring > Synthetic Tests > New Test > Import
+#   2. Terraform   → datadog_synthetics_test resource (see synthetics/README.md)
+#   3. datadog-ci  → datadog-ci synthetics upload --files synthetics/*.yaml
+#
+# Docs: https://docs.datadoghq.com/synthetics/api_tests/http_tests/
+# ─────────────────────────────────────────────────────────────────────
+
+name: "Finance Health Check — All Services"
+type: api
+subtype: http
+
+config:
+  request:
+    method: GET
+    url: "http://gateway-api:8080/health"
+    timeout: 10  # seconds; keep low — health checks must be fast
+
+    # ── SYNTHETIC → APM TRACE CORRELATION ─────────────────────────
+    # Datadog automatically injects x-datadog-trace-id,
+    # x-datadog-parent-id, and x-datadog-origin: synthetics headers
+    # into every Synthetic HTTP request when APM integration is enabled
+    # (enableSecurityTesting: false, setSampling: true below).
+    # No manual header configuration is required here.
+    # In the Synthetic test result, click "View Trace" to jump to the
+    # full APM waterfall for that specific test execution.
+    # Docs: https://docs.datadoghq.com/synthetics/apm/
+    # ──────────────────────────────────────────────────────────────
+
+    headers:
+      Accept: "application/json"
+      # x-finance-test-source: synthetic  # optional custom header for log filtering
+
+  assertions:
+    # Primary assertion: HTTP 200 means all downstream services responded.
+    - type: statusCode
+      operator: is
+      target: 200
+
+    # Body must contain the string "ok" (case-sensitive).
+    # The gateway-api /health endpoint returns: {"status": "ok", "services": {...}}
+    - type: body
+      operator: contains
+      target: "ok"
+
+    # Response time guard: health checks taking > 2 s indicate a problem.
+    - type: responseTime
+      operator: lessThan
+      target: 2000  # milliseconds
+
+    # Content-Type guard: ensures the response is JSON, not an error page.
+    - type: header
+      property: content-type
+      operator: contains
+      target: "application/json"
+
+locations:
+  - aws:eu-west-1
+  # Add additional locations for multi-region coverage:
+  # - aws:us-east-1
+  # - aws:ap-southeast-1
+
+options:
+  tick_every: 60  # Run every 60 seconds (minimum for API tests)
+  min_failure_duration: 0   # Alert immediately on first failure
+  min_location_failed: 1   # Fail if any single location fails
+
+  retry:
+    count: 1           # Retry once before marking as failed
+    interval: 300      # Wait 300 ms between retries
+
+  monitor_options:
+    renotify_interval: 120  # Re-alert every 120 minutes if still failing
+    notify_no_data: true
+    no_data_timeframe: 10   # Alert if no data for 10 minutes
+
+  # ── CI/CD INTEGRATION ────────────────────────────────────────────
+  # Run this test in your CI pipeline via:
+  #   datadog-ci synthetics run-tests --public-id <test-public-id>
+  # The exit code is non-zero if any assertion fails, blocking deploys.
+  # Docs: https://docs.datadoghq.com/continuous_testing/cicd_integrations/
+  # ────────────────────────────────────────────────────────────────
+
+tags:
+  - "env:staging"
+  - "service:gateway-api"
+  - "team:finance"
+  - "synthetic_type:health"

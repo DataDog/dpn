@@ -1,0 +1,60 @@
+# ── DATADOG SYNTHETIC API TEST — Account Not Found (404) ──────────────
+# Verifies that account-service returns HTTP 404 for a non-existent
+# account ID. Observed in real traffic (acc-does-not-exist-999 scenario).
+# Guards against silent failures where missing records return 200.
+#
+# Docs: https://docs.datadoghq.com/synthetics/api_tests/http_tests/
+# ─────────────────────────────────────────────────────────────────────
+
+name: "Finance Account — Not Found (404)"
+type: api
+subtype: http
+
+config:
+  request:
+    method: GET
+    url: "http://account-service:8081/v1/accounts/acc-does-not-exist-synthetic"
+    timeout: 10
+
+    headers:
+      Accept: "application/json"
+
+  assertions:
+    # Must return 404, not 200 or 500
+    - type: statusCode
+      operator: is
+      target: 404
+
+    # Must not return 500 — that would indicate an unhandled exception
+    - type: statusCode
+      operator: isNot
+      target: 500
+
+    # 404 responses must be fast — no DB scanning for missing records
+    - type: responseTime
+      operator: lessThan
+      target: 500  # milliseconds
+
+locations:
+  - aws:eu-west-1
+
+options:
+  tick_every: 300
+  min_failure_duration: 0
+  min_location_failed: 1
+
+  retry:
+    count: 1
+    interval: 300
+
+  monitor_options:
+    renotify_interval: 120
+    notify_no_data: true
+    no_data_timeframe: 15
+
+tags:
+  - "env:staging"
+  - "service:account-service"
+  - "team:finance"
+  - "synthetic_type:negative"
+  - "flow:account-not-found"

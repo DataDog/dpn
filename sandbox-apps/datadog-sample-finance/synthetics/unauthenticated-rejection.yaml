@@ -1,0 +1,56 @@
+# ── DATADOG SYNTHETIC API TEST — Unauthenticated Rejection ────────────
+# Verifies that the gateway-api correctly rejects requests with no bearer
+# token with HTTP 401. Observed in real traffic (explicit test scenario
+# in generate-traffic.py). Guards against auth middleware regressions.
+#
+# Docs: https://docs.datadoghq.com/synthetics/api_tests/http_tests/
+# ─────────────────────────────────────────────────────────────────────
+
+name: "Finance Auth — Unauthenticated Request Rejected (401)"
+type: api
+subtype: http
+
+config:
+  request:
+    method: GET
+    url: "http://gateway-api:8080/v1/accounts/acc-synthetic-test/balance"
+    timeout: 10
+
+    headers:
+      Accept: "application/json"
+      # Deliberately no Authorization header — testing rejection
+
+  assertions:
+    # Must reject with 401, not 200 or 500
+    - type: statusCode
+      operator: is
+      target: 401
+
+    # Must respond quickly even for rejected requests
+    - type: responseTime
+      operator: lessThan
+      target: 500  # milliseconds
+
+locations:
+  - aws:eu-west-1
+
+options:
+  tick_every: 300
+  min_failure_duration: 0
+  min_location_failed: 1
+
+  retry:
+    count: 1
+    interval: 300
+
+  monitor_options:
+    renotify_interval: 120
+    notify_no_data: true
+    no_data_timeframe: 15
+
+tags:
+  - "env:staging"
+  - "service:gateway-api"
+  - "team:finance"
+  - "synthetic_type:security"
+  - "flow:auth-rejection"

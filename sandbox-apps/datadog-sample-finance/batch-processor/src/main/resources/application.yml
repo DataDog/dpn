@@ -1,0 +1,107 @@
+server:
+  port: ${SERVER_PORT:8083}
+
+spring:
+  application:
+    name: batch-processor
+
+  # Keep the JVM alive so @Scheduled crons can fire when enabled.
+  # Without this, a non-web Spring Boot app exits immediately after startup
+  # since there are no active threads. Required for batch-processor to behave
+  # as a long-running daemon rather than a one-shot task runner.
+  main:
+    keep-alive: true
+
+  # ── DATASOURCE ──────────────────────────────────────────────────────────────
+  # Credentials are injected via environment variables — never hardcoded.
+  # In Docker Compose, set SPRING_DATASOURCE_URL (or use the defaults below).
+  # In Kubernetes, source from a Secret mounted as env vars.
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres-ledger:5432/ledger}
+    username: ${SPRING_DATASOURCE_USERNAME:finance_batch}
+    password: ${SPRING_DATASOURCE_PASSWORD:changeme}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: batch-processor-pool
+      maximum-pool-size: 5 # Keep low — batch jobs are throughput-bound, not concurrency-bound
+      minimum-idle: 1
+      connection-timeout: 30000
+      idle-timeout: 600000
+
+  # ── JPA ─────────────────────────────────────────────────────────────────────
+  jpa:
+    hibernate:
+      ddl-auto: none # batch-processor has no JPA entities; skip schema validation
+    show-sql: false # Keep false — SQL appears in DBM Query Samples instead
+    open-in-view: false
+
+  # ── SPRING BATCH ────────────────────────────────────────────────────────────
+  batch:
+    job:
+      enabled: false # Disable auto-launch on startup; use @Scheduled triggers
+    jdbc:
+      # BUG FIX: 'always' re-runs Spring Batch's schema-postgresql.sql (which has
+      # no "IF NOT EXISTS" guards) on every pod start/restart, not just the first
+      # one -- every subsequent restart logged 9 real Postgres "ERROR: relation
+      # ... already exists" lines, polluting Log Management and the error-rate
+      # monitor with noise. The BATCH_JOB_*/BATCH_STEP_* tables are now created
+      # exactly once via deploy/kubernetes/base/infrastructure/postgres-init.yaml
+      # (same idempotent-on-fresh-PVC pattern as the transactions/ledger schema),
+      # so Spring Batch itself must never attempt to (re)create them.
+      initialize-schema: never
+
+# ── LOGGING ─────────────────────────────────────────────────────────────────
+# Logback configuration is in logback-spring.xml (structured JSON via logstash-logback-encoder).
+# JSON format is required for Datadog Log Management to parse log entries correctly.
+#
+# ── DATADOG LOG CORRELATION (Step 4) ─────────────────────────────────────────
+# When dd-java-agent is attached with -Ddd.logs.injection=true, the agent
+# automatically injects dd.trace_id and dd.span_id into the MDC.
+# logstash-logback-encoder includes MDC fields in JSON output — no code change needed.
+# The Datadog Agent log pipeline then correlates log entries with APM traces.
+# Docs: https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/java/
+# ─────────────────────────────────────────────────────────────────────────────
+logging:
+  level:
+    root: INFO
+    com.example.finance.batch: DEBUG
+    org.springframework.batch: INFO
+    org.hibernate.SQL: WARN
+
+# ── BATCH JOB SCHEDULER CONFIGURATION ───────────────────────────────────────
+# Cron expressions for each job. Override via environment variables in
+# Docker Compose or Kubernetes ConfigMap.
+#
+# To activate scheduled execution:
+#   1. Uncomment @Scheduled in ReconciliationJob.launchReconciliationJob()
+#   2. Uncomment @Scheduled in StatementJob.launchStatementJob()
+#   3. Ensure spring.batch.job.enabled=false (above) so startup doesn't also launch jobs
+batch:
+  reconciliation:
+    # cron: ${BATCH_RECONCILIATION_CRON:0 0 23 * * *}   # Default: nightly at 23:00 UTC
+    cron: "-" # Disabled by default — use "-" to skip
+  statement:
+    # cron: ${BATCH_STATEMENT_CRON:0 0 1 1 * *}          # Default: 1st of month at 01:00 UTC
+    cron: "-" # Disabled by default
+
+# ── MANAGEMENT / ACTUATOR ────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    tags:
+      # ── DATADOG INSTRUMENTATION ────────────────────────────────────────────
+      # Uncomment to add Unified Service Tags to all Micrometer/Prometheus metrics.
+      # These tags align Spring Boot Actuator metrics with Datadog APM service tags.
+      # Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+      #
+      # application: ${DD_SERVICE:batch-processor}
+      # env: ${DD_ENV:local}
+      # version: ${DD_VERSION:unknown}
+      # ─────────────────────────────────────────────────────────────────────
+      application: ${spring.application.name}

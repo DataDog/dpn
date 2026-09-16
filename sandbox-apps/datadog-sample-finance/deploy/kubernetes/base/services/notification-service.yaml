@@ -1,0 +1,170 @@
+# =============================================================================
+# Finance Sample App — notification-service (Go)
+# =============================================================================
+# Async notification consumer. Responsibilities:
+#   - Listens on `alert.queue` via STOMP (ActiveMQ Artemis)
+#   - Sends email / SMS stubs based on alert payload
+#
+# This service exposes no HTTP port — it is a pure message consumer.
+# There is therefore no Service resource in this file.
+# =============================================================================
+
+# ── Deployment ────────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: finance
+  labels:
+    app: notification-service
+    component: service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      annotations:
+        # NOTE: Go does NOT support single-step library injection like
+        # Python/JS/Java — the Admission Controller injects no init container for
+        # Go, so this annotation is effectively a no-op (kept only for parity /
+        # documentation). Go APM is enabled in-code via tracer.Start() (see
+        # main.go) plus compile-time instrumentation (orchestrion), not here.
+        # Docs: https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/
+        # ── DATADOG INSTRUMENTATION (Single Step library version) ────────
+        # Uncomment via 'make instrument' (kept for parity/documentation —
+        # Go does NOT support single-step library injection; the Admission
+        # Controller creates no init container for Go, so this annotation is
+        # effectively a no-op once uncommented. Go APM is enabled in-code via
+        # tracer.Start() in main.go instead, gated by the same
+        # 'make instrument').
+        # Docs: https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/
+        #
+        # admission.datadoghq.com/go-lib.version: latest
+        # ─────────────────────────────────────────────────────────────────
+        # ── DATADOG LOG COLLECTION (autodiscovery annotation) ────────────
+        # Uncomment via 'make tags' to tell the Agent which log source and
+        # service to tag this pod's stdout/stderr logs with — required for
+        # correct parsing/faceting in Log Management.
+        # Docs: https://docs.datadoghq.com/containers/kubernetes/log/
+        #
+        # ad.datadoghq.com/notification-service.logs: '[{"source":"go","service":"notification-service"}]'
+        # ─────────────────────────────────────────────────────────────────
+      labels:
+        app: notification-service
+        component: service
+        # ── DATADOG INSTRUMENTATION (Single Step Instrumentation) ────────
+        # Uncomment via 'make instrument' to opt this pod into the Admission
+        # Controller webhook (no-op for Go — see the library-version
+        # annotation above; kept for parity across all 6 services).
+        # Docs: https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/
+        #
+        # admission.datadoghq.com/enabled: "true"
+        # ─────────────────────────────────────────────────────────────────
+        # ── DATADOG UST (Unified Service Tagging) ────────────────────────
+        # Uncomment via 'make tags' to set the tags.datadoghq.com/* pod
+        # labels used for Deployment Tracking / trace-log-metric correlation.
+        # Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+        #
+        # tags.datadoghq.com/env: "staging"
+        # tags.datadoghq.com/service: "notification-service"
+        # tags.datadoghq.com/version: "latest"
+        # ─────────────────────────────────────────────────────────────────
+    spec:
+      # notification-service exits after max retries if ActiveMQ is not reachable.
+      # The init container ensures it only starts once the STOMP port is open.
+      initContainers:
+        - name: wait-for-activemq
+          image: busybox:1.36
+          command:
+            [
+              "sh",
+              "-c",
+              'until nc -z activemq-artemis 61613; do echo "waiting for activemq stomp..."; sleep 3; done',
+            ]
+      containers:
+        - name: notification-service
+          image: finance-sample-app-notification-service:latest
+          imagePullPolicy: IfNotPresent
+
+          # No ports — this is a JMS consumer only.
+
+          env:
+            # ── ActiveMQ (STOMP) ────────────────────────────────────────────────
+            # The Go service reads credentials from the URL itself (url.Parse),
+            # not from separate ACTIVEMQ_USER/PASSWORD vars. K8s env-var
+            # substitution ($(VAR)) is used to embed the secret values in the URL.
+            - name: ARTEMIS_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: artemis-user
+            - name: ARTEMIS_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: artemis-password
+            - name: ACTIVEMQ_URL
+              value: "stomp://$(ARTEMIS_USER):$(ARTEMIS_PASS)@activemq-artemis:61613"
+            # ── Queue configuration ──────────────────────────────────────────
+            - name: ALERT_QUEUE
+              value: "alert.queue"
+
+            # ── Health check ───────────────────────────────────────────────────
+            # Verify the main consumer process is alive.
+            # ── DATADOG INSTRUMENTATION (Unified Service Tagging) ───────────
+            # Uncomment via 'make tags' to set DD_ENV/DD_SERVICE/DD_VERSION —
+            # required for APM/logs/metrics correlation and Deployment
+            # Tracking. Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+            #
+            # - name: DD_ENV
+            #   value: "staging"
+            # - name: DD_SERVICE
+            #   value: "notification-service"
+            # - name: DD_VERSION
+            #   value: "latest"
+            # ─────────────────────────────────────────────────────────────────
+            # DD_AGENT_HOST uses the node's IP so the pod sends traces/metrics
+            # to the DaemonSet agent running on the same node.
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            # ── DATADOG INSTRUMENTATION (Application Security Management) ───
+            # Uncomment via 'make security' to enable AppSec threat detection
+            # in the tracer. Works alongside the Agent-side asm.threats
+            # feature in datadog-agent.yaml. Detects SQLi, XSS, SSRF and
+            # business-logic attacks at runtime.
+            # Docs: https://docs.datadoghq.com/security/application_security/
+            #
+            # - name: DD_APPSEC_ENABLED
+            #   value: "true"
+            # ─────────────────────────────────────────────────────────────────
+            # ── DATA STREAMS MONITORING (DSM) ───────────────────────────────
+            # Uncomment via 'make instrument' — JMS consumer on alert.queue.
+            # Enabling the flag turns DSM on; for full pipeline stitching a Go
+            # consumer checkpoint may be required (see docs).
+            # Docs: https://docs.datadoghq.com/data_streams/
+            #
+            # - name: DD_DATA_STREAMS_ENABLED
+            #   value: "true"
+            # ─────────────────────────────────────────────────────────────────
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "pgrep -f 'notification' > /dev/null"
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"

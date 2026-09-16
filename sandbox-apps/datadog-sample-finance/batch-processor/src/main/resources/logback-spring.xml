@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!--
+    ── STRUCTURED JSON LOGGING (logstash-logback-encoder) ──────────────────────
+    Outputs one JSON object per log line. Required for Datadog Log Management
+    to parse and index log entries without a custom pipeline processor.
+
+    When dd-java-agent is attached with -Ddd.logs.injection=true, the agent
+    automatically populates these MDC keys before each log statement:
+      dd.trace_id  → correlates this log line to an APM trace
+      dd.span_id   → correlates this log line to the exact span
+      dd.service   → matches DD_SERVICE env var
+      dd.env       → matches DD_ENV env var
+      dd.version   → matches DD_VERSION env var
+
+    LogstashEncoder includes all MDC entries in the JSON output automatically —
+    no additional code changes are needed in application code.
+
+    Docs: https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/java/
+    ──────────────────────────────────────────────────────────────────────────────
+    -->
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- Include MDC fields (dd.trace_id, dd.span_id injected by dd-java-agent) -->
+            <includeMdcKeyName>dd.trace_id</includeMdcKeyName>
+            <includeMdcKeyName>dd.span_id</includeMdcKeyName>
+            <includeMdcKeyName>dd.service</includeMdcKeyName>
+            <includeMdcKeyName>dd.env</includeMdcKeyName>
+            <includeMdcKeyName>dd.version</includeMdcKeyName>
+
+            <!-- Finance-domain fields always present in structured logs -->
+            <customFields>{"service":"batch-processor","component":"spring-batch"}</customFields>
+
+            <!-- Short class name for readability in Log Management -->
+            <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
+        </encoder>
+    </appender>
+
+    <!-- Root logger: INFO in production, DEBUG for batch package via application.yml -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>

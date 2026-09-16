@@ -1,0 +1,56 @@
+# =============================================================================
+# Finance Sample App — Staging environment variables (non-sensitive)
+# =============================================================================
+# Copy this file to staging.tfvars and fill in the values.
+# staging.tfvars is safe to commit — it contains NO secrets.
+#
+# Usage:
+#   cp staging.tfvars.example staging.tfvars
+#   terraform plan  -var-file="staging.tfvars"
+#   terraform apply -var-file="staging.tfvars"
+# =============================================================================
+
+# ── AWS authentication ────────────────────────────────────────────────────────
+# AWS SSO / named profile.
+# Run `aws configure list-profiles` to see available profiles.
+# Leave commented to use the default credential chain (AWS_PROFILE env var,
+# ~/.aws/credentials, EC2 instance metadata, etc.).
+#
+# aws_profile = "partner"
+
+# ── Region & cluster ─────────────────────────────────────────────────────────
+aws_region   = "eu-west-1"
+cluster_name = "finance-app"
+environment  = "staging"
+
+# ── Datadog ───────────────────────────────────────────────────────────────────
+# Site must match where your Datadog org lives.
+# US1: datadoghq.com  |  EU: datadoghq.eu  |  US3: us3.datadoghq.com
+dd_site = "datadoghq.com"
+
+# ── HTTPS / TLS (optional but recommended) ───────────────────────────────────
+# Set domain_name to enable a valid ACM certificate on the NLB.
+# This gives HTTPS with no browser warnings and makes Keycloak
+# session cookies work correctly (Secure flag over HTTPS).
+#
+# Steps:
+#   1. Set domain_name below
+#   2. Run make tf-apply-aws (provisions ACM cert + DNS validation records)
+#   3. Add the CNAME records from 'terraform output acm_validation_records'
+#      to your DNS provider (or they are added automatically if using Route 53)
+#   4. Run make deploy-k8s-eks (injects ACM cert ARN into NLB annotations)
+#
+# Leave commented to use HTTP only (Keycloak admin console has limitations).
+#
+# domain_name = "finance.example.com"
+
+# ── Cluster sizing ──────────────────────────────────────────────────────
+# t3.medium is sufficient for demo workloads. Use t3.large for full observability
+# with the Datadog Agent sidecar and profiling enabled simultaneously.
+node_instance_type      = "t3.medium"
+node_group_min_size     = 2
+node_group_max_size     = 6
+node_group_desired_size = 3
+
+eks_kubernetes_version = "1.30"
+log_retention_days     = 30

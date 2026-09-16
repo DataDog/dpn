@@ -1,0 +1,81 @@
+# ── DATADOG SYNTHETIC API TEST — Account Creation Latency ─────────────
+# Tracks POST /v1/accounts latency over time. This endpoint has a
+# notably high observed p95=575ms (PostgreSQL insert + cold connection
+# pool). The test uses a generous threshold now but will surface
+# regressions as a baseline is established.
+#
+# Run frequency is low (every 10 minutes) because each run creates a
+# real account record — pair with a cleanup job or use a test-scoped DB.
+#
+# Docs: https://docs.datadoghq.com/synthetics/api_tests/http_tests/
+# ─────────────────────────────────────────────────────────────────────
+
+name: "Finance Account Creation — Latency Baseline (p95=575ms observed)"
+type: api
+subtype: http
+
+config:
+  request:
+    method: POST
+    url: "http://account-service:8081/v1/accounts"
+    timeout: 15
+
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+
+    body: |
+      {
+        "owner":           "synthetic-test-user",
+        "account_type":    "retail",
+        "currency":        "EUR",
+        "initial_balance": 0.00
+      }
+
+  assertions:
+    - type: statusCode
+      operator: is
+      target: 201
+
+    - type: header
+      property: content-type
+      operator: contains
+      target: "application/json"
+
+    # Response must include the new account_id
+    - type: body
+      operator: validatesJSONPath
+      targetValue:
+        operator: isNotEmpty
+        jsonPath: "$.account_id"
+
+    # Observed p95=575ms — threshold set at 2000ms to catch regressions
+    # without false positives. Tighten once connection pool is warmed.
+    - type: responseTime
+      operator: lessThan
+      target: 2000  # milliseconds — review after connection pool tuning
+
+locations:
+  - aws:eu-west-1
+
+options:
+  tick_every: 600  # every 10 minutes — creates a DB record each run
+  min_failure_duration: 0
+  min_location_failed: 1
+
+  retry:
+    count: 1
+    interval: 1000
+
+  monitor_options:
+    renotify_interval: 120
+    notify_no_data: true
+    no_data_timeframe: 20
+
+tags:
+  - "env:staging"
+  - "service:account-service"
+  - "team:finance"
+  - "synthetic_type:latency-baseline"
+  - "observed_p95:575ms"
+  - "flow:account-creation"

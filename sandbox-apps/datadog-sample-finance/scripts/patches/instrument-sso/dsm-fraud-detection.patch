@@ -1,0 +1,32 @@
+--- a/deploy/kubernetes/base/services/fraud-detection.yaml
++++ b/deploy/kubernetes/base/services/fraud-detection.yaml
+@@ -148,7 +148,7 @@
+             # Docs: https://docs.datadoghq.com/data_streams/python/
+             #
+-            # - name: DD_DATA_STREAMS_ENABLED
+-            #   value: "true"
++            - name: DD_DATA_STREAMS_ENABLED
++              value: "true"
+             # ─────────────────────────────────────────────────────────────────
+             # ── CONTINUOUS PROFILER ──────────────────────────────────────────
+             # Uncomment via 'make instrument' to enable Continuous Profiler for
+--- a/fraud-detection/listener.py
++++ b/fraud-detection/listener.py
+@@ -30,7 +30,7 @@
+ # Requires: ddtrace[data_streams] installed + DD_DATA_STREAMS_ENABLED=true.
+ # Docs: https://docs.datadoghq.com/data_streams/python/
+ #
+-# from ddtrace.data_streams import set_consume_checkpoint
++from ddtrace.data_streams import set_consume_checkpoint
+ # ─────────────────────────────────────────────────────────────────────
+ 
+ # NOTE: no DogStatsD here. The finance.fraud.hits and finance.fraud.score
+@@ -97,7 +97,7 @@
+         # the Java producer (account-service / transaction-service).
+         # Docs: https://docs.datadoghq.com/data_streams/python/
+         #
+-        # set_consume_checkpoint("jms", "fraud.score.queue", frame.headers)
++        set_consume_checkpoint("jms", "fraud.score.queue", frame.headers)
+         # ─────────────────────────────────────────────────────────────
+ 
+         try:

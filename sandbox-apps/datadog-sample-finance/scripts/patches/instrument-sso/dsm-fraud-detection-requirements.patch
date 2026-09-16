@@ -1,0 +1,14 @@
+# Second half of the DSM step for fraud-detection: this pip dependency is
+# baked into the image (unlike the other services' plain env-var DSM
+# toggle), so applying this patch alone is not enough — 'make instrument'
+# must be followed by 'make build' (or 'make build-ecr') + a redeploy for
+# DSM to actually take effect on this service.
+--- a/fraud-detection/requirements.txt
++++ b/fraud-detection/requirements.txt
+@@ -22,5 +22,5 @@
+ # deploy/kubernetes/base/services/fraud-detection.yaml. Requires an image
+ # rebuild + redeploy (not just a redeploy) since it's baked into the
+ # image, unlike the other services' plain env-var DSM toggle.
+-# ddtrace[data_streams]==2.21.12
++ddtrace[data_streams]==2.21.12  # DSM enabled via 'make instrument'
+ # ─────────────────────────────────────────────────────────────────────

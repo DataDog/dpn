@@ -1,0 +1,13 @@
+--- a/deploy/kubernetes/base/services/gateway-api.yaml
++++ b/deploy/kubernetes/base/services/gateway-api.yaml
+@@ -162,8 +162,8 @@
+             # code changes needed.
+             # Docs: https://docs.datadoghq.com/profiler/
+             #
+-            # - name: DD_PROFILING_ENABLED
+-            #   value: "true"
++            - name: DD_PROFILING_ENABLED
++              value: "true"
+             # ─────────────────────────────────────────────────────────────────
+           # ── Health checks ──────────────────────────────────────────────────
+           livenessProbe:

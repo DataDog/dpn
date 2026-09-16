@@ -1,0 +1,26 @@
+apiVersion: v3
+kind: service
+metadata:
+  name: gateway-api
+  displayName: Gateway API
+  tags:
+    - env:staging
+    - language:python
+    - team:finance-platform
+  links:
+    - name: Source
+      type: repo
+      provider: github
+      url: https://github.com/your-org/finance-sample-app/tree/main/gateway-api
+  contacts:
+    - name: Finance Platform
+      type: email
+      contact: finance-platform@example.com
+spec:
+  lifecycle: staging
+  tier: High
+  type: service
+  languages:
+    - python
+  description: |
+    Public-facing REST API. Handles OIDC auth, routes to account-service and transaction-service.

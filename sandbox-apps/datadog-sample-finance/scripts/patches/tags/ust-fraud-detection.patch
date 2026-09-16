@@ -1,0 +1,47 @@
+--- a/deploy/kubernetes/base/services/fraud-detection.yaml
++++ b/deploy/kubernetes/base/services/fraud-detection.yaml
+@@ -40,15 +40,9 @@
+         app: fraud-detection
+         component: service
+         # ─────────────────────────────────────────────────────────────────
+-        # ── DATADOG UST (Unified Service Tagging) ────────────────────────
+-        # Uncomment via 'make tags' to set the tags.datadoghq.com/* pod
+-        # labels used for Deployment Tracking / trace-log-metric correlation.
+-        # Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+-        #
+-        # tags.datadoghq.com/env: "staging"
+-        # tags.datadoghq.com/service: "fraud-detection"
+-        # tags.datadoghq.com/version: "latest"
+-        # ─────────────────────────────────────────────────────────────────
++        tags.datadoghq.com/env: "staging"
++        tags.datadoghq.com/service: "fraud-detection"
++        tags.datadoghq.com/version: "latest"
+     spec:
+       # fraud-detection exits after connection failures if ActiveMQ is not reachable.
+       # The init container ensures it only starts once the STOMP port is open.
+@@ -95,18 +89,13 @@
+             # Adjust the process name to match your entrypoint if needed.
+             # /proc/1 always exists while the main process (PID 1) is alive.
+             # pgrep is not available in minimal Python images, so we use /proc directly.
+-            # ── DATADOG INSTRUMENTATION (Unified Service Tagging) ───────────
+-            # Uncomment via 'make tags' to set DD_ENV/DD_SERVICE/DD_VERSION —
+-            # required for APM/logs/metrics correlation and Deployment
+-            # Tracking. Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+-            #
+-            # - name: DD_ENV
+-            #   value: "staging"
+-            # - name: DD_SERVICE
+-            #   value: "fraud-detection"
+-            # - name: DD_VERSION
+-            #   value: "latest"
+-            # ─────────────────────────────────────────────────────────────────
++            # ── Datadog Unified Service Tagging ─────────────────────────────
++            - name: DD_ENV
++              value: "staging"
++            - name: DD_SERVICE
++              value: "fraud-detection"
++            - name: DD_VERSION
++              value: "latest"
+             # DD_AGENT_HOST uses the node's IP so the pod sends traces/metrics
+             # to the DaemonSet agent running on the same node.
+             - name: DD_AGENT_HOST

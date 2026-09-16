@@ -1,0 +1,13 @@
+--- a/deploy/kubernetes/base/services/account-service.yaml
++++ b/deploy/kubernetes/base/services/account-service.yaml
+@@ -198,8 +198,8 @@
+             # env var, no JVM flag / Dockerfile changes needed.
+             # Docs: https://docs.datadoghq.com/profiler/
+             #
+-            # - name: DD_PROFILING_ENABLED
+-            #   value: "true"
++            - name: DD_PROFILING_ENABLED
++              value: "true"
+             # ─────────────────────────────────────────────────────────────────
+           # ── Health checks ──────────────────────────────────────────────
+           # Use the custom /health endpoint (not /actuator/health) because Spring
