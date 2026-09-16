@@ -4,7 +4,7 @@
 
 `dpn` is Datadog's public Partner Network repo: sandbox apps, workshop content, sample dashboards/monitors, and automation tooling that partners use to demo the Datadog platform. It is public — never add real credentials, internal-only links, or customer data here.
 
-Most partners only need one sample app, not the whole repo. Point them at the `git sparse-checkout` instructions in [README.md](README.md) rather than a full clone.
+Most partners only need one sample app, not the whole repo. Direct them to the `git sparse-checkout` instructions in [README.md](README.md) rather than a full clone.
 
 ## Repo map
 
@@ -21,7 +21,7 @@ Some sample apps referenced from the root `README.md` live in their **own dedica
 
 ## Adding a new sample app
 
-1. Copy the app's files into a new `sandbox-apps/<name>/` directory — don't add it as a git submodule or preserve an external fork's history. (Splitting an app into its own dedicated `DataDog/*` repo is a call Datadog makes later, if it takes off — not a decision to make when first adding it.)
+1. Copy the app's files into a new `sandbox-apps/<name>/` directory — don't add it as a git submodule or preserve an external fork's history. (Splitting an app into its own dedicated `DataDog/*` repo is a decision Datadog makes later, if the app grows into one actively maintained on its own — not a decision to make when first adding it.)
 2. Follow [CONTRIBUTING-sample-apps.md](CONTRIBUTING-sample-apps.md) for the checklist (README, setup docs, `.gitignore` for the app's language/ecosystem).
 3. Add an entry to the "Sandbox Applications" table of contents in `README.md`.
 4. Never commit real API keys, `.env` files, or cloud credential JSON files — this repo's `.gitignore` blocks common credential filename patterns, but review new app content before committing regardless.
