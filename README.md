@@ -38,18 +38,22 @@ git sparse-checkout add monitors scripts
 
 ## Sandbox Applications
 
-In-repo apps (clone/sparse-checkout this repo to get these):
+### In this repo
+
+Clone or sparse-checkout this repo to get these:
 
 1. [Datadog Sample Finance App](sandbox-apps/datadog-sample-finance) - A multi-service finance domain app (Python/FastAPI, Java/Spring Boot, Node.js, Go) pre-wired for Datadog APM, Logs, Metrics, Profiler, DBM, DSM, and Data Jobs. Includes a full **9-module DPN Implementation Training workshop** (see [Partner Workshops](#partner-workshops) below) with a printable attendee booklet.
 2. [Swagbot Chatbot](sandbox-apps/swagbot) - A containerized chatbot app fully instrumented with Datadog LLM Observability and APM.
-3. [Online Boutique](sandbox-apps/online-boutique) - Google's multi-language microservices demo ("swagstore"), instrumented for Datadog APM/infra/logs.
-4. [Online Boutique (AWS variant)](sandbox-apps/online-boutique-aws) - Same demo as above, packaged for AWS EC2/EKS deployment specifically.
+3. [Online Boutique (base)](sandbox-apps/microservices-demo-multiarch-main) - Google's multi-language microservices demo ("swagstore"), instrumented for Datadog APM/infra/logs.
+4. [Online Boutique (AWS variant)](sandbox-apps/aws-microservices-demo-multiarch-main) - Same demo as above, packaged for AWS EC2/EKS deployment specifically.
 
-Apps that already have their own dedicated public Datadog repo — go there directly instead of cloning this one:
+### In their own repo
 
-5. [Bank of Anthos](https://github.com/DataDog/dpn-bank-of-anthos) - Retail banking sample app (Kubernetes/GKE), instrumented with the Datadog Operator for APM/RUM.
-6. [Storedog](https://github.com/DataDog/storedog) - eCommerce demo app used in observability and code-security workshops.
-7. [TSRE Microservices](https://github.com/DataDog/tsre-microservices) - Swagstore-based 12-microservice demo used for TSRE-led workshops.
+These already have a dedicated public Datadog repo — go there directly instead of cloning this one:
+
+1. [Bank of Anthos](https://github.com/DataDog/dpn-bank-of-anthos) - Retail banking sample app (Kubernetes/GKE), instrumented with the Datadog Operator for APM/RUM.
+2. [Storedog](https://github.com/DataDog/storedog) - eCommerce demo app used in observability and code-security workshops.
+3. [TSRE Microservices](https://github.com/DataDog/tsre-microservices) - Swagstore-based 12-microservice demo used for TSRE-led workshops.
 
 ## Partner Workshops
 

@@ -1,4 +1,4 @@
 Component,Origin,License
-sample-app:online-boutique,"https://github.com/GoogleCloudPlatform/microservices-demo",Apache-2.0
-sample-app:online-boutique-aws,"https://github.com/GoogleCloudPlatform/microservices-demo",Apache-2.0
+sample-app:microservices-demo-multiarch-main,"https://github.com/GoogleCloudPlatform/microservices-demo",Apache-2.0
+sample-app:aws-microservices-demo-multiarch-main,"https://github.com/GoogleCloudPlatform/microservices-demo",Apache-2.0
 sample-app:datadog-sample-finance,"https://github.com/kepicorp/datadog-sample-finance",Unspecified upstream; included with author's permission
