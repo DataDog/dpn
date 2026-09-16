@@ -22,8 +22,7 @@ Some sample apps referenced from the root `README.md` live in their **own dedica
 
 ## Adding a new sample app
 
-1. Check first whether the app already has (or should get) its own dedicated `DataDog/*` repo — if it's likely to be actively maintained independently, prefer that over adding it here, and just link to it from `README.md`.
-2. If it belongs in `dpn` directly: copy the app's files into a new `sandbox-apps/<name>/` directory — don't add it as a git submodule or preserve an external fork's history.
-3. Follow [CONTRIBUTING-sample-apps.md](CONTRIBUTING-sample-apps.md) for the checklist (README, setup docs, `.gitignore` for the app's language/ecosystem).
-4. Add an entry to the "Sandbox Applications" table of contents in `README.md`.
-5. Never commit real API keys, `.env` files, or cloud credential JSON files — this repo's `.gitignore` blocks common credential filename patterns, but review new app content before committing regardless.
+1. Copy the app's files into a new `sandbox-apps/<name>/` directory — don't add it as a git submodule or preserve an external fork's history. (Splitting an app into its own dedicated `DataDog/*` repo is a call Datadog makes later, if it takes off — not a decision to make when first adding it.)
+2. Follow [CONTRIBUTING-sample-apps.md](CONTRIBUTING-sample-apps.md) for the checklist (README, setup docs, `.gitignore` for the app's language/ecosystem).
+3. Add an entry to the "Sandbox Applications" table of contents in `README.md`.
+4. Never commit real API keys, `.env` files, or cloud credential JSON files — this repo's `.gitignore` blocks common credential filename patterns, but review new app content before committing regardless.

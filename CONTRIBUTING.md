@@ -15,9 +15,7 @@ First off: thank you so much for contributing!
 
 * If no existing issues seem relevant, please [open a new one](https://github.com/DataDog/dpn/issues/new). When you open issues, please include a clear title and description and as much relevant info as possible.  Pasting in errors is great, and any info specific to your environment is very helpful. And **Please be careful to redact any sensitive data like API keys or credentials!**
 
-* Please have patience: This repo is a "best effort" project. It is owned by employees at Datadog, but they're busy people! And the owners will change over time. The more info you can provide, the faster they may be able to help. 
-
-* Please do not request help from support@datadoghq.com for problems that appear specific to the resources in this repo. This repo is not owned by the Datadog support team. 
+* We welcome you to contribute! The more info you can provide, the faster we can help.
 
 
 ### **Did you find a bug fix yourself?**
