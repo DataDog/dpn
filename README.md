@@ -50,17 +50,8 @@ Apps that already have their own dedicated public Datadog repo — go there dire
 6. [Storedog](https://github.com/DataDog/storedog) - eCommerce demo app used in observability and code-security workshops.
 7. [TSRE Microservices](https://github.com/DataDog/tsre-microservices) - Swagstore-based 12-microservice demo used for TSRE-led workshops.
 
-## Dashboards
-(Forthcoming)
-
 ## Monitors
 See [monitors/](monitors) — currently includes a vSphere host-down composite monitor.
-
-## Notebooks & Runbooks
-(Forthcoming)
-
-## Product Configurations
-(Forthcoming)
 
 ## Automation Tooling
 See [scripts/](scripts) - includes a Datadog backup/export script and a Windows secrets-fetcher build.
