@@ -33,6 +33,6 @@ If it takes off and ends up being actively maintained on its own (its own CI, it
 
 If it'd be useful to you, it's probably useful to other partners too — open a PR!
 
-## Don't want to write the code yourself?
+## Have an idea or sample app you want to share?
 
 Open a [new issue](https://github.com/DataDog/dpn/issues/new) and tag it `new-sample-app-request`.
