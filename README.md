@@ -29,19 +29,11 @@ This fetches all commit/tree metadata but skips downloading file contents up fro
 Need more than one thing, or something outside `sandbox-apps/`? Add any path any time:
 
 ```sh
-git sparse-checkout add datadog-sample-finance
 git sparse-checkout add partner-workshops
 git sparse-checkout add monitors scripts
 ```
 
 # Table of Contents
-
-## DPN Implementation Training
-
-[Datadog Sample Finance App](datadog-sample-finance) is both a runnable sample app and a full **9-module hands-on training curriculum** (the Meridian Financial curriculum), with a printable attendee booklet. It's more than a sandbox app, so it gets its own place at the repo root rather than living under `sandbox-apps/`.
-
-- The app: a multi-service finance domain app (Python/FastAPI, Java/Spring Boot, Node.js, Go) pre-wired for Datadog APM, Logs, Metrics, Profiler, DBM, DSM, and Data Jobs.
-- The curriculum: see [`docs/README.md`](datadog-sample-finance/docs/README.md) — covers Unified Service Tagging, DBM, APM/DSM/DJM, RUM, Security, dashboards/monitors, and an AWS/EKS deployment track.
 
 ## Sandbox Applications
 
@@ -63,9 +55,10 @@ These already have a dedicated public Datadog repo — go there directly instead
 
 ## Partner Workshops
 
-1. [LLM Observability Workshop](partner-workshops/llm-observability-workshop.md) - Guide for a partner-led LLM Observability enablement session.
+1. [DPN Implementation Training](partner-workshops/datadog-sample-finance/docs/README.md) - 9-module hands-on curriculum (the Meridian Financial curriculum), built around a full sample app in [partner-workshops/datadog-sample-finance](partner-workshops/datadog-sample-finance) (Python/FastAPI, Java/Spring Boot, Node.js, Go; pre-wired for APM, Logs, Metrics, Profiler, DBM, DSM, and Data Jobs). Covers Unified Service Tagging, DBM, APM/DSM/DJM, RUM, Security, dashboards/monitors, and an AWS/EKS deployment track. Includes a printable attendee booklet.
+2. [LLM Observability Workshop](partner-workshops/llm-observability-workshop.md) - Guide for a partner-led LLM Observability enablement session.
 
-See also [DPN Implementation Training](#dpn-implementation-training) above.
+Most workshops here are a single guide (like #2 above). If yours ships with a full runnable app and curriculum (like #1), give it its own `partner-workshops/<name>/` directory rather than a single file — that's the pattern to follow for future contributions like this.
 
 ## Monitors
 The [monitors](monitors) folder holds sample monitor definitions that demonstrate best practices for specific integrations — right now, a vSphere host-down composite monitor.
