@@ -71,7 +71,7 @@ The [scripts](scripts) folder holds automation a partner would frequently find u
 - [Partner Enablement Hub](https://www.datadoghq.com/partner-enablement/) - training, certifications, and enablement content for partners
 - [Partner Portal](https://partners.datadoghq.com/s/) - deal registration, MDF, and partner program administration
 - [Partner Documentation](https://docs.datadoghq.com/partners/getting_started/) - technical getting-started docs for the partner program
-- Questions or feedback on this repo? Email charlie@datadoghq.com
+- Questions or feedback on this repo? Email partner-support@datadoghq.com
 
 # Contributing and Feedback
-Thank you for contributing! If you wish to contribute an application, dashboard, or other resources to this repo, see [CONTRIBUTING-sample-apps.md](CONTRIBUTING-sample-apps.md) for adding a sample app, or [CONTRIBUTING.md](CONTRIBUTING.md) for general contribution guidelines. If you wish to share feedback on how we can make this repo better, please email charlie@datadoghq.com.
+Thank you for contributing! If you wish to contribute an application, dashboard, or other resources to this repo, see [CONTRIBUTING-sample-apps.md](CONTRIBUTING-sample-apps.md) for adding a sample app, or [CONTRIBUTING.md](CONTRIBUTING.md) for general contribution guidelines. If you wish to share feedback on how we can make this repo better, please email partner-support@datadoghq.com.
