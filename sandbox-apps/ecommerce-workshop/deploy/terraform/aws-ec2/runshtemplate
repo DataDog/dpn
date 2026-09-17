@@ -1,8 +1,0 @@
-#!/bin/bash
-
-function checkssh () { 
-    while ! ssh -oStrictHostKeyChecking=no $1@$2 echo ''
-        do sleep 3
-    done
-}
-

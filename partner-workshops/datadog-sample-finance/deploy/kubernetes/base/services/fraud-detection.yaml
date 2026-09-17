@@ -1,0 +1,185 @@
+# =============================================================================
+# Finance Sample App — fraud-detection (Python)
+# =============================================================================
+# Async fraud-scoring consumer. Responsibilities:
+#   - Listens on `fraud.score.queue` via STOMP (ActiveMQ Artemis)
+#   - Scores transactions and emits results back to the broker
+#
+# This service exposes no HTTP port — it is a pure message consumer.
+# There is therefore no Service resource in this file.
+#
+# Health check strategy: exec into the container and verify the STOMP
+# connection process is running, as there is no HTTP endpoint.
+# =============================================================================
+
+# ── Deployment ────────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fraud-detection
+  namespace: finance
+  labels:
+    app: fraud-detection
+    component: service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fraud-detection
+  template:
+    metadata:
+      annotations:
+        # Datadog single-step instrumentation — inject python tracer at pod startup.
+        # Pinned to the tracer's MAJOR version (Datadog publishes floating vN
+        # init-image tags). More reproducible than "latest" (no surprise major
+        # bumps) while still receiving patches; always resolvable — unlike exact
+        # patch tags, which don't reliably exist as init-image tags.
+        # ── DATADOG INSTRUMENTATION (Single Step library version) ────────
+        # Uncomment via 'make instrument' together with the
+        # admission.datadoghq.com/enabled label below — tells the Admission
+        # Controller webhook which tracer library to inject into this pod.
+        # Docs: https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/
+        #
+        # admission.datadoghq.com/python-lib.version: "v2"
+        # ─────────────────────────────────────────────────────────────────
+        # ── DATADOG LOG COLLECTION (autodiscovery annotation) ────────────
+        # Uncomment via 'make tags' to tell the Agent which log source and
+        # service to tag this pod's stdout/stderr logs with — required for
+        # correct parsing/faceting in Log Management.
+        # Docs: https://docs.datadoghq.com/containers/kubernetes/log/
+        #
+        # ad.datadoghq.com/fraud-detection.logs: '[{"source":"python","service":"fraud-detection"}]'
+        # ─────────────────────────────────────────────────────────────────
+      labels:
+        app: fraud-detection
+        component: service
+        # ── DATADOG INSTRUMENTATION (Single Step Instrumentation) ────────
+        # Uncomment via 'make instrument' to opt this pod into the Admission
+        # Controller webhook — injects the Datadog tracer at pod startup
+        # (APM traces, log-trace correlation, runtime metrics; no code
+        # changes, no rebuild required).
+        # Docs: https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/
+        #
+        # admission.datadoghq.com/enabled: "true"
+        # ─────────────────────────────────────────────────────────────────
+        # ── DATADOG UST (Unified Service Tagging) ────────────────────────
+        # Uncomment via 'make tags' to set the tags.datadoghq.com/* pod
+        # labels used for Deployment Tracking / trace-log-metric correlation.
+        # Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+        #
+        # tags.datadoghq.com/env: "staging"
+        # tags.datadoghq.com/service: "fraud-detection"
+        # tags.datadoghq.com/version: "latest"
+        # ─────────────────────────────────────────────────────────────────
+    spec:
+      # fraud-detection exits after connection failures if ActiveMQ is not reachable.
+      # The init container ensures it only starts once the STOMP port is open.
+      initContainers:
+        - name: wait-for-activemq
+          image: busybox:1.36
+          command:
+            [
+              "sh",
+              "-c",
+              'until nc -z activemq-artemis 61613; do echo "waiting for activemq stomp..."; sleep 3; done',
+            ]
+      containers:
+        - name: fraud-detection
+          image: finance-sample-app-fraud-detection:latest
+          imagePullPolicy: IfNotPresent
+
+          # No ports — this is a JMS consumer only.
+
+          env:
+            # ── ActiveMQ (STOMP) ────────────────────────────────────────────────
+            # The Python stomp.py client reads host/port/credentials separately.
+            # STOMP_HOST, STOMP_PORT, STOMP_USER, STOMP_PASS match main.py's os.environ.get() calls.
+            - name: STOMP_HOST
+              value: "activemq-artemis"
+            - name: STOMP_PORT
+              value: "61613"
+            - name: STOMP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: artemis-user
+            - name: STOMP_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: artemis-password
+            # ── Queue configuration ──────────────────────────────────────────
+            - name: FRAUD_QUEUE
+              value: "fraud.score.queue"
+
+            # ── Health check ───────────────────────────────────────────────────
+            # Verify the main consumer process is alive.
+            # Adjust the process name to match your entrypoint if needed.
+            # /proc/1 always exists while the main process (PID 1) is alive.
+            # pgrep is not available in minimal Python images, so we use /proc directly.
+            # ── DATADOG INSTRUMENTATION (Unified Service Tagging) ───────────
+            # Uncomment via 'make tags' to set DD_ENV/DD_SERVICE/DD_VERSION —
+            # required for APM/logs/metrics correlation and Deployment
+            # Tracking. Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+            #
+            # - name: DD_ENV
+            #   value: "staging"
+            # - name: DD_SERVICE
+            #   value: "fraud-detection"
+            # - name: DD_VERSION
+            #   value: "latest"
+            # ─────────────────────────────────────────────────────────────────
+            # DD_AGENT_HOST uses the node's IP so the pod sends traces/metrics
+            # to the DaemonSet agent running on the same node.
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            # ── DATADOG INSTRUMENTATION (Application Security Management) ───
+            # Uncomment via 'make security' to enable AppSec threat detection
+            # in the tracer. Works alongside the Agent-side asm.threats
+            # feature in datadog-agent.yaml. Detects SQLi, XSS, SSRF and
+            # business-logic attacks at runtime.
+            # Docs: https://docs.datadoghq.com/security/application_security/
+            #
+            # - name: DD_APPSEC_ENABLED
+            #   value: "true"
+            # ─────────────────────────────────────────────────────────────────
+            # ── DATA STREAMS MONITORING (DSM) ───────────────────────────────
+            # Uncomment via 'make instrument' — JMS consumer on
+            # fraud.score.queue. Enabling the flag turns DSM on; for full
+            # pipeline stitching a Python consumer checkpoint (ddtrace
+            # set_consume_checkpoint) may be required (see docs). Also
+            # requires ddtrace[data_streams] in requirements.txt (same
+            # 'make instrument' step) + an image rebuild.
+            # Docs: https://docs.datadoghq.com/data_streams/python/
+            #
+            # - name: DD_DATA_STREAMS_ENABLED
+            #   value: "true"
+            # ─────────────────────────────────────────────────────────────────
+            # ── CONTINUOUS PROFILER ──────────────────────────────────────────
+            # Uncomment via 'make instrument' to enable Continuous Profiler for
+            # this service — correlate CPU flame graphs with slow traces.
+            # Single Step Instrumentation already injects ddtrace for Python
+            # APM; ddtrace's profiler is enabled by this plain env var, no
+            # code changes needed.
+            # Docs: https://docs.datadoghq.com/profiler/
+            #
+            # - name: DD_PROFILING_ENABLED
+            #   value: "true"
+            # ─────────────────────────────────────────────────────────────────
+          livenessProbe:
+            exec:
+              command: ["/bin/sh", "-c", "[ -d /proc/1 ]"]
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"

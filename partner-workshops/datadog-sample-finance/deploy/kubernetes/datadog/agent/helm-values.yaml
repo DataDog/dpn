@@ -1,0 +1,148 @@
+# ── DATADOG HELM CHART VALUES ─────────────────────────────────────────────────
+# Chart: datadog/datadog
+# Install:
+#   helm repo add datadog https://helm.datadoghq.com
+#   helm repo update
+#   helm install datadog datadog/datadog \
+#     --namespace datadog --create-namespace \
+#     -f helm-values.yaml
+#
+# Docs: https://github.com/DataDog/helm-charts
+# Docs: https://docs.datadoghq.com/containers/kubernetes/
+#
+# These values mirror the DatadogAgent CRD (datadog-agent.yaml) for teams
+# that prefer Helm over the Datadog Operator.
+# ─────────────────────────────────────────────────────────────────────────────
+
+datadog:
+
+  # ── API KEY (never inline — reference a K8s Secret) ───────────────────────
+  # Create the Secret before installing the chart:
+  #   kubectl create secret generic datadog-secret \
+  #     --from-literal api-key=<YOUR_DD_API_KEY> \
+  #     --namespace datadog
+  #
+  # Then reference it here instead of providing the key directly:
+  apiKeyExistingSecret: datadog-secret
+  # apiKey: ""   # DO NOT USE — would expose the key in Helm release history
+
+  site: datadoghq.com                 # Change to datadoghq.eu for EU region
+
+  # ── UNIFIED SERVICE TAGGING ────────────────────────────────────────────────
+  # Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+  tags:
+    - env:staging
+    - app:finance-sample-app
+
+  # ── APM / DISTRIBUTED TRACING ─────────────────────────────────────────────
+  # Docs: https://docs.datadoghq.com/tracing/
+  apm:
+    portEnabled: true
+    port: 8126
+
+  # ── LOG COLLECTION ────────────────────────────────────────────────────────
+  # Docs: https://docs.datadoghq.com/logs/log_collection/
+  logs:
+    enabled: true
+    containerCollectAll: true
+
+  # ── PROCESS AGENT ─────────────────────────────────────────────────────────
+  processAgent:
+    enabled: true
+    processCollection: true
+
+  # ── DOGSTATSD (CUSTOM METRICS) ────────────────────────────────────────────
+  # Finance services emit metrics via DogStatsD on port 8125.
+  # Docs: https://docs.datadoghq.com/developers/dogstatsd/
+  dogstatsd:
+    port: 8125
+    useHostPort: true
+    # UDS socket (preferred in K8s for reliability over UDP):
+    # useSocketVolume: true
+    # socketPath: /var/run/datadog/dsd.socket
+
+  # ── DATA STREAMS MONITORING (DSM) ─────────────────────────────────────────
+  # End-to-end JMS / ActiveMQ pipeline visibility.
+  # Finance use case: fraud.score.queue and alert.queue consumer lag alerting.
+  # Docs: https://docs.datadoghq.com/data_streams/
+  dataStreams:
+    enabled: true
+
+  # ── LIVE CONTAINER MONITORING ─────────────────────────────────────────────
+  containerExclude: "name:datadog-agent"  # Exclude the agent itself
+
+  # ── ORCHESTRATOR EXPLORER (K8s resource visibility) ───────────────────────
+  orchestratorExplorer:
+    enabled: true
+
+  # ── CLUSTER CHECKS (required for postgres.d / activemq.d ConfigMaps) ─────
+  clusterChecks:
+    enabled: true
+
+  # ── KUBERNETES STATE METRICS ──────────────────────────────────────────────
+  kubeStateMetricsEnabled: true
+  kubeStateMetricsCore:
+    enabled: true
+
+  # ── ADMISSION CONTROLLER ──────────────────────────────────────────────────
+  # Auto-injects DD_AGENT_HOST, DD_TRACE_AGENT_URL, DD_ENTITY_ID into
+  # pods annotated with: admission.datadoghq.com/enabled: "true"
+  # Docs: https://docs.datadoghq.com/containers/cluster_agent/admission_controller/
+  admissionController:
+    enabled: true
+    mutateUnlabelled: false
+
+  # ── SECURITY / CSPM (optional) ────────────────────────────────────────────
+  # securityAgent:
+  #   compliance:
+  #     enabled: true              # CSPM — useful for PCI-DSS / SOC2 posture
+  #   runtime:
+  #     enabled: true              # Cloud Workload Security (CWS)
+
+  # ── CONTINUOUS PROFILER ───────────────────────────────────────────────────
+  # Agent-side intake is always on. Enable per service via:
+  #   DD_PROFILING_ENABLED=true (Python, Node)
+  #   -Ddd.profiling.enabled=true (Java)
+  # Docs: https://docs.datadoghq.com/profiler/
+
+# ── CLUSTER AGENT ─────────────────────────────────────────────────────────
+clusterAgent:
+  enabled: true
+  replicas: 2                         # HA for production
+  metricsProvider:
+    enabled: true                     # Enables HPA with Datadog metrics
+
+# ── NODE AGENT RESOURCE LIMITS ────────────────────────────────────────────
+agents:
+  containers:
+    agent:
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 400m
+          memory: 512Mi
+    traceAgent:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+    processAgent:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
+# ── TOLERATIONS / NODE SELECTOR (optional) ────────────────────────────────
+# agents:
+#   tolerations:
+#     - operator: Exists
+#   nodeSelector:
+#     kubernetes.io/os: linux

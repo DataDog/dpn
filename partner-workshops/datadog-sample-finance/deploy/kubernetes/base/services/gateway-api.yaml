@@ -1,0 +1,200 @@
+# =============================================================================
+# Finance Sample App — gateway-api (Python / FastAPI)
+# =============================================================================
+# Public-facing REST API. Responsibilities:
+#   - OIDC bearer-token validation against Keycloak
+#   - Routes authenticated requests to account-service and transaction-service
+#   - Manages sessions via Redis
+#
+# Health endpoint: GET /health  →  200 OK
+# Main API:        GET/POST /v1/*
+# =============================================================================
+
+# ── Service ───────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-api
+  namespace: finance
+  labels:
+    app: gateway-api
+    component: service
+spec:
+  type: ClusterIP
+  selector:
+    app: gateway-api
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+
+---
+# ── Deployment ────────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-api
+  namespace: finance
+  labels:
+    app: gateway-api
+    component: service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway-api
+  template:
+    metadata:
+      annotations:
+        # Datadog single-step instrumentation — inject python tracer at pod startup.
+        # Pinned to the tracer's MAJOR version (Datadog publishes floating vN
+        # init-image tags). More reproducible than "latest" (no surprise major
+        # bumps) while still receiving patches; always resolvable — unlike exact
+        # patch tags, which don't reliably exist as init-image tags.
+        # ── DATADOG INSTRUMENTATION (Single Step library version) ────────
+        # Uncomment via 'make instrument' together with the
+        # admission.datadoghq.com/enabled label below — tells the Admission
+        # Controller webhook which tracer library to inject into this pod.
+        # Docs: https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/
+        #
+        # admission.datadoghq.com/python-lib.version: "v2"
+        # ─────────────────────────────────────────────────────────────────
+        # ── DATADOG LOG COLLECTION (autodiscovery annotation) ────────────
+        # Uncomment via 'make tags' to tell the Agent which log source and
+        # service to tag this pod's stdout/stderr logs with — required for
+        # correct parsing/faceting in Log Management.
+        # Docs: https://docs.datadoghq.com/containers/kubernetes/log/
+        #
+        # ad.datadoghq.com/gateway-api.logs: '[{"source":"python","service":"gateway-api"}]'
+        # ─────────────────────────────────────────────────────────────────
+      labels:
+        app: gateway-api
+        component: service
+        # ── DATADOG INSTRUMENTATION (Single Step Instrumentation) ────────
+        # Uncomment via 'make instrument' to opt this pod into the Admission
+        # Controller webhook — injects the Datadog tracer at pod startup
+        # (APM traces, log-trace correlation, runtime metrics; no code
+        # changes, no rebuild required).
+        # Docs: https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/
+        #
+        # admission.datadoghq.com/enabled: "true"
+        # ─────────────────────────────────────────────────────────────────
+        # ── DATADOG UST (Unified Service Tagging) ────────────────────────
+        # Uncomment via 'make tags' to set the tags.datadoghq.com/* pod
+        # labels used for Deployment Tracking / trace-log-metric correlation.
+        # Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+        #
+        # tags.datadoghq.com/env: "staging"
+        # tags.datadoghq.com/service: "gateway-api"
+        # tags.datadoghq.com/version: "latest"
+        # ─────────────────────────────────────────────────────────────────
+    spec:
+      containers:
+        - name: gateway-api
+          image: finance-sample-app-gateway-api:latest
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8080
+
+          env:
+            # ── Internal service URLs ────────────────────────────────────────
+            - name: ACCOUNT_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: ACCOUNT_SERVICE_URL
+            - name: TRANSACTION_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: TRANSACTION_SERVICE_URL
+            # ── Session / cache ──────────────────────────────────────────────
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: REDIS_URL
+            # ── OIDC / Keycloak ──────────────────────────────────────────────
+            - name: KEYCLOAK_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: KEYCLOAK_ISSUER
+            - name: KEYCLOAK_JWKS_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: KEYCLOAK_JWKS_URI
+            - name: KEYCLOAK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: keycloak-client-secret
+
+            # ── DATADOG INSTRUMENTATION (Unified Service Tagging) ───────────
+            # Uncomment via 'make tags' to set DD_ENV/DD_SERVICE/DD_VERSION —
+            # required for APM/logs/metrics correlation and Deployment
+            # Tracking. Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+            #
+            # - name: DD_ENV
+            #   value: "staging"
+            # - name: DD_SERVICE
+            #   value: "gateway-api"
+            # - name: DD_VERSION
+            #   value: "latest"
+            # ─────────────────────────────────────────────────────────────────
+            # DD_AGENT_HOST uses the node's IP so the pod sends traces/metrics
+            # to the DaemonSet agent running on the same node.
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            # ── DATADOG INSTRUMENTATION (Application Security Management) ───
+            # Uncomment via 'make security' to enable AppSec threat detection
+            # in the tracer. Works alongside the Agent-side asm.threats
+            # feature in datadog-agent.yaml. Detects SQLi, XSS, SSRF and
+            # business-logic attacks at runtime.
+            # Docs: https://docs.datadoghq.com/security/application_security/
+            #
+            # - name: DD_APPSEC_ENABLED
+            #   value: "true"
+            # ─────────────────────────────────────────────────────────────────
+            # ── CONTINUOUS PROFILER ──────────────────────────────────────────
+            # Uncomment via 'make instrument' to enable Continuous Profiler for
+            # this service — correlate CPU flame graphs with slow traces.
+            # Single Step Instrumentation already injects ddtrace for Python
+            # APM; ddtrace's profiler is enabled by this plain env var, no
+            # code changes needed.
+            # Docs: https://docs.datadoghq.com/profiler/
+            #
+            # - name: DD_PROFILING_ENABLED
+            #   value: "true"
+            # ─────────────────────────────────────────────────────────────────
+          # ── Health checks ──────────────────────────────────────────────────
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

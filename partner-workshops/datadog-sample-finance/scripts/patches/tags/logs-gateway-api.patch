@@ -1,0 +1,26 @@
+# NOTE: this patch's leading context (the SSO block's closing '# ────...'
+# separator line) only exists while 'make instrument' has NOT yet been run --
+# scripts/patches/instrument-sso/sso-*.patch replaces that whole 8-line
+# commented banner with 2 active lines and drops the separator. Run
+# 'make tags' before 'make instrument' (the order the Quick Start section
+# already documents) for this hunk to apply; running 'make instrument' first
+# makes this specific patch a silent no-op, same class of ordering
+# requirement already documented for notification-service/Go and
+# transaction-service/Node's log-injection patches.
+--- a/deploy/kubernetes/base/services/gateway-api.yaml
++++ b/deploy/kubernetes/base/services/gateway-api.yaml
+@@ -61,12 +61,5 @@
+         # ─────────────────────────────────────────────────────────────────
+-        # ── DATADOG LOG COLLECTION (autodiscovery annotation) ────────────
+-        # Uncomment via 'make tags' to tell the Agent which log source and
+-        # service to tag this pod's stdout/stderr logs with — required for
+-        # correct parsing/faceting in Log Management.
+-        # Docs: https://docs.datadoghq.com/containers/kubernetes/log/
+-        #
+-        # ad.datadoghq.com/gateway-api.logs: '[{"source":"python","service":"gateway-api"}]'
+-        # ─────────────────────────────────────────────────────────────────
++        ad.datadoghq.com/gateway-api.logs: '[{"source":"python","service":"gateway-api"}]'
+       labels:
+         app: gateway-api
+         component: service
+

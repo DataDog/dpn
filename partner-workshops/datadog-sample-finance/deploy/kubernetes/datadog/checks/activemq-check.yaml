@@ -1,0 +1,126 @@
+# ── DATADOG ACTIVEMQ AGENT CHECK ConfigMap ────────────────────────────────────
+# This ConfigMap is mounted into the Datadog Agent DaemonSet at:
+#   /etc/datadog-agent/conf.d/activemq.d/conf.yaml
+#
+# Mount it via the DatadogAgent CRD override or Helm values:
+#
+#   agents:
+#     volumes:
+#       - name: activemq-check-config
+#         configMap:
+#           name: datadog-activemq-check
+#     volumeMounts:
+#       - name: activemq-check-config
+#         mountPath: /etc/datadog-agent/conf.d/activemq.d/conf.yaml
+#         subPath: conf.yaml
+#
+# Prerequisites:
+#   - JMX port (1099) must be exposed on the ActiveMQ Artemis pod/service.
+#   - A dedicated 'datadog' JMX user should be configured in ActiveMQ.
+#
+# Finance use case: monitor queue depth and consumer count for
+#   fraud.score.queue and alert.queue — trigger alerts on consumer lag.
+#
+# Docs: https://docs.datadoghq.com/integrations/activemq/
+# Docs: https://docs.datadoghq.com/data_streams/   (complement with DSM)
+# ─────────────────────────────────────────────────────────────────────────────
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: datadog-activemq-check
+  namespace: datadog
+  labels:
+    app.kubernetes.io/name: datadog-activemq-check
+    app.kubernetes.io/part-of: finance-sample-app
+data:
+  conf.yaml: |
+    # ── DATADOG ACTIVEMQ CHECK CONFIG ─────────────────────────────
+    # ActiveMQ broker metrics collection ── enabled.
+    # Collects: queue depth, consumer count, producer count, memory usage,
+    #           enqueue/dequeue rates ── all tagged by queue name.
+    # Docs: https://docs.datadoghq.com/integrations/activemq/
+    #
+    # No JMX user/password needed: the broker's JAVA_ARGS (see
+    # deploy/kubernetes/base/infrastructure/activemq.yaml) set
+    # com.sun.management.jmxremote.authenticate=false, i.e. JMX is
+    # unauthenticated on this deployment (fine for a local demo broker with
+    # no external exposure ── do not do this on a production/internet-facing
+    # broker).
+
+    init_config:
+      is_jmx: true
+      collect_default_metrics: true
+
+    instances:
+      # Fully-qualified Service DNS name required: the Agent pod runs in the
+      # 'datadog' namespace, so the short name 'activemq-artemis' only
+      # resolves within its own namespace's search domain (same issue fixed
+      # for the postgres check ── see postgres-check.yaml).
+      - host: activemq-artemis.finance.svc.cluster.local
+        port: 1099                    # JMX RMI port ── exposed in activemq.yaml
+
+        # ── Metric collection ────────────────────────────────
+        # Default JMX beans collected automatically (when collect_default_metrics: true):
+        #   - activemq.queue.size           (queue depth)
+        #   - activemq.queue.consumer_count
+        #   - activemq.queue.producer_count
+        #   - activemq.queue.enqueue_count
+        #   - activemq.queue.dequeue_count
+        #   - activemq.broker.memory_percent_usage
+        #   - activemq.broker.store_percent_usage
+
+        # ── Custom JMX beans for Artemis-specific metrics ────────────
+        # Artemis exposes queues under a different JMX domain than Classic ActiveMQ.
+        # Real ObjectName on this broker (verified via 'agent jmx list everything'):
+        #   org.apache.activemq.artemis:broker="0.0.0.0",component=addresses,
+        #   address="fraud.score.queue",subcomponent=queues,
+        #   routing-type="anycast",queue="fraud.score.queue"
+        # Scoped to the 3 Finance-relevant queues rather than every
+        # broker-internal queue (DLQ, ExpiryQueue, sys.mqtt.sessions, ...).
+        #
+        # NOTE on bean_regex: this MUST be a single-line regex with no extra
+        # whitespace. A YAML folded scalar (">") collapses newlines into
+        # spaces, which previously injected literal spaces after commas
+        # (e.g. "addresses, address=") that do not exist in the real Artemis
+        # ObjectName ("addresses,address=", no space) -- causing every bean to
+        # silently fail to match (0 metrics collected, no error surfaced).
+        #
+        # KNOWN QUIRK -- auto-tag values get a leading underscore:
+        # This JMXFetch version (0.52.0, bundled with agent 7.80.2-jmx) auto-
+        # tags metrics using the wildcarded ObjectName properties (queue,
+        # address, broker, routing-type -- all QUOTED in Artemis's canonical
+        # ObjectName). The resulting tag VALUES come through with a stray
+        # leading underscore, e.g. queue:_fraud.score.queue instead of
+        # queue:fraud.score.queue (confirmed reproducible with both bean_regex
+        # and structured domain/component/subcomponent/routing-type
+        # filtering -- it's a property-value-quoting artifact, not a
+        # bean_regex-specific bug). Unquoted properties (component,
+        # subcomponent) are unaffected. Dashboards/monitors/SLOs in
+        # deploy/terraform/datadog/main.tf reference the tag as it actually
+        # appears: queue:_<name> (see the 'queue' tag, not 'queue_name').
+        conf:
+          - include:
+              attribute:
+                MessageCount:
+                  alias: activemq.artemis.queue.message_count
+                  metric_type: gauge
+                ConsumerCount:
+                  alias: activemq.artemis.queue.consumer_count
+                  metric_type: gauge
+                MessagesAdded:
+                  alias: activemq.artemis.queue.messages_added
+                  metric_type: rate
+                MessagesAcknowledged:
+                  alias: activemq.artemis.queue.messages_acknowledged
+                  metric_type: rate
+              bean_regex: org.apache.activemq.artemis:broker=".*",component=addresses,address="(fraud\.score\.queue|alert\.queue|payment\.events)",subcomponent=queues,routing-type="anycast",queue=".*"
+
+        # ── Tagging ───────────────────────────────────────────────
+        # ⚠ HIGH CARDINALITY WARNING: do not tag with message IDs or content.
+        # Tag with queue name only (bounded set).
+        tags:
+          - "broker:activemq-artemis"
+          - "env:staging"
+          - "service:activemq-artemis"
+    # ────────────────────────────────────────────────────────────────────────

@@ -1,0 +1,164 @@
+# =============================================================================
+# Finance Sample App — Keycloak (Identity Provider)
+# =============================================================================
+# Keycloak is used by gateway-api to validate bearer tokens (OIDC / JWT).
+# The `finance` realm and the `finance-gateway` OIDC client are imported
+# automatically at startup via the realm-import volume.
+#
+# IMPORTANT — Create the realm ConfigMap before applying this file:
+#
+#   kubectl create configmap keycloak-realm-import \
+#     --from-file=deploy/kubernetes/base/keycloak-realm/ \
+#     -n finance
+#
+# The ConfigMap mounts all JSON files from that directory into
+# /opt/keycloak/data/import so Keycloak imports them on first boot.
+#
+# `start-dev` mode is used here for simplicity. For production, switch to
+# `start` with a proper hostname, TLS, and an external PostgreSQL backend:
+#   https://www.keycloak.org/server/configuration
+# =============================================================================
+
+# ── Service ───────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: finance
+  labels:
+    app: keycloak
+    component: infrastructure
+spec:
+  # ClusterIP — Keycloak is only reachable within the cluster.
+  # The browser accesses Keycloak through the nginx HTTPS reverse proxy
+  # at https://localhost:30443, which terminates TLS and forwards to
+  # keycloak:8080 internally. This makes KC_PROXY=edge work correctly
+  # (Secure cookies are sent over HTTPS from the browser).
+  type: ClusterIP
+  selector:
+    app: keycloak
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+
+---
+# ── Deployment ────────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: finance
+  labels:
+    app: keycloak
+    component: infrastructure
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+        component: infrastructure
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:26.0
+          imagePullPolicy: IfNotPresent
+
+          # In Kubernetes, `args` appends to the Keycloak ENTRYPOINT (/opt/keycloak/bin/kc.sh).
+          # Using `command` would try to execute 'start-dev' as a standalone binary, which fails.
+          # start-dev enables H2 in-process DB and disables TLS — dev/local only.
+          # --import-realm causes Keycloak to scan /opt/keycloak/data/import on startup.
+          args:
+            - start-dev
+            - --import-realm
+
+          ports:
+            - name: http
+              containerPort: 8080
+
+          env:
+            - name: KEYCLOAK_ADMIN
+              value: "admin"
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: keycloak-admin-password
+            - name: KC_HTTP_ENABLED
+              value: "true"
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
+            - name: KC_HOSTNAME_STRICT_HTTPS
+              value: "false"
+            - name: KC_LOG_LEVEL
+              value: "INFO"
+            # KC_PROXY=edge: nginx terminates TLS and forwards HTTP to Keycloak.
+            # Keycloak trusts X-Forwarded-* headers from nginx and builds
+            # correct issuer URLs. Secure cookies work because the browser
+            # communicates with nginx over HTTPS (port 30443).
+            - name: KC_PROXY
+              value: "edge"
+            - name: KC_PROXY_HEADERS
+              value: "xforwarded"
+            # Public URL read from app-config ConfigMap:
+            #   Local: https://localhost:30443 (nginx HTTPS NodePort)
+            #   EKS:   patched to the HTTPS NLB/frontend hostname
+            - name: KC_HOSTNAME_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: KEYCLOAK_PUBLIC_URL
+            - name: KC_HOSTNAME_ADMIN_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: KEYCLOAK_PUBLIC_URL
+
+          # ── Health checks ──────────────────────────────────────────────
+          # TCP probes are used because:
+          #   1. Keycloak 26 in dev mode puts /health/* on the management port
+          #      (9000), NOT the main HTTP port (8080).
+          #   2. This matches the Docker Compose health check strategy.
+          # Realm import adds ~15-30 s to startup, so initialDelaySeconds is generous.
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 5
+
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 10
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+
+          volumeMounts:
+            # Realm JSON files are read from this directory on first boot.
+            # The ConfigMap must be created with:
+            #   kubectl create configmap keycloak-realm-import \
+            #     --from-file=deploy/kubernetes/base/keycloak-realm/ \
+            #     -n finance
+            - name: realm-import
+              mountPath: /opt/keycloak/data/import
+              readOnly: true
+
+      volumes:
+        - name: realm-import
+          configMap:
+            name: keycloak-realm-import

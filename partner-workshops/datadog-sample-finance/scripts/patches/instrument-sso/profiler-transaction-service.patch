@@ -1,0 +1,13 @@
+--- a/deploy/kubernetes/base/services/transaction-service.yaml
++++ b/deploy/kubernetes/base/services/transaction-service.yaml
+@@ -199,8 +199,8 @@
+             # code changes needed.
+             # Docs: https://docs.datadoghq.com/profiler/
+             #
+-            # - name: DD_PROFILING_ENABLED
+-            #   value: "true"
++            - name: DD_PROFILING_ENABLED
++              value: "true"
+             # ─────────────────────────────────────────────────────────────────
+           # ── Health checks ──────────────────────────────────────────────────
+           livenessProbe:

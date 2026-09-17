@@ -1,0 +1,26 @@
+apiVersion: v3
+kind: service
+metadata:
+  name: account-service
+  displayName: Account Service
+  tags:
+    - env:staging
+    - language:java
+    - team:finance-platform
+  links:
+    - name: Source
+      type: repo
+      provider: github
+      url: https://github.com/your-org/finance-sample-app/tree/main/account-service
+  contacts:
+    - name: Finance Platform
+      type: email
+      contact: finance-platform@example.com
+spec:
+  lifecycle: staging
+  tier: High
+  type: service
+  languages:
+    - java
+  description: |
+    Account CRUD, balance enquiry, JMS producer. Persists to PostgreSQL.

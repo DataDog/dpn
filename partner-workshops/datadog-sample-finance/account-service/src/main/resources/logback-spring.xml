@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Structured JSON logging via logstash-logback-encoder.
+  Every log line is a valid JSON object parseable by the Datadog log pipeline.
+
+  Step 4 — Trace correlation:
+    When dd-java-agent is active (-javaagent:/dd-java-agent.jar) with DD_LOGS_INJECTION=true,
+    the agent automatically injects dd.trace_id and dd.span_id into the MDC.
+    These appear as top-level JSON fields in every log line — no code change needed.
+    Datadog's log pipeline links log lines to the parent APM trace automatically.
+    Docs: https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/java/
+
+  Finance log schema fields:
+    - event:       operation name (e.g. account.balance_check)
+    - status:      ok | error | not_found
+    - account_tier: retail | premium | corporate  (for SLA alerting)
+    - currency:    EUR | USD | GBP
+    - dd.trace_id: injected by dd-java-agent (Step 4)
+    - dd.span_id:  injected by dd-java-agent (Step 4)
+    - dd.service:  from DD_SERVICE env var
+    - dd.env:      from DD_ENV env var
+    - dd.version:  from DD_VERSION env var
+-->
+<configuration>
+
+  <springProperty scope="context" name="DD_SERVICE" source="spring.application.name" defaultValue="account-service"/>
+
+  <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <!--
+      LoggingEventCompositeJsonEncoder is used instead of LogstashEncoder
+      because logstash-logback-encoder 7.x removed <providers> support from
+      LogstashEncoder. CompositeJsonEncoder accepts <providers> and lets us
+      control exactly which fields appear in every log line.
+    -->
+    <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+      <providers>
+        <timestamp/>
+        <logLevel/>
+        <loggerName>
+          <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
+        </loggerName>
+        <message/>
+        <mdc/>           <!-- Picks up dd.trace_id, dd.span_id injected by dd-java-agent -->
+        <arguments/>
+        <stackTrace/>
+        <!-- Inject service name as a static field on every log line -->
+        <pattern>
+          <pattern>{"service":"${DD_SERVICE}"}</pattern>
+        </pattern>
+      </providers>
+    </encoder>
+  </appender>
+
+  <root level="INFO">
+    <appender-ref ref="JSON_CONSOLE"/>
+  </root>
+
+  <!-- Reduce noise from Spring internals -->
+  <logger name="org.springframework" level="WARN"/>
+  <logger name="org.apache.activemq" level="WARN"/>
+  <logger name="org.hibernate" level="WARN"/>
+
+</configuration>

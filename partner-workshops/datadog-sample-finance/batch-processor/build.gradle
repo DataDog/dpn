@@ -1,0 +1,73 @@
+plugins {
+    id 'org.springframework.boot' version '3.2.5'
+    id 'io.spring.dependency-management' version '1.1.5'
+    id 'java'
+}
+
+group = 'com.example.finance'
+version = System.getenv('DD_VERSION') ?: '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // ── CORE SPRING BOOT ──────────────────────────────────────────────────────
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // spring-boot-starter-web: exposes an on-demand job trigger endpoint
+    // (BatchJobController) and makes the actuator endpoints above reachable
+    // over HTTP. Without a web starter, batch-processor never runs any job
+    // outside of an (also disabled by default) nightly/monthly cron, meaning
+    // it produces zero APM spans and no Data Jobs Monitoring history.
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // ── DATABASE ──────────────────────────────────────────────────────────────
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // ── STRUCTURED LOGGING ────────────────────────────────────────────────────
+    // logstash-logback-encoder: emits one JSON object per log line.
+    // Required for Datadog Log Management to parse log entries without a custom
+    // pipeline processor. Automatically includes MDC fields (dd.trace_id,
+    // dd.span_id) injected by dd-java-agent when logs.injection is enabled.
+    // Docs: https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/java/
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
+    // ── TEST ──────────────────────────────────────────────────────────────────
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.batch:spring-batch-test'
+    testRuntimeOnly 'com.h2database:h2'   // In-memory DB for unit tests (no Postgres needed)
+
+    // ── DATADOG INSTRUMENTATION ───────────────────────────────────────────────────
+    // Uncomment the block below to enable manual span creation and custom tags
+    // from application code (DatadogJobListener).
+    //
+    // NOTE: use implementation, NOT compileOnly. DatadogJobListener creates
+    // and activates a real span at runtime (not just compile-time
+    // annotations), so the opentracing classes must be present in the
+    // runtime classpath whether or not the dd-java-agent is attached —
+    // the agent's bridge classes live in its own isolated classloader and
+    // are NOT exposed to the application classloader that Spring uses for
+    // bean introspection. Using compileOnly here causes a NoClassDefFoundError
+    // at startup (DatadogJobListener bean creation fails) regardless of
+    // whether the agent is attached. When the agent IS attached,
+    // GlobalTracer.get() returns its bridge Tracer; when it is NOT attached,
+    // opentracing-util's built-in NoopTracerFactory is used instead, so span
+    // calls safely no-op rather than crashing the app.
+    // Docs: https://docs.datadoghq.com/tracing/trace_collection/custom_instrumentation/java/
+    //
+    implementation 'io.opentracing:opentracing-api:0.33.0'
+    implementation 'io.opentracing:opentracing-util:0.33.0'
+    // ───────────────────────────────────────────────────
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

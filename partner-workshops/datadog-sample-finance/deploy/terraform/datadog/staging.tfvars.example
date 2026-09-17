@@ -1,0 +1,21 @@
+# =============================================================================
+# Finance Sample App — Datadog Terraform staging variables (non-sensitive)
+# =============================================================================
+# Copy to staging.tfvars and fill in the values.
+# DO NOT put API keys or App keys here — use TF_VAR_* env vars instead.
+#
+# Usage:
+#   export TF_VAR_datadog_api_key="$(aws secretsmanager get-secret-value \
+#     --secret-id finance-app/staging/dd-api-key \
+#     --query SecretString --output text --profile partner)"
+#   export TF_VAR_datadog_app_key="$(aws secretsmanager get-secret-value \
+#     --secret-id finance-app/staging/dd-app-key \
+#     --query SecretString --output text --profile partner)"
+#   terraform plan  -var-file="staging.tfvars"
+#   terraform apply -var-file="staging.tfvars"
+# =============================================================================
+
+datadog_site       = "datadoghq.com"   # US1: datadoghq.com | EU: datadoghq.eu
+environment        = "staging"
+cluster_name       = "finance-app"
+log_retention_days = 15                # Valid values: 3 7 15 30 45 60 90 180 360

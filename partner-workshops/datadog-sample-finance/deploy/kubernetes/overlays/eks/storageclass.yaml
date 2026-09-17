@@ -1,0 +1,39 @@
+# =============================================================================
+# StorageClass — gp3 (default)
+# =============================================================================
+# Creates a gp3 EBS storage class backed by the AWS EBS CSI driver and marks
+# it as the cluster default so PVCs with no storageClassName are satisfied.
+#
+# gp3 vs gp2:
+#   - gp3 is the current-generation EBS volume type (2026)
+#   - 20% cheaper than gp2 at the same size
+#   - Baseline 3000 IOPS / 125 MB/s throughput (vs gp2's burst model)
+#   - Encryption enabled by default — required for finance workloads
+#
+# Provisioner: ebs.csi.aws.com (AWS EBS CSI driver — deployed as a cluster addon)
+# WaitForFirstConsumer: volume is created in the same AZ as the pod that claims
+#   it, avoiding cross-AZ latency and data transfer costs.
+#
+# Note: the legacy kubernetes.io/aws-ebs provisioner (gp2 storage class) is
+# still present on EKS clusters but is not marked default and uses an older
+# in-tree driver. Do not use it for new workloads.
+#
+# EKS ONLY — this StorageClass uses the ebs.csi.aws.com provisioner which is
+# only present on EKS clusters with the EBS CSI driver addon installed.
+# Do NOT apply this on local clusters (Docker Desktop, kind, minikube) — it will break
+# the default StorageClass and cause PVCs to remain stuck in Pending state.
+# Use 'make deploy-k8s-eks' instead of 'make deploy-k8s' when targeting EKS.
+# =============================================================================
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gp3
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: ebs.csi.aws.com
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+parameters:
+  type: gp3
+  encrypted: "true"

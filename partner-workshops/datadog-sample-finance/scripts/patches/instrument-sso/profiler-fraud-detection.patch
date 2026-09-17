@@ -1,0 +1,13 @@
+--- a/deploy/kubernetes/base/services/fraud-detection.yaml
++++ b/deploy/kubernetes/base/services/fraud-detection.yaml
+@@ -153,8 +153,8 @@
+             # code changes needed.
+             # Docs: https://docs.datadoghq.com/profiler/
+             #
+-            # - name: DD_PROFILING_ENABLED
+-            #   value: "true"
++            - name: DD_PROFILING_ENABLED
++              value: "true"
+             # ─────────────────────────────────────────────────────────────────
+           livenessProbe:
+             exec:

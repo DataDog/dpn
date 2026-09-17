@@ -1,0 +1,24 @@
+# gateway-api runtime dependencies
+# Install: pip install -r requirements.txt
+
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+httpx==0.27.0
+python-json-logger==2.0.7
+pydantic==2.7.1
+
+# ── DATADOG INSTRUMENTATION ──────────────────────────────────────────
+# ddtrace is intentionally NOT a pip dependency of this service. Step 3
+# (APM), Step 6 (span-based custom metrics — no DogStatsD package needed),
+# and Step 7 (Continuous Profiler, bundled in ddtrace) are all provided by
+# Single Step Instrumentation: the Datadog Admission Controller injects
+# the ddtrace library into the pod at startup via 'make instrument' +
+# 'make deploy-k8s-dd', with no image rebuild and no pip install here.
+# Baking ddtrace into this file as well would shadow that injected copy
+# (`import ddtrace` resolves to site-packages before the SSI-mounted
+# volume), defeating the point of using SSI for this service.
+# Docs: https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/
+# ─────────────────────────────────────────────────────────────────────
+
+python-jose[cryptography]==3.3.0  # JWT validation against Keycloak JWKS (RS256)
+python-multipart==0.0.9           # required by FastAPI for form data parsing

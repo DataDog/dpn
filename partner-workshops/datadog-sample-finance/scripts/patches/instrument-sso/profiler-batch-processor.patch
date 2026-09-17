@@ -1,0 +1,13 @@
+--- a/deploy/kubernetes/base/services/batch-processor.yaml
++++ b/deploy/kubernetes/base/services/batch-processor.yaml
+@@ -187,8 +187,8 @@
+             # env var, no JVM flag / Dockerfile changes needed.
+             # Docs: https://docs.datadoghq.com/profiler/
+             #
+-            # - name: DD_PROFILING_ENABLED
+-            #   value: "true"
++            - name: DD_PROFILING_ENABLED
++              value: "true"
+             # ─────────────────────────────────────────────────────────────────
+           # HTTP probes against Spring Boot Actuator — batch-processor now
+           # runs an embedded web server (spring-boot-starter-web) to expose

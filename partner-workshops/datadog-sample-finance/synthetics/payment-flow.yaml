@@ -1,0 +1,188 @@
+# ── DATADOG SYNTHETIC MULTI-STEP API TEST — Payment Flow ──────────────
+# Exercises the happy-path payment flow end-to-end:
+#   Step 1: POST /v1/payments → assert 200, extract payment_id
+#   Step 2: GET  /v1/payments/{payment_id} → assert status field present
+#
+# SYNTHETIC → APM TRACE CORRELATION
+#   Datadog injects x-datadog-trace-id, x-datadog-parent-id, and
+#   x-datadog-origin: synthetics headers into every HTTP step automatically
+#   when the test is linked to an APM service (see apm_service_name below).
+#   The Synthetic runner generates a single root trace ID for the entire
+#   multi-step test, meaning both steps appear as child spans under one
+#   root Synthetic trace in APM > Traces.
+#   In the test result, click "View Trace" to jump directly to the APM
+#   waterfall covering the full payment → fraud-detection → notification
+#   service chain triggered by this test run.
+#   Docs: https://docs.datadoghq.com/synthetics/apm/
+#
+# Import options:
+#   1. Datadog UI  → UX Monitoring > Synthetic Tests > New Test > Import
+#   2. Terraform   → datadog_synthetics_test resource (see synthetics/README.md)
+#   3. datadog-ci  → datadog-ci synthetics upload --files synthetics/*.yaml
+#
+# Docs: https://docs.datadoghq.com/synthetics/api_tests/multistep/
+# ─────────────────────────────────────────────────────────────────────
+
+name: "Finance Payment Flow — Happy Path"
+type: api
+subtype: multi  # multi-step API test
+
+config:
+  # ── GLOBAL VARIABLES ──────────────────────────────────────────────
+  # Variables defined here are available in all steps as {{ VAR_NAME }}.
+  # Synthetic global variables (set in UI under UX Monitoring > Settings)
+  # can hold secrets like API keys — they are never exposed in test results.
+  configVariables:
+    - name: GATEWAY_BASE_URL
+      type: text
+      value: "http://gateway-api:8080"  # override per environment in CI
+
+    - name: TEST_ACCOUNT_ID
+      type: text
+      value: "ACC-SYNTHETIC-001"  # dedicated test account — never a real account
+
+    - name: TEST_AMOUNT
+      type: text
+      value: "1.00"  # minimum meaningful amount; avoids triggering fraud scoring
+
+  steps:
+    # ── STEP 1: Initiate Payment ────────────────────────────────────
+    - name: "POST /v1/payments — Initiate payment"
+      type: assertionsStep  # evaluate assertions before moving to next step
+      request:
+        method: POST
+        url: "{{ GATEWAY_BASE_URL }}/v1/payments"
+        timeout: 15  # payment initiation may involve fraud scoring — allow headroom
+
+        headers:
+          Content-Type: "application/json"
+          Accept: "application/json"
+          # x-datadog-trace-id and x-datadog-parent-id are injected automatically
+          # by the Synthetic runner — do not set them manually here.
+
+        body: |
+          {
+            "account_id":       "{{ TEST_ACCOUNT_ID }}",
+            "amount":           {{ TEST_AMOUNT }},
+            "currency":         "EUR",
+            "transaction_type": "payment"
+          }
+
+      assertions:
+        # The gateway-api must return HTTP 200 for a valid payment request.
+        - type: statusCode
+          operator: is
+          target: 200
+
+        # Response must be JSON.
+        - type: header
+          property: content-type
+          operator: contains
+          target: "application/json"
+
+        # The response body must contain a payment_id field.
+        - type: body
+          operator: validatesJSONPath
+          targetValue:
+            operator: isNotEmpty
+            jsonPath: "$.payment_id"
+
+        # The payment must start in a non-failed state.
+        - type: body
+          operator: validatesJSONPath
+          targetValue:
+            operator: doesNotContain
+            jsonPath: "$.status"
+            targetValue: "failed"
+
+        # Step 1 must complete within 5 s (fraud scoring included).
+        - type: responseTime
+          operator: lessThan
+          target: 5000  # milliseconds
+
+      # ── VARIABLE EXTRACTION ──────────────────────────────────────
+      # Extract payment_id from the response body so Step 2 can use it.
+      # The captured value is available as {{ PAYMENT_ID }} in subsequent steps.
+      extractedValues:
+        - name: PAYMENT_ID
+          type: body
+          field: "$.payment_id"  # JSONPath into the response body
+
+    # ── STEP 2: Retrieve Payment Status ─────────────────────────────
+    - name: "GET /v1/payments/{{ PAYMENT_ID }} — Verify payment record"
+      type: assertionsStep
+      request:
+        method: GET
+        url: "{{ GATEWAY_BASE_URL }}/v1/payments/{{ PAYMENT_ID }}"
+        timeout: 10
+
+        headers:
+          Accept: "application/json"
+
+      assertions:
+        # The payment record must be retrievable.
+        - type: statusCode
+          operator: is
+          target: 200
+
+        # The response must include the status field — confirms the payment
+        # was persisted and is readable from the account-service.
+        - type: body
+          operator: validatesJSONPath
+          targetValue:
+            operator: isNotEmpty
+            jsonPath: "$.status"
+
+        # The payment_id in the response must match what was returned in Step 1.
+        - type: body
+          operator: validatesJSONPath
+          targetValue:
+            operator: is
+            jsonPath: "$.payment_id"
+            targetValue: "{{ PAYMENT_ID }}"
+
+        # Retrieval must be fast — no heavy computation involved.
+        - type: responseTime
+          operator: lessThan
+          target: 2000  # milliseconds
+
+locations:
+  - aws:eu-west-1
+  # - aws:us-east-1
+  # - aws:ap-southeast-1
+
+options:
+  tick_every: 300  # Run every 5 minutes (multi-step tests are more resource-intensive)
+  min_failure_duration: 0
+  min_location_failed: 1
+
+  retry:
+    count: 1
+    interval: 1000  # 1 s between retries for transient network issues
+
+  monitor_options:
+    renotify_interval: 60
+    notify_no_data: true
+    no_data_timeframe: 15
+
+  # ── APM SERVICE LINK ────────────────────────────────────────────
+  # Linking this test to a service enables the "View Trace" button in the
+  # test result and makes the Synthetic test appear in the service's
+  # APM > Synthetic Tests panel.
+  # apm_service_name: gateway-api  # must match DD_SERVICE on the gateway
+
+  # ── CI/CD INTEGRATION ──────────────────────────────────────────
+  # Block a deploy if the payment flow is broken:
+  #   datadog-ci synthetics run-tests \
+  #     --public-id <test-public-id> \
+  #     --override startUrl="{{ GATEWAY_BASE_URL }}" \
+  #     --failOnCriticalErrors
+  # Docs: https://docs.datadoghq.com/continuous_testing/cicd_integrations/
+  # ──────────────────────────────────────────────────────────────
+
+tags:
+  - "env:staging"
+  - "service:gateway-api"
+  - "team:finance"
+  - "synthetic_type:journey"
+  - "flow:payment"

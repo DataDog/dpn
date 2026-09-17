@@ -1,0 +1,25 @@
+--- a/fraud-detection/main.py
++++ b/fraud-detection/main.py
+@@ -8,20 +8,11 @@
+ import time
+ 
+ from ddtrace import patch_all
+-# ── Datadog Log Injection (enable via 'make tags') ───────────────
+-# Uncomment to inject dd.trace_id / dd.span_id into every log record via
+-# ddtrace's logging integration — stitches JSON logs to APM traces so
+-# "View in APM" works from Log Management.
+-# Docs: https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/?tab=python
+-#
+-# from ddtrace.contrib.logging import patch as patch_logging
+-# ────────────────────────────────────────────────────
++from ddtrace.contrib.logging import patch as patch_logging
+ from pythonjsonlogger import jsonlogger
+ 
+ patch_all()
+-# ── Datadog Log Injection (enable via 'make tags') ───────────────
+-# patch_logging()
+-# ────────────────────────────────────────────────────
++patch_logging()
+ 
+ import ddtrace.profiling.auto  # noqa: F401  — side-effect import, keep at top
+ import stomp

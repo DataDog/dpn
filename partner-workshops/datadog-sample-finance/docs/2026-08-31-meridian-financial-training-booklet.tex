@@ -1,0 +1,662 @@
+% =====================================================================
+% Meridian Financial — DPN Implementation Workshop Booklet
+% Compile: pdflatex 2026-08-31-meridian-financial-training-booklet.tex (run twice for refs)
+% =====================================================================
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[a4paper, margin=1.8cm, top=2.2cm, bottom=2.2cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multicol}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{hyperref}
+
+% --- Colors ---
+\definecolor{ddpurple}{HTML}{632CA6}
+\definecolor{ddlightpurple}{HTML}{C5B0E8}
+\definecolor{ddpale}{HTML}{F0EBF9}
+\definecolor{ddgreen}{HTML}{00BF9A}
+\definecolor{ddgray}{HTML}{6B6B76}
+\definecolor{dddark}{HTML}{1E1E2D}
+\definecolor{ddorange}{HTML}{F26522}
+\definecolor{codebg}{HTML}{F4F4F4}
+
+% --- Hyperref ---
+\hypersetup{
+  colorlinks=true,
+  linkcolor=ddpurple,
+  urlcolor=ddpurple,
+  pdftitle={Meridian Financial - DPN Implementation Workshop Booklet},
+  pdfauthor={Datadog Partner Solutions}
+}
+
+% --- Section Styling ---
+\renewcommand{\section}[1]{%
+  \refstepcounter{section}%
+  \addcontentsline{toc}{section}{\protect\numberline{\thesection}#1}%
+  \vspace{10pt}%
+  \noindent\colorbox{ddpurple}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \vspace{3pt}\hspace{4pt}{\large\bfseries\color{white}#1}\vspace{3pt}%
+    }%
+  }\vspace{6pt}\par%
+}
+
+\renewcommand{\subsection}[1]{%
+  \vspace{8pt}%
+  {\normalsize\bfseries\color{ddpurple}#1}\par\vspace{2pt}%
+}
+
+% --- Header / Footer ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{ddgray}\textbf{Meridian Financial -- DPN Implementation Workshop}}
+\fancyhead[R]{\small\color{ddgray}August 2026}
+\fancyfoot[C]{\small\color{ddgray}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Box helpers ---
+\newcommand{\objectivebox}[1]{%
+  \noindent\colorbox{ddpale}{%
+    \begin{minipage}{\dimexpr\linewidth-2\fboxsep\relax}%
+      \vspace{4pt}%
+      {\small\bfseries\color{ddpurple}Learning Objectives}\par\vspace{2pt}%
+      #1%
+      \vspace{2pt}%
+    \end{minipage}%
+  }\par\vspace{6pt}%
+}
+
+\newcommand{\exercisebox}[1]{%
+  \noindent\fcolorbox{ddgreen}{white}{%
+    \begin{minipage}{\dimexpr\linewidth-2\fboxrule-2\fboxsep\relax}%
+      \vspace{4pt}%
+      {\small\bfseries\color{ddgreen}Hands-On Exercise}\par\vspace{2pt}%
+      #1%
+      \vspace{2pt}%
+    \end{minipage}%
+  }\par\vspace{6pt}%
+}
+
+\newcommand{\tipbox}[1]{%
+  \noindent\fcolorbox{ddorange}{white}{%
+    \begin{minipage}{\dimexpr\linewidth-2\fboxrule-2\fboxsep\relax}%
+      \vspace{3pt}%
+      #1%
+      \vspace{3pt}%
+    \end{minipage}%
+  }\par\vspace{6pt}%
+}
+
+\newcommand{\resourcebox}[1]{%
+  \noindent\fcolorbox{ddgray}{codebg}{%
+    \begin{minipage}{\dimexpr\linewidth-2\fboxrule-2\fboxsep\relax}%
+      \vspace{4pt}%
+      {\small\bfseries\color{ddgray}Datadog Documentation}\par\vspace{2pt}%
+      #1%
+      \vspace{2pt}%
+    \end{minipage}%
+  }\par\vspace{6pt}%
+}
+
+% --- Code Listings ---
+\lstdefinestyle{ddcode}{
+  backgroundcolor=\color{codebg},
+  basicstyle=\small\ttfamily,
+  breaklines=true,
+  breakatwhitespace=true,
+  frame=single,
+  framesep=4pt,
+  xleftmargin=4pt,
+  xrightmargin=4pt,
+  showstringspaces=false,
+  tabsize=2,
+  aboveskip=4pt,
+  belowskip=4pt,
+}
+\lstset{style=ddcode}
+
+% --- Table helpers ---
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+\setlength{\parindent}{0pt}
+
+% =====================================================================
+\begin{document}
+
+% =====================================================================
+% TITLE PAGE
+% =====================================================================
+\thispagestyle{empty}
+\vspace*{2cm}
+\begin{center}
+
+{\fontsize{28}{34}\selectfont\bfseries\color{ddpurple}
+DPN Implementation\\[6pt]
+Workshop -- Meridian Financial}\\[1.2cm]
+
+{\large\color{dddark} Partner Training -- Attendee Booklet}\\[0.4cm]
+{\normalsize\color{ddgray} August 2026}\\[3cm]
+
+\noindent\colorbox{ddpurple}{%
+  \begin{minipage}{12cm}%
+    \centering\vspace{10pt}
+    {\large\bfseries\color{white}9 Modules $\cdot$ make-Pipeline Hands-On Lab}\\[6pt]
+    {\normalsize\color{ddlightpurple}Organized around the real \texttt{make} targets in
+    \texttt{sample/impl}, not product pillars}\\[10pt]
+  \end{minipage}%
+}
+
+\end{center}
+\vspace{2cm}
+
+\textbf{\color{ddpurple}What changed from the previous booklet:} this curriculum replaces the
+earlier product-pillar structure (Foundation / Three Pillars / DEM / Observability / Shift
+Left-Right / AI) with modules that map one-to-one onto the actual pipeline stages in the
+Meridian Financial sample app's \texttt{Makefile}: \texttt{make tags} $\rightarrow$
+\texttt{make dbm} $\rightarrow$ \texttt{make instrument} $\rightarrow$ \texttt{make dem}
+$\rightarrow$ \texttt{make security} $\rightarrow$ \texttt{make tf-apply-dd}, plus a
+fault-injection diagnosis lab and a dedicated AWS/EKS module. There is no DogStatsD anywhere in
+this curriculum -- every custom metric in the sample app is span-based.
+
+\newpage
+
+% =====================================================================
+{\Large\bfseries\color{ddpurple}Contents}\par\vspace{8pt}
+\makeatletter\@starttoc{toc}\makeatother
+\newpage
+
+% =====================================================================
+\section{Module 0 -- Project \& Customer Scoping}
+
+Before any \texttt{make} target runs, a Datadog deployment needs a scope. Meridian Financial is
+a fictional mid-market financial services company -- payments, account management, nightly
+reconciliation, async fraud detection -- used throughout this curriculum.
+
+\objectivebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Read a customer's architecture for monitoring blind spots before proposing anything
+\item Map each architecture component to the Datadog capability that closes its gap
+\item Translate customer pain points into business impact and priority
+\item Produce a phased, justified proposal -- not a feature checklist
+\end{itemize}}
+
+\textbf{Duration:} 45--60 minutes \quad \textbf{Prerequisites:} none.
+
+\subsection{The four-step scoping method}
+\begin{enumerate}\setlength\itemsep{0pt}
+\item \textbf{Read the Architecture} -- critical path, infrastructure beyond the app layer,
+  monitoring gaps, ownership.
+\item \textbf{Build the Initial Proposal} -- map each component to the Datadog capability that
+  closes its blind spot.
+\item \textbf{Listen to Customer Requirements} -- map real pain points to business impact.
+\item \textbf{Adjust and Prioritize} -- phase the proposal: revenue impact first, compliance/risk
+  second, operational efficiency third.
+\end{enumerate}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{L{4.5cm}L{4.5cm}L{5cm}}
+\toprule
+\textbf{Architecture component} & \textbf{Blind spot} & \textbf{Datadog capability}\\
+\midrule
+gateway-api / account-service / transaction-service & No distributed trace across services & APM, Unified Service Tagging\\
+PostgreSQL (postgres-ledger) & Query performance invisible without DBA access & Database Monitoring\\
+ActiveMQ Artemis queues & Can't tell producer overload from consumer lag & Data Streams Monitoring\\
+batch-processor (Spring Batch) & A job can report success while doing less work & Data Jobs Monitoring\\
+Finance dashboard (frontend) & No visibility into real user sessions & Real User Monitoring\\
+All 6 services & CVEs, injection attacks, container drift & ASM, CWS, CSPM\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\exercisebox{Fill in the architecture-to-capability table with one Meridian-specific
+justification per row. Pick two customer pain points and assign each a priority phase with one
+success criterion. \textit{Expected outcome:} a one-page phased proposal grounded in the real
+architecture, mapping onto Modules 1--8.}
+
+\resourcebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Getting Started with Datadog: \url{https://docs.datadoghq.com/getting_started/}
+\item Getting Started with Tagging: \url{https://docs.datadoghq.com/getting_started/tagging/}
+\end{itemize}}
+
+\newpage
+% =====================================================================
+\section{Module 1 -- Foundation \& Deploy}
+
+Org setup is general and applies to any customer; deploying Meridian Financial ``cold'' -- with
+every Datadog signal off -- is the starting point every later module instruments from.
+
+\objectivebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Configure a new Datadog org: authentication, users, teams, API/App keys
+\item Understand when to use single vs. multi-org architecture
+\item Deploy the app with zero instrumentation active and confirm it runs cleanly
+\item Install the Datadog Agent without enabling any instrumentation layer yet
+\end{itemize}}
+
+\textbf{Duration:} 1--1.5 hours \quad \textbf{Prerequisites:} Datadog sandbox org (Admin), a
+local cluster or AWS account, \texttt{kubectl}/\texttt{helm}/\texttt{terraform}.
+
+\subsection{Organization setup}
+\begin{center}
+\begin{tabularx}{\linewidth}{L{4cm}L{5cm}L{5cm}}
+\toprule
+\textbf{Key type} & \textbf{Purpose} & \textbf{Who holds it}\\
+\midrule
+API key & Authenticates data sent to Datadog (Agent, Terraform) & The org -- secrets manager\\
+App key & Authenticates API calls on a user's behalf & Each individual user\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\tipbox{\textbf{Get the App Key \emph{value}}, not the Key ID -- the list view shows the Key ID
+by default. Using the Key ID causes \texttt{401 Unauthorized} on every \texttt{terraform apply}.}
+
+\subsection{Deploy Meridian Financial cold}
+\begin{lstlisting}
+make build            # build all 6 service images + traffic-generator
+make deploy-k8s       # deploy the app into the finance namespace
+make deploy-k8s-dd    # install Operator, create secret, deploy the Agent
+\end{lstlisting}
+
+Confirm: \texttt{kubectl get pods -n finance} (12 Running), log in to the dashboard at
+\texttt{http://localhost:30080} as \texttt{carol.admin} / \texttt{Finance@2025!}. At this point:
+no traces, no DBM, no RUM -- the deliberate starting state.
+
+\exercisebox{Complete the org setup decisions for your sandbox. Deploy the app and Agent cold.
+Confirm APM $>$ Services shows nothing yet (expected). \textit{Expected outcome:} a running
+baseline deployment with a documented org configuration.}
+
+\resourcebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Managing Multiple Organizations: \url{https://docs.datadoghq.com/account_management/multi_organization/}
+\item SAML SSO: \url{https://docs.datadoghq.com/account_management/saml/}
+\item Teams: \url{https://docs.datadoghq.com/account_management/teams/}
+\item API \& Application Keys: \url{https://docs.datadoghq.com/account_management/api-app-keys/}
+\end{itemize}}
+
+\newpage
+% =====================================================================
+\section{Module 2 -- Unified Service Tagging (\texttt{make tags})}
+
+\objectivebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Design a tag taxonomy grounded in real business services
+\item Apply UST + log injection to all six services and verify correlation end-to-end
+\item Recognize each language's log-injection mechanism -- Python, Node, Java, Go all differ
+\end{itemize}}
+
+\textbf{Duration:} 45--60 minutes \quad \textbf{Prerequisites:} Module 1 complete.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{L{3cm}L{3cm}L{8cm}}
+\toprule
+\textbf{Language} & \textbf{Service(s)} & \textbf{Log-injection mechanism}\\
+\midrule
+Python & gateway-api, fraud-detection & \texttt{ddtrace.contrib.logging.patch} + \texttt{patch\_logging()}\\
+Node.js & transaction-service & \texttt{logInjection: true} in the \texttt{dd-trace} init block\\
+Java & account-service, batch-processor & \texttt{DD\_LOGS\_INJECTION=true} (Logback/Log4j2 MDC hook)\\
+Go & notification-service & Manual \texttt{dd.trace\_id}/\texttt{dd.span\_id} injection -- no automatic MDC hook\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\tipbox{\textbf{Ordering matters for Go.} \texttt{notification-service}'s log injection reads
+the \texttt{alert.send} span's trace/span ID -- a span that only exists once Module 4's
+\texttt{make instrument} has uncommented it. Running \texttt{make tags} alone first leaves an
+undefined \texttt{span} variable and the build fails.}
+
+\begin{lstlisting}
+make tags && make build && make deploy-k8s   # apply UST + log injection, rebuild, redeploy
+make untag && make build && make deploy-k8s  # reverse
+\end{lstlisting}
+
+\textbf{Validate:} any trace/log carries \texttt{env:staging service:<name> version:latest}. In
+Log Explorer, a \textbf{View Trace} button appears on any log once \texttt{dd.trace\_id} is
+present.
+
+\exercisebox{Apply UST + log injection. Confirm env vars are set on each pod. Prove the
+log$\rightarrow$trace jump works for at least one service, then reverse it.}
+
+\resourcebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Unified Service Tagging: \url{https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/}
+\item Log-Trace Correlation: \url{https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/}
+\item Tag Policies: \url{https://docs.datadoghq.com/monitors/settings/}
+\end{itemize}}
+
+\newpage
+% =====================================================================
+\section{Module 3 -- Database Monitoring (\texttt{make dbm})}
+
+\objectivebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Understand what DBM collects and why it needs its own database role
+\item Apply \texttt{make dbm} and confirm query metrics and explain plans appear
+\item Understand the APM $\leftrightarrow$ DBM correlation link
+\end{itemize}}
+
+\textbf{Duration:} 30--45 minutes \quad \textbf{Prerequisites:} Module 2 complete.
+
+Two steps: (a) Agent-side config uncomments the \texttt{postgres.d} check + password wiring;
+(b) a dedicated read-only \texttt{datadog} role is created in PostgreSQL, granted
+\texttt{pg\_stat\_statements} and the \texttt{datadog.explain\_statement} function. The
+monitoring role is \textbf{read-only} (\texttt{pg\_monitor} only, never superuser) -- important
+for a ledger database specifically.
+
+\begin{lstlisting}
+make dbm
+kubectl apply -k deploy/kubernetes/datadog/agent
+kubectl rollout restart daemonset/datadog-agent -n datadog
+make undbm     # reverse: drops the role, reverses the Agent-side patch
+\end{lstlisting}
+
+\textbf{Validate:} Databases $\rightarrow$ Query Metrics shows \texttt{postgres-ledger}
+queries; open a sample $\rightarrow$ \textbf{Explain Plan}.
+
+\exercisebox{Enable DBM. Generate payment traffic. Open a \texttt{POST /v1/payments} trace,
+find the \texttt{ledger.velocity\_check} span, click \textbf{View in DBM}, confirm it lands on
+that exact query's explain plan. Reverse it.}
+
+\resourcebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Database Monitoring: \url{https://docs.datadoghq.com/database_monitoring/}
+\item DBM -- PostgreSQL self-hosted setup: \url{https://docs.datadoghq.com/database_monitoring/setup_postgres/selfhosted/}
+\item DBM + APM correlation: \url{https://docs.datadoghq.com/database_monitoring/connect_dbm_and_apm/}
+\end{itemize}}
+
+\newpage
+% =====================================================================
+\section{Module 4 -- APM, Data Streams \& Data Jobs Monitoring (\texttt{make instrument})}
+
+The densest module -- four steps under one sentinel: APM custom spans, Single Step
+Instrumentation gating, Continuous Profiler, and DSM/DJM.
+
+\objectivebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Understand which spans are always-on vs. patch-gated, per service
+\item Enable Single Step Instrumentation and verify tracer injection actually happened
+\item Correlate a Continuous Profiler flame graph with a slow trace
+\item Understand DSM's producer-vs-consumer distinction -- including a real STOMP coverage gap
+\item Understand what Data Jobs Monitoring adds on top of a job's own status field
+\end{itemize}}
+
+\textbf{Duration:} 1.5--2 hours \quad \textbf{Prerequisites:} Modules 2 and 3.
+
+\textbf{No DogStatsD anywhere.} Every \texttt{finance.*} custom metric is span-based
+(\texttt{datadog\_spans\_metric}), generated directly from the spans below.
+
+\subsection{The STOMP / DSM gap}
+
+\tipbox{\texttt{transaction-service} publishes to \texttt{fraud.score.queue} over STOMP via the
+\texttt{stompit} library -- and dd-trace Node.js has \textbf{no automatic STOMP instrumentation
+at all}. Without extra work it never appears as a producer in the DSM pathway map, no matter how
+much traffic it generates. \texttt{make instrument} closes this with a \textbf{manual DSM
+checkpoint} (\texttt{setProduceCheckpoint}) in \texttt{producer.js}, plus a matching manual
+consume checkpoint in \texttt{fraud-detection/listener.py}. Module 7's diagnosis lab Scenario 3
+depends entirely on this checkpoint being in place.}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{L{3.5cm}L{3.5cm}L{7cm}}
+\toprule
+\textbf{Service} & \textbf{Library} & \textbf{Injection mechanism}\\
+\midrule
+gateway-api, fraud-detection & ddtrace (Python) & \texttt{PYTHONPATH} + auto-instrumentation\\
+transaction-service & dd-trace (Node.js) & \texttt{NODE\_OPTIONS=--require dd-trace/init}\\
+account-service, batch-processor & dd-java-agent & \texttt{JAVA\_TOOL\_OPTIONS=-javaagent:...}\\
+notification-service & dd-trace-go & Not single-step injected -- in-code \texttt{tracer.Start()}\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\tipbox{\textbf{fraud-detection needs a rebuild, not just a redeploy.} Its DSM support is a
+baked pip dependency, unlike the other services' plain env-var toggle. After
+\texttt{make instrument}, run \texttt{make build} (or \texttt{build-ecr}) and reload the image
+before DSM data appears for it.}
+
+\begin{lstlisting}
+make instrument && make build && make deploy-k8s
+make uninstrument && make build   # reverse: DSM/DJM -> profiler -> SSI -> APM spans
+\end{lstlisting}
+
+\exercisebox{Enable all four steps. Verify custom spans, SSI injection, profiler flame graphs.
+Confirm \texttt{transaction-service} appears as a \textbf{producer} in the DSM pathway map for
+\texttt{fraud.score.queue} -- this is the check Module 7 Scenario 3 depends on. Trigger a
+reconciliation run and confirm it appears under APM $\rightarrow$ Data Jobs.}
+
+\resourcebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Custom instrumentation: \url{https://docs.datadoghq.com/tracing/trace_collection/custom_instrumentation/}
+\item Single-step instrumentation: \url{https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/}
+\item Continuous Profiler: \url{https://docs.datadoghq.com/profiler/}
+\item Data Streams Monitoring: \url{https://docs.datadoghq.com/data_streams/}
+\item Data Streams -- Node.js manual checkpoints: \url{https://docs.datadoghq.com/data_streams/nodejs/}
+\item Data Jobs Monitoring: \url{https://docs.datadoghq.com/data_jobs/}
+\end{itemize}}
+
+\newpage
+% =====================================================================
+\section{Module 5 -- Real User Monitoring (\texttt{make dem})}
+
+\objectivebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Understand how \texttt{make dem} differs mechanically -- a direct API call, not a patch
+\item Enable Browser RUM + Session Replay and confirm a session is captured
+\item Apply PII masking correctly for a financial application's session replay
+\end{itemize}}
+
+\textbf{Duration:} 30--45 minutes \quad \textbf{Prerequisites:} App running (Module 1). Independent
+of Modules 2--4 and 7 -- no Terraform dependency.
+
+\texttt{make dem} creates the RUM application via a direct \texttt{POST
+/api/v2/rum/applications} call and injects the resulting \texttt{client\_token} into
+\texttt{frontend-stub/index.html} with \texttt{sed}. Idempotent via \texttt{.dem-applied}.
+
+\tipbox{\textbf{PII masking matters specifically here} -- this is a financial dashboard.
+\texttt{defaultPrivacyLevel: 'mask-user-input'} ensures form values (account numbers, payment
+amounts) are never captured in Session Replay. Never disable this on real financial data.}
+
+\begin{lstlisting}
+make dem
+kubectl create configmap frontend-dashboard --from-file=index.html=frontend-stub/index.html -n finance --dry-run=client -o yaml | kubectl apply -f -
+kubectl rollout restart deployment/frontend -n finance
+make undem   # reverse
+\end{lstlisting}
+
+\textbf{Validate:} RUM $\rightarrow$ Applications $\rightarrow$ \texttt{finance-frontend}
+$\rightarrow$ Sessions $\rightarrow$ Session Replay available.
+
+\exercisebox{Enable RUM. Click through the dashboard. Confirm Session Replay shows the
+interaction with form fields masked, not literal values. Reverse it.}
+
+\resourcebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Browser RUM: \url{https://docs.datadoghq.com/real_user_monitoring/browser/}
+\item RUM Session Replay: \url{https://docs.datadoghq.com/real_user_monitoring/session_replay/}
+\item RUM Privacy / PII masking: \url{https://docs.datadoghq.com/real_user_monitoring/session_replay/privacy_options/}
+\end{itemize}}
+
+\newpage
+% =====================================================================
+\section{Module 6 -- Security (\texttt{make security})}
+
+\objectivebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Understand the two-sided nature of \texttt{make security} -- Agent config + app-side flag
+\item Distinguish what ASM Threats, ASM SCA, CWS, and CSPM each detect
+\item Enable the stage and confirm CWS self-tests pass
+\end{itemize}}
+
+\textbf{Duration:} 30--45 minutes \quad \textbf{Prerequisites:} Module 4 -- ASM Threats needs the
+tracer already injected via Single Step Instrumentation.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{L{3cm}L{3.5cm}L{7cm}}
+\toprule
+\textbf{Product} & \textbf{Layer} & \textbf{Detects}\\
+\midrule
+ASM Threats & APM tracer (app-side) & SQLi, XSS, SSRF, credential stuffing, business-logic attacks\\
+ASM SCA & Agent-side & Known CVEs in dependencies\\
+CWS & Agent eBPF (kernel) & Shell spawned in container, privilege escalation, syscall anomalies\\
+CSPM & Agent + cloud APIs & Privileged pods, exposed secrets, CIS/PCI-DSS findings\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+make security
+kubectl apply -k deploy/kubernetes/datadog/agent && kubectl rollout restart daemonset/datadog-agent -n datadog
+make build && make deploy-k8s   # DD_APPSEC_ENABLED needs a redeploy, not a bare restart
+make unsecurity   # reverse
+\end{lstlisting}
+
+\textbf{Validate:} \texttt{DD\_APPSEC\_ENABLED=true} on \texttt{gateway-api};
+\texttt{security-agent status} shows CWS self-tests succeeded (\texttt{rule\_open},
+\texttt{rule\_chmod}, \texttt{rule\_chown}).
+
+\exercisebox{Enable all four products. Confirm both halves independently. Configure one
+finance-specific threat rule (e.g. brute force on \texttt{/v1/payments}). Reverse it.}
+
+\resourcebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Application Security (ASM): \url{https://docs.datadoghq.com/security/application_security/}
+\item Cloud Workload Security (CWS): \url{https://docs.datadoghq.com/security/cloud_workload_security/}
+\item Cloud Security Posture Management (CSPM): \url{https://docs.datadoghq.com/security/cloud_security_management/misconfigurations/}
+\end{itemize}}
+
+\newpage
+% =====================================================================
+\section{Module 7 -- Dashboards, Monitors \& the Diagnosis Lab (\texttt{make tf-apply-dd})}
+
+\objectivebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Apply the Terraform-managed dashboard, monitors, SLOs, and synthetic tests
+\item Diagnose three realistic incidents live, using the exact capability that catches each one
+\item Understand why a monitor's absolute thresholds can fail to fire at demo scale even when
+  the underlying signal is genuinely correct
+\end{itemize}}
+
+\textbf{Duration:} 1.5--2 hours \quad \textbf{Prerequisites:} Modules 2--4.
+
+\begin{lstlisting}
+make tf-apply-dd     # DD_API_KEY / DD_APP_KEY read from .env automatically; dashboard,
+                     # 7+ monitors, 3 SLOs, 7 synthetic tests, log pipeline
+make tf-destroy-dd    # reverse -- WARNING: deletes the log index and indexed logs too
+\end{lstlisting}
+
+\subsection{Scenario 1 -- Payments Are Slow and No One Knows Why}
+
+\texttt{make scenario-1} drops \texttt{idx\_transactions\_account\_id}, turning the
+\texttt{ledger.velocity\_check} query into a full table scan on every payment. The
+\texttt{transactions} table is pre-seeded with $\sim$300k backdated rows specifically so this
+scan is slow enough to see -- on live traffic volume alone it finishes in under a millisecond.
+\textbf{Capability:} APM traces + log correlation + the APM $\leftrightarrow$ DBM link.
+
+\subsection{Scenario 2 -- The Nightly Reconciliation Is Failing Silently}
+
+\texttt{make scenario-2} appends \texttt{AND currency <> 'JPY'} to the reconciliation reader's
+\texttt{WHERE} clause -- the job still completes with no error; only the record count drops
+$\sim$20\%. \textbf{Capability:} Data Jobs Monitoring.
+
+\tipbox{The \texttt{reconciliation\_low\_record\_count} monitor's absolute thresholds were
+sized for production volume -- at workshop traffic scale, the $\sim$20\% drop may not cross
+them within the session. \texttt{job.records\_processed} in Data Jobs Monitoring is the live,
+always-reliable signal; treat the monitor as ``here's the kind of alert you'd build,'' not a
+guaranteed live-fire.}
+
+\subsection{Scenario 3 -- The Fraud Queue Is Backing Up}
+
+\texttt{make scenario-3} triples \texttt{transaction-service}'s publish rate to
+\texttt{fraud.score.queue}. The producer floods the queue; \texttt{fraud-detection} keeps up at
+its normal rate -- scaling the consumer would do nothing. \textbf{Depends on Module 4's DSM
+manual checkpoint} -- without it \texttt{transaction-service} never appears as a producer at all.
+\textbf{Capability:} Data Streams Monitoring pathway map + Deployment Tracking.
+
+\tipbox{The \texttt{fraud\_queue\_depth} monitor may \textbf{not} fire at workshop scale --
+\texttt{fraud-detection} keeps up even at 3x load, so depth stays near 0. The
+\texttt{fraud\_queue\_producer\_surge} monitor (a change alert on the production
+\emph{rate}, not depth) is the one that actually catches this scenario live.}
+
+\exercisebox{Run all three scenarios in turn. Diagnose each using only the intended capability,
+before checking this booklet's answer. Note explicitly which monitors fired and which didn't,
+and why. Reverse all three, then \texttt{tf-destroy-dd} if ending the session.}
+
+\resourcebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Synthetic Monitoring: \url{https://docs.datadoghq.com/synthetics/}
+\item Synthetic $\rightarrow$ APM correlation: \url{https://docs.datadoghq.com/synthetics/apm/}
+\item Generate metrics from spans: \url{https://docs.datadoghq.com/tracing/trace_pipeline/generate_metrics/}
+\end{itemize}}
+
+\newpage
+% =====================================================================
+\section{Module 8 -- AWS/EKS Deployment}
+
+\objectivebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item Provision EKS/VPC/ECR/IAM via Terraform and confirm the cluster is reachable
+\item Understand the two AWS-specific integration points this app needs
+\item Tear down AWS resources in the correct order
+\end{itemize}}
+
+\textbf{Duration:} 1--1.5 hours \quad \textbf{Prerequisites:} AWS CLI $\geq$ 2.x, an SSO
+profile, Terraform $\geq$ 1.5.
+
+\tipbox{\textbf{RUM validation status:} Module 5's Browser RUM was validated locally in this
+curriculum's development. \textbf{It has not been validated end-to-end on AWS EKS} -- treat it
+as untested territory on this path, and verify it yourself before relying on it with a customer.}
+
+\begin{lstlisting}
+aws sso login --profile <profile>
+make tf-plan-aws && make tf-apply-aws     # provisions EKS/VPC/ECR/IAM/NLB, ~15-20 min
+make tf-configure-kubectl && kubectl get nodes
+make build-ecr && make deploy-k8s-eks
+\end{lstlisting}
+
+Two AWS-specific integration points Terraform doesn't own: Keycloak's public URL (patch the
+\texttt{app-config} ConfigMap and the frontend HTML to point at the NLB) and Keycloak's allowed
+CORS origins (the realm import hardcodes \texttt{localhost} -- patch via \texttt{kcadm.sh} after
+the NLB hostname is known). Both are detailed in Module 8's full write-up
+(\texttt{docs/Module-8-AWS-EKS-Deployment.md}).
+
+\tipbox{Both patches are \textbf{in-memory only} -- Keycloak runs \texttt{start-dev} with an
+in-process H2 database, so any pod restart wipes them back to \texttt{localhost}-only. If login
+fails with \texttt{Failed to fetch} again after working before, re-apply the CORS patch.}
+
+\begin{lstlisting}
+make deploy-k8s-dd
+make tf-apply-dd
+# Teardown, in this order:
+make tf-destroy-dd
+make tf-destroy-aws
+\end{lstlisting}
+
+\exercisebox{Provision, deploy, patch Keycloak's URL and CORS origins, log in via the NLB URL,
+apply Datadog resources, then tear down completely. \textit{Expected outcome:} a working EKS
+deployment confirmed end-to-end, followed by a clean teardown with no orphaned AWS resources.}
+
+\resourcebox{
+\begin{itemize}\setlength\itemsep{0pt}
+\item AWS Integration: \url{https://docs.datadoghq.com/integrations/amazon_web_services/}
+\item Datadog on Kubernetes (Operator/Helm, Cluster Agent): \url{https://docs.datadoghq.com/containers/kubernetes/}
+\item Datadog Operator: \url{https://github.com/DataDog/datadog-operator}
+\item Terraform provider: \url{https://registry.terraform.io/providers/DataDog/datadog/latest/docs}
+\end{itemize}}
+
+\vspace{1cm}
+\begin{center}
+{\small\color{ddgray} Source of truth for all modules:
+\texttt{sample/impl/INSTRUMENTATION.md}, \texttt{USECASES.md}, \texttt{README.md},
+\texttt{TROUBLESHOOTING.md} -- this booklet summarizes, the repo governs.}
+\end{center}
+
+\end{document}

@@ -1,0 +1,39 @@
+# NOTE: the second hunk below uses minimal (1-line) context rather than
+# the repo's usual 3-line diff -u default. That line (admission.datadoghq.
+# com/enabled) sits immediately above the block scripts/patches/tags/
+# ust-*.patch uses as ITS hunk's leading context, so a normal 3-line-
+# context diff here would read past the closing separator into the UST
+# banner text that make tags's patch actually rewrites — order-dependent
+# breakage. True zero-context (diff -U0) was tried first but is NOT
+# reliably applied by this machine's BSD `patch` when combined with the
+# preceding (annotation) hunk in the same invocation — verified empirically
+# both ways. 1-line context (the blank '#' line before, the closing
+# separator after — both unchanged by either patch) is the minimum that is
+# both reliable AND order-independent w.r.t. make tags's patch; verified
+# with 'patch --dry-run' in both orderings (tags-then-sso, sso-then-tags).
+# Do NOT regenerate this hunk with a default 'diff -u' (3-line context) —
+# regenerate only the first (annotation) hunk that way.
+--- a/deploy/kubernetes/base/services/fraud-detection.yaml
++++ b/deploy/kubernetes/base/services/fraud-detection.yaml
+@@ -34,14 +34,8 @@
+         # init-image tags). More reproducible than "latest" (no surprise major
+         # bumps) while still receiving patches; always resolvable — unlike exact
+         # patch tags, which don't reliably exist as init-image tags.
+-        # ── DATADOG INSTRUMENTATION (Single Step library version) ────────
+-        # Uncomment via 'make instrument' together with the
+-        # admission.datadoghq.com/enabled label below — tells the Admission
+-        # Controller webhook which tracer library to inject into this pod.
+-        # Docs: https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/
+-        #
+-        # admission.datadoghq.com/python-lib.version: "v2"
+-        # ─────────────────────────────────────────────────────────────────
++        # ── Datadog Single Step library version ──────────────────────────
++        admission.datadoghq.com/python-lib.version: "v2"
+         ad.datadoghq.com/fraud-detection.logs: '[{"source":"python","service":"fraud-detection"}]'
+       labels:
+         app: fraud-detection
+@@ -55,3 +55,3 @@
+         #
+-        # admission.datadoghq.com/enabled: "true"
++        admission.datadoghq.com/enabled: "true"
+         # ─────────────────────────────────────────────────────────────────

@@ -1,0 +1,69 @@
+# ── DATADOG SYNTHETIC API TEST — Payment Bad Payload (422) ────────────
+# Verifies that the gateway-api returns HTTP 422 when a payment request
+# carries an invalid body (missing required fields). Observed in real
+# traffic via generate-traffic.py bad_payload scenario.
+# Guards against input validation regressions.
+#
+# Docs: https://docs.datadoghq.com/synthetics/api_tests/http_tests/
+# ─────────────────────────────────────────────────────────────────────
+
+name: "Finance Payment — Bad Payload Rejected (422)"
+type: api
+subtype: http
+
+config:
+  request:
+    method: POST
+    url: "http://gateway-api:8080/v1/payments"
+    timeout: 10
+
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+      Authorization: "Bearer {{ SYNTHETIC_BEARER_TOKEN }}"
+
+    # Invalid body: missing required 'amount' and 'currency' fields
+    body: |
+      {
+        "not_a_valid_field": "synthetic-test"
+      }
+
+  assertions:
+    # Must reject with 422 Unprocessable Entity
+    - type: statusCode
+      operator: is
+      target: 422
+
+    # Must not return a 500 — that would indicate an unhandled exception
+    - type: statusCode
+      operator: isNot
+      target: 500
+
+    # Validation errors must be fast
+    - type: responseTime
+      operator: lessThan
+      target: 500  # milliseconds
+
+locations:
+  - aws:eu-west-1
+
+options:
+  tick_every: 300
+  min_failure_duration: 0
+  min_location_failed: 1
+
+  retry:
+    count: 1
+    interval: 300
+
+  monitor_options:
+    renotify_interval: 120
+    notify_no_data: true
+    no_data_timeframe: 15
+
+tags:
+  - "env:staging"
+  - "service:gateway-api"
+  - "team:finance"
+  - "synthetic_type:negative"
+  - "flow:payment-validation"

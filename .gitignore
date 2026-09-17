@@ -44,6 +44,11 @@ terraform.rc
 
 # Ignore DS_Store
 **/.DS_Store
+
+# Ignore credential-shaped files that shouldn't be committed to a public repo
+gcp_json_key.json
+*-key.json
+*-credentials.json
 utils/SecretManager/.vscode/launch.json
 utils/SecretManager/secretBackendCommand
 .vscode/launch.json

@@ -1,0 +1,73 @@
+--- a/deploy/kubernetes/base/services/transaction-service.yaml
++++ b/deploy/kubernetes/base/services/transaction-service.yaml
+@@ -57,15 +57,9 @@
+         app: transaction-service
+         component: service
+         # ─────────────────────────────────────────────────────────────────
+-        # ── DATADOG UST (Unified Service Tagging) ────────────────────────
+-        # Uncomment via 'make tags' to set the tags.datadoghq.com/* pod
+-        # labels used for Deployment Tracking / trace-log-metric correlation.
+-        # Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+-        #
+-        # tags.datadoghq.com/env: "staging"
+-        # tags.datadoghq.com/service: "transaction-service"
+-        # tags.datadoghq.com/version: "latest"
+-        # ─────────────────────────────────────────────────────────────────
++        tags.datadoghq.com/env: "staging"
++        tags.datadoghq.com/service: "transaction-service"
++        tags.datadoghq.com/version: "latest"
+     spec:
+       # transaction-service writes to the ledger DB (PostgreSQL) and publishes
+       # fraud-scoring events via ActiveMQ STOMP. Both init containers prevent
+@@ -141,18 +135,13 @@
+                   name: app-config
+                   key: REDIS_URL
+ 
+-            # ── DATADOG INSTRUMENTATION (Unified Service Tagging) ───────────
+-            # Uncomment via 'make tags' to set DD_ENV/DD_SERVICE/DD_VERSION —
+-            # required for APM/logs/metrics correlation and Deployment
+-            # Tracking. Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+-            #
+-            # - name: DD_ENV
+-            #   value: "staging"
+-            # - name: DD_SERVICE
+-            #   value: "transaction-service"
+-            # - name: DD_VERSION
+-            #   value: "latest"
+-            # ─────────────────────────────────────────────────────────────────
++            # ── Datadog Unified Service Tagging ─────────────────────────────
++            - name: DD_ENV
++              value: "staging"
++            - name: DD_SERVICE
++              value: "transaction-service"
++            - name: DD_VERSION
++              value: "latest"
+             # DD_AGENT_HOST uses the node's IP so the pod sends traces/metrics
+             # to the DaemonSet agent running on the same node.
+             - name: DD_AGENT_HOST
+--- a/transaction-service/src/index.js
++++ b/transaction-service/src/index.js
+@@ -36,18 +36,11 @@
+ // ─────────────────────────────────────────────────────────────────────
+ const logger = pino({
+   level: process.env.LOG_LEVEL || "info",
+-  // ── Datadog Unified Service Tagging (enable via 'make tags') ────────
+-  // Uncomment to stamp every JSON log line with service/env/version —
+-  // mirrors the DD_ENV/DD_SERVICE/DD_VERSION pod env vars uncommented in
+-  // the Kubernetes manifest by the same target.
+-  // Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+-  //
+-  // base: {
+-  //   service: process.env.DD_SERVICE || "transaction-service",
+-  //   env: process.env.DD_ENV || "development",
+-  //   version: process.env.DD_VERSION || "0.0.0",
+-  // },
+-  // ─────────────────────────────────────────────────────────────────────
++  base: {
++    service: process.env.DD_SERVICE || "transaction-service",
++    env: process.env.DD_ENV || "development",
++    version: process.env.DD_VERSION || "0.0.0",
++  },
+ });
+ 
+ // ── Safety net for the fire-and-forget STOMP producer ──────────────────

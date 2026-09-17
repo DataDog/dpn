@@ -1,0 +1,26 @@
+apiVersion: v3
+kind: service
+metadata:
+  name: batch-processor
+  displayName: Batch Processor
+  tags:
+    - env:staging
+    - language:java
+    - team:finance-platform
+  links:
+    - name: Source
+      type: repo
+      provider: github
+      url: https://github.com/your-org/finance-sample-app/tree/main/batch-processor
+  contacts:
+    - name: Finance Platform
+      type: email
+      contact: finance-platform@example.com
+spec:
+  lifecycle: staging
+  tier: Medium
+  type: service
+  languages:
+    - java
+  description: |
+    Nightly reconciliation (ReconciliationJob) and statement generation (StatementJob) via Spring Batch.

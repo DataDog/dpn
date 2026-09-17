@@ -1,0 +1,78 @@
+plugins {
+    id 'org.springframework.boot' version '3.3.0'
+    id 'io.spring.dependency-management' version '1.1.5'
+    id 'java'
+}
+
+group = 'com.example.finance'
+version = System.getenv('DD_VERSION') ?: '1.0.0-local'
+// NOTE: In CI, DD_VERSION is set to the short git SHA:
+//   export DD_VERSION=$(git rev-parse --short HEAD)
+// This ties the running version to a specific deployment for Deployment Tracking.
+// Docs: https://docs.datadoghq.com/tracing/deployment_tracking/
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // ── Core Spring Boot ──────────────────────────────────────────────────
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // ── Messaging — ActiveMQ Artemis (JMS 2.0) ────────────────────────────
+    // Auto-instrumented by dd-java-agent: generates jms.produce / jms.consume spans.
+    // Docs: https://docs.datadoghq.com/tracing/trace_collection/compatibility/java/
+    implementation 'org.springframework.boot:spring-boot-starter-artemis'
+
+    // ── Database — PostgreSQL + JPA ──────────────────────────────────────
+    // DBM is an Agent-side feature — no additional library needed here.
+    // Docs: https://docs.datadoghq.com/database_monitoring/setup_postgres/selfhosted/
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // ── Structured JSON Logging ───────────────────────────────────────────
+    // Required for Datadog log pipeline parsing and trace correlation (Step 4).
+    // Pairs with logback-spring.xml to emit one JSON object per log line.
+    // Docs: https://docs.datadoghq.com/logs/log_collection/java/
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
+    // ── DATADOG INSTRUMENTATION ──────────────────────────────────────────
+    // Step 5 — Uncomment to use the Datadog Trace API for custom spans and tags.
+    // This is a thin API layer only — the actual instrumentation is done by
+    // the dd-java-agent JVM flag. You do NOT need this dependency for
+    // auto-instrumentation; only add it when writing @Trace annotations
+    // or setting custom span tags programmatically.
+    //
+    // implementation 'com.datadoghq:dd-trace-api:1.+'
+    //
+    // Step 6 — Uncomment to emit custom DogStatsD metrics:
+    //
+    // implementation 'com.datadoghq:java-dogstatsd-client:4.+'
+    //
+    // Step 10 — DSM is bundled with dd-java-agent; no extra dependency needed.
+    // DataStreamsCheckpointer is part of dd-trace-api above.
+    //
+    // Docs: https://docs.datadoghq.com/tracing/trace_collection/custom_instrumentation/java/
+    // Docs: https://docs.datadoghq.com/developers/dogstatsd/
+    // Docs: https://docs.datadoghq.com/data_streams/java/
+    // ─────────────────────────────────────────────────────────────────────
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+// ── Fat JAR ───────────────────────────────────────────────────────────────
+// Produces account-service-<version>.jar under build/libs/.
+// The Dockerfile copies this as app.jar.
+bootJar {
+    archiveFileName = 'app.jar'
+}

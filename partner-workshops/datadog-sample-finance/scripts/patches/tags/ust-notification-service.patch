@@ -1,0 +1,47 @@
+--- a/deploy/kubernetes/base/services/notification-service.yaml
++++ b/deploy/kubernetes/base/services/notification-service.yaml
+@@ -38,15 +38,9 @@
+         app: notification-service
+         component: service
+         # ─────────────────────────────────────────────────────────────────
+-        # ── DATADOG UST (Unified Service Tagging) ────────────────────────
+-        # Uncomment via 'make tags' to set the tags.datadoghq.com/* pod
+-        # labels used for Deployment Tracking / trace-log-metric correlation.
+-        # Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+-        #
+-        # tags.datadoghq.com/env: "staging"
+-        # tags.datadoghq.com/service: "notification-service"
+-        # tags.datadoghq.com/version: "latest"
+-        # ─────────────────────────────────────────────────────────────────
++        tags.datadoghq.com/env: "staging"
++        tags.datadoghq.com/service: "notification-service"
++        tags.datadoghq.com/version: "latest"
+     spec:
+       # notification-service exits after max retries if ActiveMQ is not reachable.
+       # The init container ensures it only starts once the STOMP port is open.
+@@ -89,18 +83,13 @@
+ 
+             # ── Health check ───────────────────────────────────────────────────
+             # Verify the main consumer process is alive.
+-            # ── DATADOG INSTRUMENTATION (Unified Service Tagging) ───────────
+-            # Uncomment via 'make tags' to set DD_ENV/DD_SERVICE/DD_VERSION —
+-            # required for APM/logs/metrics correlation and Deployment
+-            # Tracking. Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+-            #
+-            # - name: DD_ENV
+-            #   value: "staging"
+-            # - name: DD_SERVICE
+-            #   value: "notification-service"
+-            # - name: DD_VERSION
+-            #   value: "latest"
+-            # ─────────────────────────────────────────────────────────────────
++            # ── Datadog Unified Service Tagging ─────────────────────────────
++            - name: DD_ENV
++              value: "staging"
++            - name: DD_SERVICE
++              value: "notification-service"
++            - name: DD_VERSION
++              value: "latest"
+             # DD_AGENT_HOST uses the node's IP so the pod sends traces/metrics
+             # to the DaemonSet agent running on the same node.
+             - name: DD_AGENT_HOST

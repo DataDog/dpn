@@ -1,0 +1,347 @@
+# =============================================================================
+# Finance Sample App — frontend (nginx)
+# =============================================================================
+# Three listeners:
+#   :80   (NodePort 30080) — Finance dashboard + API proxy
+#   :8443 (NodePort 30443) — HTTPS reverse proxy for Keycloak (self-signed cert)
+#   :8444 (NodePort 30444) — HTTP reverse proxy for Keycloak, TLS terminated
+#                             at the NLB with a real ACM cert instead — only
+#                             wired up when domain_name is set (EKS only, see
+#                             deploy/terraform/aws/main.tf's
+#                             aws_lb_listener.frontend_keycloak_acm)
+#
+# Routing on :80:
+#   /v1/                              →  gateway-api:8080  (JWT required)
+#   /internal/accounts                →  account-service:8081/v1/accounts (unauthenticated)
+#   /internal/transactions            →  transaction-service:8082/v1/payments (unauthenticated, read-only via GET)
+#   /health                           →  gateway-api:8080/health
+#   /internal/account-service/health  →  account-service:8081/health
+#   /internal/transaction-service/health →  transaction-service:8082/health
+#   /auth/                            →  keycloak:8080 (plain HTTP, for Synthetics login step)
+#   /                                 →  static finance dashboard
+#
+# The /internal/* routes exist so Datadog Synthetic API tests (which run from
+# Datadog's public testing infrastructure, not from inside the cluster) can
+# reach account-service and transaction-service without a Kubernetes Private
+# Location. See deploy/terraform/datadog/main.tf's Synthetic Tests section.
+#
+# Routing on :8443 (TLS, self-signed cert in 'keycloak-tls' Secret):
+#   all paths         →  keycloak:8080
+#   Keycloak runs KC_PROXY=edge so it trusts X-Forwarded-Proto: https
+#   from nginx and sets Secure session cookies correctly.
+#
+# ⚠  Self-signed certificate: browsers will show a security warning on
+#    first visit to https://localhost:30443. Click "Advanced → Accept" once.
+#    The certificate is valid for 10 years and covers localhost.
+# =============================================================================
+
+# ── nginx config ConfigMap ─────────────────────────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-frontend-config
+  namespace: finance
+  labels:
+    app: frontend
+    component: service
+data:
+  default.conf: |
+    # ── HTTP server (:80) — Finance dashboard + API proxy ───────────────────
+    server {
+        listen 80;
+        server_name _;
+
+        # ── API gateway — all /v1/ traffic goes to gateway-api ───────────────
+        location /v1/ {
+            proxy_pass         http://gateway-api:8080;
+            proxy_http_version 1.1;
+            proxy_set_header   Host              $host;
+            proxy_set_header   X-Real-IP         $remote_addr;
+            proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Forwarded-Proto $scheme;
+            proxy_read_timeout 30s;
+        }
+
+        # ── Internal accounts ───────────────────────────────────
+        # NOTE: unauthenticated — same trust level as before this change,
+        # just now reachable from the public NLB instead of only in-cluster.
+        # See the Datadog Synthetic Tests section in deploy/terraform/datadog
+        # for why this is exposed (account_not_found / account_creation_latency
+        # synthetic tests need a publicly-reachable target).
+        location /internal/accounts {
+            rewrite ^/internal/accounts(.*)$ /v1/accounts$1 break;
+            proxy_pass         http://account-service:8081;
+            proxy_http_version 1.1;
+            proxy_set_header   Host              $host;
+            proxy_set_header   X-Real-IP         $remote_addr;
+            proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Forwarded-Proto $scheme;
+            proxy_read_timeout 30s;
+        }
+
+        # ── Internal transactions (read-only) ───────────────────
+        # Only used by the payment_happy_path synthetic test's second step
+        # (GET /v1/payments/{id} to verify the record after POSTing via the
+        # authenticated /v1/ gateway route above). Exposes payment lookups by
+        # ID only — no listing, no writes.
+        location /internal/transactions {
+            rewrite ^/internal/transactions(.*)$ /v1/payments$1 break;
+            proxy_pass         http://transaction-service:8082;
+            proxy_http_version 1.1;
+            proxy_set_header   Host              $host;
+            proxy_set_header   X-Real-IP         $remote_addr;
+            proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Forwarded-Proto $scheme;
+            proxy_read_timeout 30s;
+        }
+
+        # ── Keycloak token endpoint (plain HTTP, port 80) ─────────────
+        # Used by Datadog Synthetic tests to log in and obtain a fresh JWT as
+        # their first step. The :8443 server block below also proxies to
+        # Keycloak, but with a self-signed cert — Datadog's multistep API
+        # tests do not reliably honour accept_self_signed/allow_insecure, so
+        # this plain-HTTP route avoids TLS validation entirely. Token issuance
+        # (password grant) doesn't depend on redirect_uri/hostname matching,
+        # so it works the same regardless of which route reaches it.
+        location /auth/ {
+            rewrite ^/auth(.*)$ $1 break;
+            proxy_pass         http://keycloak:8080;
+            proxy_http_version 1.1;
+            proxy_set_header   Host              $host;
+            proxy_set_header   X-Real-IP         $remote_addr;
+            proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Forwarded-Proto $scheme;
+            proxy_read_timeout 30s;
+        }
+
+        # ── Gateway-API health ────────────────────────
+        location = /health {
+            proxy_pass         http://gateway-api:8080/health;
+            proxy_http_version 1.1;
+            proxy_set_header   Host $host;
+        }
+
+        # ── account-service / transaction-service health (Datadog Synthetics) ──
+        # Exact-match locations take priority over the /internal/accounts and
+        # /internal/transactions prefix matches above, so these correctly hit
+        # each service's own /health endpoint instead of being rewritten.
+        location = /internal/account-service/health {
+            proxy_pass         http://account-service:8081/health;
+            proxy_http_version 1.1;
+            proxy_set_header   Host $host;
+        }
+
+        location = /internal/transaction-service/health {
+            proxy_pass         http://transaction-service:8082/health;
+            proxy_http_version 1.1;
+            proxy_set_header   Host $host;
+        }
+
+        # ── Static finance dashboard ────────────────────────────────────────
+        location / {
+            root  /usr/share/nginx/html;
+            index index.html;
+            try_files $uri $uri/ /index.html;
+        }
+
+        location /nginx-health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
+    }
+
+    # ── HTTPS server (:8443) — Keycloak reverse proxy ─────────────────────
+    # nginx terminates TLS with the self-signed cert from the keycloak-tls
+    # Secret and forwards plain HTTP to keycloak:8080.
+    # KC_PROXY=edge on Keycloak trusts X-Forwarded-Proto: https so it:
+    #   - Issues Secure session cookies (required by browsers)
+    #   - Builds redirect_uri as https://localhost:30443/...
+    #   - Advertises issuer as https://localhost:30443/realms/finance
+    # ⚠  Self-signed cert: accept the browser security warning once.
+    server {
+        listen 8443 ssl;
+        server_name _;
+
+        ssl_certificate     /etc/nginx/certs/tls.crt;
+        ssl_certificate_key /etc/nginx/certs/tls.key;
+        ssl_protocols       TLSv1.2 TLSv1.3;
+        ssl_ciphers         HIGH:!aNULL:!MD5;
+
+        # Proxy everything to Keycloak
+        location / {
+            proxy_pass             http://keycloak:8080;
+            proxy_http_version     1.1;
+            proxy_set_header       Host               $http_host;
+            proxy_set_header       X-Real-IP          $remote_addr;
+            proxy_set_header       X-Forwarded-For    $proxy_add_x_forwarded_for;
+            proxy_set_header       X-Forwarded-Proto  https;
+            proxy_set_header       X-Forwarded-Host   $http_host;
+            proxy_read_timeout     60s;
+            proxy_buffer_size      8k;
+            proxy_buffers          8 8k;
+        }
+
+        location /nginx-health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
+    }
+
+    # ── HTTP server (:8444) — Keycloak reverse proxy for ACM/EKS only ──────
+    # Plain HTTP on purpose: TLS is terminated at the NLB using a real ACM
+    # certificate (deploy/terraform/aws/main.tf's aws_lb_listener.frontend_keycloak_acm,
+    # only created when domain_name is set), not here. X-Forwarded-Proto is
+    # hardcoded to https because this port is only ever reached through that
+    # ACM-terminated listener — there is no plain-HTTP path to it.
+    # This exists alongside (not instead of) the self-signed :8443 server
+    # above: local dev and EKS-without-a-domain keep using :8443/self-signed
+    # unchanged; :8444 only comes into play when a partner sets domain_name
+    # and wants a browser-trusted cert for Keycloak too, not just the
+    # dashboard. See README.md's "Optional: custom domain + trusted ACM
+    # certificate" section.
+    server {
+        listen 8444;
+        server_name _;
+
+        location / {
+            proxy_pass             http://keycloak:8080;
+            proxy_http_version     1.1;
+            proxy_set_header       Host               $http_host;
+            proxy_set_header       X-Real-IP          $remote_addr;
+            proxy_set_header       X-Forwarded-For    $proxy_add_x_forwarded_for;
+            proxy_set_header       X-Forwarded-Proto  https;
+            proxy_set_header       X-Forwarded-Host   $http_host;
+            proxy_read_timeout     60s;
+            proxy_buffer_size      8k;
+            proxy_buffers          8 8k;
+        }
+
+        location /nginx-health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
+    }
+
+  # index.html is served from a separate ConfigMap (frontend-dashboard)
+  # created by 'make deploy-k8s' from frontend-stub/index.html.
+  # The nginx ConfigMap only holds the site configuration.
+
+---
+# ── Service (NodePort) ──────────────────────────────────────────────────
+# 30080 — Finance dashboard (HTTP)
+# 30443 — Keycloak HTTPS proxy (self-signed cert, accept once in browser)
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: finance
+  labels:
+    app: frontend
+    component: service
+spec:
+  type: NodePort
+  selector:
+    app: frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: 30080
+    - name: https-keycloak
+      port: 8443
+      targetPort: 8443
+      nodePort: 30443
+    - name: http-kc-acm
+      port: 8444
+      targetPort: 8444
+      nodePort: 30444
+
+---
+# ── Deployment ────────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: finance
+  labels:
+    app: frontend
+    component: service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+        component: service
+    spec:
+      containers:
+        - name: frontend
+          image: nginx:1.25-alpine
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 80
+            - name: https-keycloak
+              containerPort: 8443
+            - name: http-kc-acm
+              containerPort: 8444
+
+          # ── Health checks ──────────────────────────────────────────────────
+          livenessProbe:
+            httpGet:
+              path: /nginx-health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /nginx-health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+              readOnly: true
+            - name: frontend-dashboard
+              mountPath: /usr/share/nginx/html/index.html
+              subPath: index.html
+              readOnly: true
+            # TLS cert+key for the HTTPS Keycloak proxy listener (:8443)
+            # Created by 'make deploy-k8s' as the 'keycloak-tls' Secret.
+            - name: keycloak-tls
+              mountPath: /etc/nginx/certs
+              readOnly: true
+
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-frontend-config
+        - name: frontend-dashboard
+          configMap:
+            name: frontend-dashboard
+        - name: keycloak-tls
+          secret:
+            secretName: keycloak-tls

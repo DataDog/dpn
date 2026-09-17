@@ -1,0 +1,1725 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Finance Platform — Dashboard</title>
+
+        <!-- ── DATADOG RUM (enable via 'make dem') ───────────────────────────────────────────
+        Step 8 — Browser RUM + Session Replay
+        Docs: https://docs.datadoghq.com/real_user_monitoring/browser/
+        RUM app created via a direct Datadog API call ('make dem'), which also
+        uncomments this block and injects the real applicationId/clientToken below.
+        PII MASKING: 'mask-user-input' hides form values in Session Replay.
+
+        <script src="https://www.datadoghq-browser-agent.com/us1/v5/datadog-rum.js"></script>
+        <script>
+            window.DD_RUM && window.DD_RUM.init({
+                applicationId:           'REPLACE_WITH_APPLICATION_ID',
+                clientToken:             'REPLACE_WITH_CLIENT_TOKEN',
+                site:                    'datadoghq.com',
+                service:                 'finance-frontend',
+                env:                     'staging',
+                version:                 '1.0.0',
+                sessionSampleRate:       100,
+                sessionReplaySampleRate: 100,
+                trackUserInteractions:   true,
+                defaultPrivacyLevel:     'mask-user-input',
+            });
+            window.DD_RUM.startSessionReplayRecording();
+        </script>
+        ────────────────────────────────────────────────────────────────────── -->
+
+        <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    sans-serif;
+                background: #f0f2f5;
+                color: #1f2d3d;
+                min-height: 100vh;
+            }
+
+            /* Header */
+            header {
+                background: #1f2d3d;
+                color: #fff;
+                padding: 0.9rem 2rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+            }
+            header h1 {
+                font-size: 1.15rem;
+                font-weight: 600;
+            }
+            header small {
+                font-size: 0.78rem;
+                color: #a0aec0;
+            }
+            #auth-badge {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                font-size: 0.85rem;
+            }
+            .avatar {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: #6366f1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 0.85rem;
+            }
+            .role-pill {
+                background: rgba(99, 102, 241, 0.25);
+                color: #a5b4fc;
+                font-size: 0.72rem;
+                padding: 0.15rem 0.5rem;
+                border-radius: 12px;
+            }
+            #sign-out-btn {
+                background: none;
+                border: 1px solid #4a5568;
+                color: #a0aec0;
+                padding: 0.3rem 0.75rem;
+                border-radius: 6px;
+                font-size: 0.8rem;
+                cursor: pointer;
+            }
+            #sign-out-btn:hover {
+                background: #2d3748;
+            }
+
+            /* Layout */
+            main {
+                padding: 2rem;
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+            .grid-2 {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            .grid-3 {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            @media (max-width: 750px) {
+                .grid-2,
+                .grid-3 {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            /* Cards */
+            .card {
+                background: #fff;
+                border-radius: 10px;
+                padding: 1.5rem;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+                margin-bottom: 1.5rem;
+            }
+            .card h2 {
+                font-size: 0.95rem;
+                font-weight: 600;
+                color: #2d3748;
+                margin-bottom: 1.25rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            /* Forms */
+            label {
+                display: block;
+                font-size: 0.8rem;
+                font-weight: 500;
+                color: #4a5568;
+                margin-bottom: 0.3rem;
+            }
+            input,
+            select {
+                width: 100%;
+                padding: 0.5rem 0.75rem;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                font-size: 0.875rem;
+                background: #fff;
+                margin-bottom: 0.9rem;
+                color: #2d3748;
+                transition: border-color 0.15s;
+            }
+            input:focus,
+            select:focus {
+                outline: none;
+                border-color: #6366f1;
+            }
+
+            /* Buttons */
+            .btn {
+                padding: 0.55rem 1.2rem;
+                border: none;
+                border-radius: 6px;
+                font-size: 0.875rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition:
+                    background 0.15s,
+                    opacity 0.15s;
+            }
+            .btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+            .btn-primary {
+                background: #6366f1;
+                color: #fff;
+            }
+            .btn-primary:hover:not(:disabled) {
+                background: #4f46e5;
+            }
+            .btn-success {
+                background: #10b981;
+                color: #fff;
+            }
+            .btn-success:hover:not(:disabled) {
+                background: #059669;
+            }
+
+            /* Status banners */
+            .status-box {
+                margin-top: 0.9rem;
+                padding: 0.65rem 0.9rem;
+                border-radius: 6px;
+                font-size: 0.82rem;
+                display: none;
+            }
+            .status-box.show {
+                display: block;
+            }
+            .status-ok {
+                background: #d1fae5;
+                color: #065f46;
+            }
+            .status-err {
+                background: #fee2e2;
+                color: #991b1b;
+            }
+            .status-info {
+                background: #dbeafe;
+                color: #1e40af;
+            }
+            .status-warn {
+                background: #fef3c7;
+                color: #92400e;
+            }
+
+            /* Login */
+            #login-section {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: calc(100vh - 56px);
+            }
+            .login-card {
+                background: #fff;
+                border-radius: 12px;
+                padding: 2.5rem 2rem;
+                box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+                width: 100%;
+                max-width: 380px;
+            }
+            .login-card h2 {
+                font-size: 1.25rem;
+                font-weight: 700;
+                margin-bottom: 0.5rem;
+            }
+            .login-card p {
+                font-size: 0.85rem;
+                color: #718096;
+                margin-bottom: 1.75rem;
+            }
+
+            /* Balance display */
+            #balance-amount {
+                font-size: 2.25rem;
+                font-weight: 700;
+                color: #1f2d3d;
+                margin: 0.75rem 0 0.5rem;
+            }
+            .tag {
+                display: inline-block;
+                background: #eff6ff;
+                color: #2563eb;
+                font-size: 0.72rem;
+                padding: 0.2rem 0.5rem;
+                border-radius: 4px;
+                margin-right: 0.3rem;
+                margin-top: 0.2rem;
+            }
+
+            /* Account chips */
+            #account-chips {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.4rem;
+                margin-top: 0.5rem;
+            }
+            .account-chip {
+                background: #f3f4f6;
+                border: 1px solid #e5e7eb;
+                border-radius: 20px;
+                font-size: 0.75rem;
+                color: #374151;
+                padding: 0.2rem 0.65rem;
+                cursor: pointer;
+            }
+            .account-chip:hover {
+                background: #e0e7ff;
+                border-color: #6366f1;
+                color: #4f46e5;
+            }
+
+            /* Accounts table */
+            .accounts-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.83rem;
+            }
+            .accounts-table th {
+                text-align: left;
+                font-weight: 600;
+                color: #6b7280;
+                padding: 0.4rem 0.75rem;
+                border-bottom: 2px solid #f0f2f5;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+            }
+            .accounts-table td {
+                padding: 0.55rem 0.75rem;
+                border-bottom: 1px solid #f0f2f5;
+            }
+            .accounts-table tr:last-child td {
+                border-bottom: none;
+            }
+            .accounts-table tr:hover td {
+                background: #fafafa;
+            }
+            .acc-id {
+                color: #6366f1;
+                cursor: pointer;
+                font-family: monospace;
+                font-size: 0.8rem;
+            }
+            .acc-id:hover {
+                text-decoration: underline;
+            }
+            #accounts-empty {
+                color: #a0aec0;
+                font-size: 0.85rem;
+                padding: 1rem 0;
+            }
+
+            /* Activity feed */
+            #activity-list {
+                list-style: none;
+                max-height: 240px;
+                overflow-y: auto;
+            }
+            #activity-list li {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.75rem;
+                padding: 0.65rem 0;
+                border-bottom: 1px solid #f0f2f5;
+                font-size: 0.82rem;
+            }
+            #activity-list li:last-child {
+                border-bottom: none;
+            }
+            .activity-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                flex-shrink: 0;
+                margin-top: 4px;
+            }
+            .act-ok {
+                background: #10b981;
+            }
+            .act-err {
+                background: #ef4444;
+            }
+            .act-warn {
+                background: #f59e0b;
+            }
+            .activity-time {
+                color: #a0aec0;
+                flex-shrink: 0;
+                font-size: 0.75rem;
+                padding-top: 1px;
+            }
+            #activity-empty {
+                color: #a0aec0;
+                font-size: 0.85rem;
+                text-align: center;
+                padding: 1.5rem 0;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- ── Header ─────────────────────────────────────────────────────────────── -->
+        <header>
+            <div>
+                <h1>Finance Platform</h1>
+                <small>Datadog observability instrumentation exercise</small>
+            </div>
+            <div id="auth-badge" style="display: none">
+                <div class="avatar" id="avatar-initial">?</div>
+                <div>
+                    <div id="auth-username" style="font-weight: 600"></div>
+                    <div class="role-pill" id="auth-role"></div>
+                </div>
+                <button id="sign-out-btn" onclick="signOut()">Sign out</button>
+            </div>
+        </header>
+
+        <!-- ── Login ──────────────────────────────────────────────────────────────── -->
+        <div id="login-section">
+            <div class="login-card">
+                <h2>Sign in</h2>
+                <p>Select a Finance realm user to authenticate via Keycloak.</p>
+                <label for="user-select">User</label>
+                <select id="user-select">
+                    <option value="alice.analyst:Finance@2025!:analyst">
+                        alice.analyst — finance-analyst (read-only)
+                    </option>
+                    <option value="bob.trader:Finance@2025!:trader">
+                        bob.trader — finance-trader (payments)
+                    </option>
+                    <option value="carol.admin:Finance@2025!:admin">
+                        carol.admin — finance-admin (full access)
+                    </option>
+                    <option value="dave.auditor:Finance@2025!:auditor">
+                        dave.auditor — finance-auditor (read-only)
+                    </option>
+                    <option value="eve.compliance:Finance@2025!:compliance">
+                        eve.compliance — finance-compliance (payment validation)
+                    </option>
+                </select>
+                <button
+                    class="btn btn-primary"
+                    id="login-btn"
+                    onclick="login()"
+                    style="width: 100%"
+                >
+                    Connect via Keycloak
+                </button>
+                <div id="login-status" class="status-box"></div>
+                <p
+                    style="
+                        margin-top: 1.25rem;
+                        font-size: 0.75rem;
+                        color: #a0aec0;
+                        text-align: center;
+                    "
+                >
+                    Keycloak <code>finance</code> realm · proxied via nginx at
+                    <code>/auth/</code>
+                </p>
+            </div>
+        </div>
+
+        <!-- ── Dashboard ──────────────────────────────────────────────────────────── -->
+        <div id="dashboard" style="display: none">
+            <main>
+                <!-- Row 1: Create Account | Check Balance -->
+                <div class="grid-2">
+                    <!-- Create Account -->
+                    <div class="card">
+                        <h2>🏦 Create Account</h2>
+                        <p
+                            style="
+                                font-size: 0.8rem;
+                                color: #718096;
+                                margin-bottom: 1rem;
+                            "
+                        >
+                            Calls <code>account-service</code> directly (no JWT
+                            required — internal service).
+                        </p>
+                        <label>Owner ID</label>
+                        <input type="text" id="new-owner" value="owner-demo" />
+                        <div
+                            style="
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 0.75rem;
+                            "
+                        >
+                            <div>
+                                <label>Currency</label>
+                                <select id="new-currency">
+                                    <option>EUR</option>
+                                    <option>USD</option>
+                                    <option>GBP</option>
+                                    <option>JPY</option>
+                                    <option>CHF</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Account tier</label>
+                                <select id="new-tier">
+                                    <option value="retail">retail</option>
+                                    <option value="premium">premium</option>
+                                    <option value="corporate">corporate</option>
+                                </select>
+                            </div>
+                        </div>
+                        <label>Initial balance</label>
+                        <input
+                            type="number"
+                            id="new-balance"
+                            value="10000"
+                            min="0"
+                            step="100"
+                        />
+                        <button
+                            class="btn btn-success"
+                            onclick="createAccount()"
+                        >
+                            Create Account
+                        </button>
+                        <div id="create-status" class="status-box"></div>
+                        <div id="account-chips"></div>
+                    </div>
+
+                    <!-- Check Balance -->
+                    <div class="card">
+                        <h2>💰 Account Balance</h2>
+                        <p
+                            style="
+                                font-size: 0.8rem;
+                                color: #718096;
+                                margin-bottom: 1rem;
+                            "
+                        >
+                            Calls <code>GET /v1/accounts/{id}/balance</code> via
+                            the gateway (JWT required).
+                        </p>
+                        <label>Account ID</label>
+                        <div style="display: flex; gap: 0.5rem">
+                            <input
+                                type="text"
+                                id="balance-id"
+                                placeholder="e.g. acc-abc123"
+                                style="margin-bottom: 0"
+                            />
+                            <button
+                                class="btn btn-primary"
+                                id="balance-btn"
+                                onclick="fetchBalance()"
+                            >
+                                Refresh
+                            </button>
+                        </div>
+                        <div
+                            id="balance-amount"
+                            style="
+                                font-size: 2rem;
+                                font-weight: 700;
+                                margin: 1rem 0 0.5rem;
+                                color: #1f2d3d;
+                            "
+                        >
+                            — —
+                        </div>
+                        <div
+                            id="balance-meta"
+                            style="font-size: 0.8rem; color: #718096"
+                        ></div>
+                        <div id="balance-tags" style="margin-top: 0.5rem"></div>
+                        <div id="balance-status" class="status-box"></div>
+                        <!--
+      ── DATADOG RUM ACTION ────────────────────────────────────────────────────
+      After enabling the RUM SDK, add in fetchBalance() on success:
+      window.DD_RUM && window.DD_RUM.addAction('account_dashboard.load', {
+        account_tier: tier,   // bounded — safe as RUM attribute
+        currency,
+        // Do NOT include: raw balance, account_id
+      });
+      ── END DATADOG RUM ACTION ────────────────────────────────────────────── -->
+                    </div>
+                </div>
+
+                <!-- All Accounts -->
+                <div class="card">
+                    <h2 style="justify-content: space-between">
+                        <span>📊 All Accounts</span>
+                        <button
+                            class="btn btn-primary"
+                            onclick="loadAccounts()"
+                            style="font-size: 0.78rem; padding: 0.3rem 0.8rem"
+                        >
+                            ↻ Refresh
+                        </button>
+                    </h2>
+                    <p
+                        style="
+                            font-size: 0.8rem;
+                            color: #718096;
+                            margin-bottom: 1rem;
+                        "
+                    >
+                        Calls <code>GET /v1/accounts</code> on account-service
+                        directly. Click an ID to auto-fill the payment and
+                        balance forms.
+                    </p>
+                    <p
+                        id="accounts-empty"
+                        style="
+                            display: none;
+                            color: #a0aec0;
+                            font-size: 0.85rem;
+                            padding: 0.5rem 0;
+                        "
+                    >
+                        No accounts yet — create one above.
+                    </p>
+                    <table
+                        class="accounts-table"
+                        id="accounts-table"
+                        style="display: none"
+                    >
+                        <thead>
+                            <tr>
+                                <th>Account ID</th>
+                                <th>Owner</th>
+                                <th>Tier</th>
+                                <th>Currency</th>
+                                <th>Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accounts-tbody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Deposit & Transfer — visibility controlled by applyRoleUI() -->
+                <div class="grid-2" id="money-ops-row" style="display: none">
+                    <!-- Deposit (finance-admin only) -->
+                    <div class="card" id="deposit-card">
+                        <h2>💵 Deposit</h2>
+                        <p
+                            style="
+                                font-size: 0.8rem;
+                                color: #718096;
+                                margin-bottom: 1rem;
+                            "
+                        >
+                            Credits an account balance. Calls
+                            <code>POST /v1/accounts/{id}/deposit</code> via the
+                            gateway (JWT required —
+                            <strong>finance-admin</strong> only).
+                        </p>
+                        <label>Account ID</label>
+                        <input
+                            type="text"
+                            id="dep-account"
+                            placeholder="e.g. acc-abc123"
+                        />
+                        <label>Amount</label>
+                        <input
+                            type="number"
+                            id="dep-amount"
+                            value="1000"
+                            min="0.01"
+                            step="100"
+                        />
+                        <label>Note (optional)</label>
+                        <input
+                            type="text"
+                            id="dep-note"
+                            placeholder="e.g. Initial funding"
+                            style="margin-bottom: 0.9rem"
+                        />
+                        <button
+                            class="btn btn-success"
+                            id="dep-btn"
+                            onclick="deposit()"
+                        >
+                            Deposit
+                        </button>
+                        <div id="dep-status" class="status-box"></div>
+                    </div>
+
+                    <!-- Transfer (finance-trader + finance-admin) -->
+                    <div class="card" id="transfer-card">
+                        <h2>↔ Transfer</h2>
+                        <p
+                            style="
+                                font-size: 0.8rem;
+                                color: #718096;
+                                margin-bottom: 1rem;
+                            "
+                        >
+                            Moves funds between two accounts. Calls
+                            <code>POST /v1/transfers</code> via the gateway (JWT
+                            required — <strong>finance-trader</strong> or
+                            <strong>finance-admin</strong>).
+                        </p>
+                        <label>From Account</label>
+                        <input
+                            type="text"
+                            id="txf-from"
+                            placeholder="Source account ID"
+                        />
+                        <label>To Account</label>
+                        <input
+                            type="text"
+                            id="txf-to"
+                            placeholder="Destination account ID"
+                        />
+                        <div
+                            style="
+                                display: grid;
+                                grid-template-columns: 2fr 1fr;
+                                gap: 0.75rem;
+                            "
+                        >
+                            <div>
+                                <label>Amount</label>
+                                <input
+                                    type="number"
+                                    id="txf-amount"
+                                    value="500"
+                                    min="0.01"
+                                    step="100"
+                                />
+                            </div>
+                            <div>
+                                <label>Currency</label>
+                                <select id="txf-currency">
+                                    <option>EUR</option>
+                                    <option>USD</option>
+                                    <option>GBP</option>
+                                    <option>JPY</option>
+                                    <option>CHF</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button
+                            class="btn btn-primary"
+                            id="txf-btn"
+                            onclick="initiateTransfer()"
+                        >
+                            Transfer
+                        </button>
+                        <div id="txf-status" class="status-box"></div>
+                    </div>
+                </div>
+
+                <!-- Initiate Payment -->
+                <div class="card">
+                    <h2>💸 Initiate Payment</h2>
+                    <p
+                        style="
+                            font-size: 0.8rem;
+                            color: #718096;
+                            margin-bottom: 1rem;
+                        "
+                    >
+                        Calls <code>POST /v1/payments</code> via the gateway
+                        (JWT required). Forwards to
+                        <code>transaction-service</code> → ledger write →
+                        ActiveMQ fraud-score event.
+                    </p>
+                    <!-- Role enforcement notice — shown for read-only roles -->
+                    <div
+                        id="pay-role-note"
+                        class="status-box show status-warn"
+                        style="
+                            margin-top: 0;
+                            margin-bottom: 0.9rem;
+                            display: none;
+                        "
+                    >
+                        🔒 Your role (<span id="pay-role-label"></span>) is
+                        read-only. Only <strong>finance-trader</strong> and
+                        <strong>finance-admin</strong> can initiate payments.
+                    </div>
+                    <div class="grid-3">
+                        <div>
+                            <label>Account ID</label>
+                            <input
+                                type="text"
+                                id="pay-account"
+                                placeholder="e.g. acc-abc123"
+                            />
+                        </div>
+                        <div>
+                            <label>Amount</label>
+                            <input
+                                type="number"
+                                id="pay-amount"
+                                value="250.00"
+                                min="0.01"
+                                step="0.01"
+                            />
+                        </div>
+                        <div>
+                            <label>Currency</label>
+                            <select id="pay-currency">
+                                <option>EUR</option>
+                                <option>USD</option>
+                                <option>GBP</option>
+                                <option>JPY</option>
+                                <option>CHF</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button
+                        class="btn btn-primary"
+                        id="pay-btn"
+                        onclick="initiatePayment()"
+                    >
+                        Submit Payment
+                    </button>
+                    <div id="pay-status" class="status-box"></div>
+                    <!--
+    ── DATADOG RUM ACTION ────────────────────────────────────────────────────
+    After enabling the RUM SDK, add in initiatePayment() on success:
+    window.DD_RUM && window.DD_RUM.addAction('payment_form.submit', {
+      currency,
+      amount_bucket: amount < 100 ? '<100' : amount <= 1000 ? '100-1000' : '>1000',
+      // Do NOT include: raw amount, account_id, payment_id
+    });
+    On error:
+    window.DD_RUM && window.DD_RUM.addError(new Error('Payment failed: ' + msg), {
+      http_status: res.status, currency,
+    });
+    ── END DATADOG RUM ACTION ────────────────────────────────────────────── -->
+                </div>
+
+                <!-- Payment Validation — shown only for finance-compliance and finance-admin -->
+                <div class="card" id="validation-card" style="display: none">
+                    <h2 style="justify-content: space-between">
+                        <span>🔍 Payment Validation</span>
+                        <button
+                            class="btn btn-primary"
+                            onclick="loadPayments()"
+                            style="font-size: 0.78rem; padding: 0.3rem 0.8rem"
+                        >
+                            ↻ Refresh
+                        </button>
+                    </h2>
+                    <p
+                        style="
+                            font-size: 0.8rem;
+                            color: #718096;
+                            margin-bottom: 1rem;
+                        "
+                    >
+                        Calls <code>PATCH /v1/payments/{id}</code> via the
+                        gateway. Only <strong>finance-compliance</strong> and
+                        <strong>finance-admin</strong> may approve or reject.
+                    </p>
+                    <p
+                        id="payments-empty"
+                        style="
+                            display: none;
+                            color: #a0aec0;
+                            font-size: 0.85rem;
+                            padding: 0.5rem 0;
+                        "
+                    >
+                        No payments yet — a trader must initiate one first.
+                    </p>
+                    <table
+                        class="accounts-table"
+                        id="payments-table"
+                        style="display: none"
+                    >
+                        <thead>
+                            <tr>
+                                <th>Payment ID</th>
+                                <th>Account</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payments-tbody"></tbody>
+                    </table>
+                    <div id="validation-status" class="status-box"></div>
+                </div>
+
+                <!-- Activity Feed -->
+                <div class="card">
+                    <h2>
+                        📋 Activity Feed
+                        <span
+                            style="
+                                font-weight: 400;
+                                font-size: 0.8rem;
+                                color: #718096;
+                            "
+                            >(this session)</span
+                        >
+                    </h2>
+                    <ul id="activity-list">
+                        <li id="activity-empty">
+                            No activity yet — sign in and interact with the
+                            forms above.
+                        </li>
+                    </ul>
+                </div>
+            </main>
+        </div>
+        <!-- /dashboard -->
+
+        <script>
+            "use strict";
+
+            // ── Configuration ──────────────────────────────────────────────────────────
+            // All requests go to the same origin (localhost:3000).
+            // nginx proxies:
+            //   /auth/             → keycloak:8080          (avoids browser CORS error)
+            //   /v1/               → gateway-api:8080        (JWT required)
+            //   /internal/accounts → account-service:8081    (no auth)
+            const KEYCLOAK_BASE = "https://localhost:30443";
+            const KEYCLOAK_REALM = "finance";
+            const CLIENT_ID = "finance-gateway";
+            const CLIENT_SECRET = "FuX1ZIddFs02LzJT-s5MZufplT7SzGmflb42_6P8VcI";
+            const WRITE_ROLES = new Set(["finance-trader", "finance-admin"]);
+            const VALIDATE_ROLES = new Set([
+                "finance-compliance",
+                "finance-admin",
+            ]);
+            const DEPOSIT_ROLES = new Set(["finance-admin"]);
+            const TRANSFER_ROLES = new Set(["finance-trader", "finance-admin"]);
+
+            // ── Auth state ─────────────────────────────────────────────────────
+            let _token = null;
+            let _userRoles = [];
+            let _canWrite = false;
+            let _canValidate = false;
+            let _canDeposit = false;
+            let _canTransfer = false;
+
+            // ── Utilities ─────────────────────────────────────────────────────────────
+            function ts() {
+                return new Date().toLocaleTimeString();
+            }
+
+            // Structured console log — replace with DD_RUM.addAction() at Step 8.
+            function appLog(level, message, ctx = {}) {
+                const entry = {
+                    timestamp: new Date().toISOString(),
+                    level,
+                    service: "finance-frontend",
+                    message,
+                    ...ctx,
+                };
+                (level === "error" ? console.error : console.log)(
+                    JSON.stringify(entry),
+                );
+            }
+
+            function addActivity(type, html) {
+                const empty = document.getElementById("activity-empty");
+                if (empty) empty.remove();
+                const dot =
+                    { ok: "act-ok", err: "act-err", warn: "act-warn" }[type] ||
+                    "act-warn";
+                const li = document.createElement("li");
+                li.innerHTML = `<div class="activity-dot ${dot}"></div><div style="flex:1">${html}</div><div class="activity-time">${ts()}</div>`;
+                const list = document.getElementById("activity-list");
+                list.insertBefore(li, list.firstChild);
+            }
+
+            function authHeaders() {
+                return {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${_token}`,
+                };
+            }
+
+            // ── Role-based UI ──────────────────────────────────────────────────────────
+            function applyRoleUI() {
+                const payBtn = document.getElementById("pay-btn");
+                const payNote = document.getElementById("pay-role-note");
+                const roleLabel = document.getElementById("pay-role-label");
+                if (_canWrite) {
+                    payBtn.disabled = false;
+                    payBtn.title = "";
+                    payNote.style.display = "none";
+                } else {
+                    payBtn.disabled = true;
+                    payBtn.title = "Read-only role — cannot initiate payments";
+                    roleLabel.textContent = _userRoles.join(", ") || "unknown";
+                    payNote.style.display = "block";
+                }
+                // Show the validation card only for compliance/admin roles
+                document.getElementById("validation-card").style.display =
+                    _canValidate ? "block" : "none";
+                // Show deposit only for admin; transfer for trader+admin
+                const showDeposit = _canDeposit;
+                const showTransfer = _canTransfer;
+                document.getElementById("deposit-card").style.display =
+                    showDeposit ? "block" : "none";
+                document.getElementById("transfer-card").style.display =
+                    showTransfer ? "block" : "none";
+                document.getElementById("money-ops-row").style.display =
+                    showDeposit || showTransfer ? "grid" : "none";
+            }
+
+            // ── Keycloak login (ROPC — demo only; use Authorization Code + PKCE in prod) ──
+            async function login() {
+                const btn = document.getElementById("login-btn");
+                const statusEl = document.getElementById("login-status");
+                btn.disabled = true;
+                btn.textContent = "Connecting…";
+                statusEl.className = "status-box";
+
+                const [username, password, role] = document
+                    .getElementById("user-select")
+                    .value.split(":");
+                try {
+                    const res = await fetch(
+                        `${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type":
+                                    "application/x-www-form-urlencoded",
+                            },
+                            body: new URLSearchParams({
+                                grant_type: "password",
+                                client_id: CLIENT_ID,
+                                client_secret: CLIENT_SECRET,
+                                username,
+                                password,
+                            }),
+                        },
+                    );
+                    if (!res.ok) throw new Error(`Keycloak HTTP ${res.status}`);
+                    const td = await res.json();
+                    _token = td.access_token;
+
+                    // Decode JWT payload (base64url) to extract roles
+                    try {
+                        const payload = JSON.parse(
+                            atob(
+                                _token
+                                    .split(".")[1]
+                                    .replace(/-/g, "+")
+                                    .replace(/_/g, "/"),
+                            ),
+                        );
+                        _userRoles = payload.roles || [];
+                    } catch (_) {
+                        _userRoles = [`finance-${role}`];
+                    }
+                    _canWrite = _userRoles.some((r) => WRITE_ROLES.has(r));
+                    _canValidate = _userRoles.some((r) =>
+                        VALIDATE_ROLES.has(r),
+                    );
+                    _canDeposit = _userRoles.some((r) => DEPOSIT_ROLES.has(r));
+                    _canTransfer = _userRoles.some((r) =>
+                        TRANSFER_ROLES.has(r),
+                    );
+
+                    appLog("info", "auth.login", {
+                        username,
+                        roles: _userRoles,
+                    });
+
+                    document.getElementById("avatar-initial").textContent =
+                        username[0].toUpperCase();
+                    document.getElementById("auth-username").textContent =
+                        username;
+                    document.getElementById("auth-role").textContent =
+                        _userRoles.join(", ");
+                    document.getElementById("auth-badge").style.display =
+                        "flex";
+                    document.getElementById("login-section").style.display =
+                        "none";
+                    document.getElementById("dashboard").style.display =
+                        "block";
+
+                    applyRoleUI();
+                    loadAccounts();
+
+                    addActivity(
+                        "ok",
+                        `Signed in as <strong>${username}</strong> — roles: <code>${_userRoles.join(", ")}</code>`,
+                    );
+
+                    // Auto-refresh before expiry
+                    setTimeout(
+                        () => silentRefresh(username, password),
+                        (td.expires_in - 60) * 1000,
+                    );
+                } catch (err) {
+                    statusEl.textContent = `Login failed: ${err.message}`;
+                    statusEl.className = "status-box show status-err";
+                    appLog("error", "auth.login.failed", {
+                        error: err.message,
+                    });
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Connect via Keycloak";
+                }
+            }
+
+            async function silentRefresh(username, password) {
+                try {
+                    const res = await fetch(
+                        `${KEYCLOAK_BASE}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type":
+                                    "application/x-www-form-urlencoded",
+                            },
+                            body: new URLSearchParams({
+                                grant_type: "password",
+                                client_id: CLIENT_ID,
+                                client_secret: CLIENT_SECRET,
+                                username,
+                                password,
+                            }),
+                        },
+                    );
+                    if (res.ok) {
+                        const td = await res.json();
+                        _token = td.access_token;
+                        setTimeout(
+                            () => silentRefresh(username, password),
+                            (td.expires_in - 60) * 1000,
+                        );
+                    }
+                } catch (_) {
+                    /* silent */
+                }
+            }
+
+            function signOut() {
+                _token = null;
+                _userRoles = [];
+                _canWrite = false;
+                _canValidate = false;
+                _canDeposit = false;
+                _canTransfer = false;
+                document.getElementById("auth-badge").style.display = "none";
+                document.getElementById("dashboard").style.display = "none";
+                document.getElementById("login-section").style.display = "flex";
+                document.getElementById("accounts-tbody").innerHTML = "";
+                document.getElementById("account-chips").innerHTML = "";
+                appLog("info", "auth.logout");
+            }
+
+            // ── Load payments list (for validation panel) ──────────────────────────────
+            async function loadPayments() {
+                const tbody = document.getElementById("payments-tbody");
+                const empty = document.getElementById("payments-empty");
+                const table = document.getElementById("payments-table");
+                if (!tbody) return;
+                try {
+                    const res = await fetch("/v1/payments", {
+                        headers: authHeaders(),
+                    });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const list = await res.json();
+                    if (!Array.isArray(list) || list.length === 0) {
+                        table.style.display = "none";
+                        empty.style.display = "block";
+                        return;
+                    }
+                    empty.style.display = "none";
+                    table.style.display = "table";
+                    tbody.innerHTML = list
+                        .map((p) => {
+                            const statusBadge =
+                                {
+                                    pending:
+                                        '<span style="color:#d97706;font-weight:600">pending</span>',
+                                    approved:
+                                        '<span style="color:#059669;font-weight:600">approved</span>',
+                                    rejected:
+                                        '<span style="color:#dc2626;font-weight:600">rejected</span>',
+                                    flagged:
+                                        '<span style="color:#7c3aed;font-weight:600">flagged</span>',
+                                }[p.status] || `<span>${p.status}</span>`;
+                            const canAct =
+                                _canValidate && p.status === "pending";
+                            const actions = canAct
+                                ? `<button class="btn btn-success" style="font-size:.75rem;padding:.25rem .6rem;margin-right:.3rem"
+                                 onclick="validatePayment('${p.payment_id}','approved')">Approve</button>
+                               <button class="btn" style="background:#ef4444;color:#fff;font-size:.75rem;padding:.25rem .6rem;margin-right:.3rem"
+                                 onclick="validatePayment('${p.payment_id}','rejected')">Reject</button>
+                               <button class="btn" style="background:#7c3aed;color:#fff;font-size:.75rem;padding:.25rem .6rem"
+                                 onclick="validatePayment('${p.payment_id}','flagged')">Flag</button>`
+                                : p.validated_at
+                                  ? `<span style="font-size:.75rem;color:#718096">validated ${new Date(p.validated_at).toLocaleTimeString()}</span>`
+                                  : "—";
+                            return `<tr>
+                          <td><code style="font-size:.78rem">${p.payment_id}</code></td>
+                          <td style="font-size:.8rem;color:#718096">${p.account_id}</td>
+                          <td style="font-variant-numeric:tabular-nums">${p.amount} ${p.currency}</td>
+                          <td>${statusBadge}</td>
+                          <td style="font-size:.75rem;color:#718096">${p.created_at ? new Date(p.created_at).toLocaleTimeString() : "—"}</td>
+                          <td>${actions}</td>
+                        </tr>`;
+                        })
+                        .join("");
+                } catch (err) {
+                    empty.textContent = `Could not load payments: ${err.message}`;
+                    empty.style.display = "block";
+                    table.style.display = "none";
+                }
+            }
+
+            async function validatePayment(paymentId, action) {
+                const statusEl = document.getElementById("validation-status");
+                statusEl.className = "status-box";
+                try {
+                    const res = await fetch(
+                        `/v1/payments/${encodeURIComponent(paymentId)}`,
+                        {
+                            method: "PATCH",
+                            headers: authHeaders(),
+                            body: JSON.stringify({ action }),
+                        },
+                    );
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok) {
+                        statusEl.textContent = `Payment ${paymentId} — ${action}`;
+                        statusEl.className =
+                            "status-box show " +
+                            (action === "approved"
+                                ? "status-ok"
+                                : action === "rejected"
+                                  ? "status-err"
+                                  : "status-warn");
+                        addActivity(
+                            action === "approved"
+                                ? "ok"
+                                : action === "rejected"
+                                  ? "err"
+                                  : "warn",
+                            `Payment <code>${paymentId}</code> — <strong>${action}</strong>`,
+                        );
+                        appLog("info", "payment.validate", {
+                            payment_id: paymentId,
+                            action,
+                        });
+                        loadPayments(); // refresh validation table
+                        loadAccounts(); // refresh balance in accounts table
+                        // If the approved payment's account matches the balance panel, refresh it too
+                        if (action === "approved" && data.account_id) {
+                            const balanceIdEl =
+                                document.getElementById("balance-id");
+                            if (balanceIdEl.value === data.account_id)
+                                fetchBalance();
+                        }
+                    } else {
+                        const msg =
+                            data.detail || data.error || `HTTP ${res.status}`;
+                        statusEl.textContent = `Failed: ${msg}`;
+                        statusEl.className = "status-box show status-err";
+                        addActivity(
+                            "err",
+                            `Validation failed for <code>${paymentId}</code> — ${msg}`,
+                        );
+                    }
+                } catch (err) {
+                    statusEl.textContent = `Network error: ${err.message}`;
+                    statusEl.className = "status-box show status-err";
+                }
+            }
+
+            // ── Deposit (credit) ─────────────────────────────────────────────────────
+            async function deposit() {
+                const btn = document.getElementById("dep-btn");
+                const statusEl = document.getElementById("dep-status");
+                const accountId = document
+                    .getElementById("dep-account")
+                    .value.trim();
+                const amount = parseFloat(
+                    document.getElementById("dep-amount").value,
+                );
+                const note = document.getElementById("dep-note").value.trim();
+                statusEl.className = "status-box";
+
+                if (!accountId || isNaN(amount) || amount <= 0) {
+                    statusEl.textContent =
+                        "Enter a valid account ID and positive amount.";
+                    statusEl.className = "status-box show status-err";
+                    return;
+                }
+                btn.disabled = true;
+                btn.textContent = "Depositing…";
+                appLog("info", "account.deposit.start", { amount });
+                try {
+                    const res = await fetch(
+                        `/v1/accounts/${encodeURIComponent(accountId)}/deposit`,
+                        {
+                            method: "POST",
+                            headers: authHeaders(),
+                            body: JSON.stringify({
+                                amount,
+                                note: note || undefined,
+                            }),
+                        },
+                    );
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok) {
+                        const newBal = Number(data.balance).toLocaleString(
+                            undefined,
+                            { minimumFractionDigits: 2 },
+                        );
+                        statusEl.textContent = `✓ Deposited ${amount} — new balance: ${newBal} ${data.currency}`;
+                        statusEl.className = "status-box show status-ok";
+                        addActivity(
+                            "ok",
+                            `Deposited <strong>${amount}</strong> into <code>${accountId}</code> — new balance ${newBal} ${data.currency}`,
+                        );
+                        appLog("info", "account.deposit.success", {
+                            account_tier: data.tier,
+                            currency: data.currency,
+                        });
+                        loadAccounts();
+                        if (
+                            document.getElementById("balance-id").value ===
+                            accountId
+                        )
+                            fetchBalance();
+                    } else {
+                        const msg =
+                            data.detail || data.error || `HTTP ${res.status}`;
+                        statusEl.textContent = `Failed: ${msg}`;
+                        statusEl.className = "status-box show status-err";
+                        addActivity("err", `Deposit failed — ${msg}`);
+                    }
+                } catch (err) {
+                    statusEl.textContent = `Network error: ${err.message}`;
+                    statusEl.className = "status-box show status-err";
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Deposit";
+                }
+            }
+
+            // ── Transfer ─────────────────────────────────────────────────────────────────
+            async function initiateTransfer() {
+                const btn = document.getElementById("txf-btn");
+                const statusEl = document.getElementById("txf-status");
+                const fromId = document.getElementById("txf-from").value.trim();
+                const toId = document.getElementById("txf-to").value.trim();
+                const amount = parseFloat(
+                    document.getElementById("txf-amount").value,
+                );
+                const currency = document.getElementById("txf-currency").value;
+                statusEl.className = "status-box";
+
+                if (!fromId || !toId || isNaN(amount) || amount <= 0) {
+                    statusEl.textContent =
+                        "Enter valid source, destination and a positive amount.";
+                    statusEl.className = "status-box show status-err";
+                    return;
+                }
+                if (fromId === toId) {
+                    statusEl.textContent =
+                        "Source and destination accounts must differ.";
+                    statusEl.className = "status-box show status-err";
+                    return;
+                }
+                btn.disabled = true;
+                btn.textContent = "Transferring…";
+                appLog("info", "transfer.start", { amount, currency });
+                try {
+                    const res = await fetch("/v1/transfers", {
+                        method: "POST",
+                        headers: authHeaders(),
+                        body: JSON.stringify({
+                            from_account_id: fromId,
+                            to_account_id: toId,
+                            amount,
+                            currency,
+                        }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok) {
+                        statusEl.textContent = `✓ Transfer ${data.transfer_id} — ${amount} ${currency} from ${fromId} → ${toId}`;
+                        statusEl.className = "status-box show status-ok";
+                        addActivity(
+                            "ok",
+                            `Transfer <code>${data.transfer_id}</code> — ${amount} ${currency} <code>${fromId}</code> → <code>${toId}</code>`,
+                        );
+                        appLog("info", "transfer.success", {
+                            transfer_id: data.transfer_id,
+                            currency,
+                        });
+                        loadAccounts();
+                        const balId =
+                            document.getElementById("balance-id").value;
+                        if (balId === fromId || balId === toId) fetchBalance();
+                    } else {
+                        const msg =
+                            data.detail || data.error || `HTTP ${res.status}`;
+                        statusEl.textContent = `Failed: ${msg}`;
+                        statusEl.className = "status-box show status-err";
+                        addActivity("err", `Transfer failed — ${msg}`);
+                    }
+                } catch (err) {
+                    statusEl.textContent = `Network error: ${err.message}`;
+                    statusEl.className = "status-box show status-err";
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Transfer";
+                }
+            }
+
+            // ── Load accounts list ─────────────────────────────────────────────────────
+            async function loadAccounts() {
+                const tbody = document.getElementById("accounts-tbody");
+                const empty = document.getElementById("accounts-empty");
+                const table = document.getElementById("accounts-table");
+                try {
+                    const res = await fetch("/internal/accounts");
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const list = await res.json();
+                    if (!Array.isArray(list) || list.length === 0) {
+                        table.style.display = "none";
+                        empty.style.display = "block";
+                        return;
+                    }
+                    empty.style.display = "none";
+                    table.style.display = "table";
+                    tbody.innerHTML = list
+                        .map(
+                            (a) => `
+      <tr>
+        <td><span class="acc-id" title="Click to use in forms" onclick="useAccount('${a.id}')">${a.id}</span></td>
+        <td style="color:#718096;font-size:.8rem">${a.ownerId || "—"}</td>
+        <td><span class="tag">${a.tier || "—"}</span></td>
+        <td>${a.currency || "—"}</td>
+        <td style="font-weight:600;font-variant-numeric:tabular-nums">
+          ${a.balance != null ? Number(a.balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—"}
+        </td>
+      </tr>`,
+                        )
+                        .join("");
+                } catch (err) {
+                    empty.textContent = `Could not load accounts: ${err.message}`;
+                    empty.style.display = "block";
+                    table.style.display = "none";
+                }
+            }
+
+            function useAccount(id) {
+                document.getElementById("pay-account").value = id;
+                document.getElementById("balance-id").value = id;
+                addActivity(
+                    "ok",
+                    `Using account <code>${id}</code> — forms pre-filled`,
+                );
+            }
+
+            // ── Create Account ─────────────────────────────────────────────────────────
+            async function createAccount() {
+                const btn = document.querySelector(
+                    '[onclick="createAccount()"]',
+                );
+                const statusEl = document.getElementById("create-status");
+                statusEl.className = "status-box";
+                btn.disabled = true;
+                btn.textContent = "Creating…";
+
+                const body = {
+                    ownerId: document.getElementById("new-owner").value.trim(),
+                    currency: document.getElementById("new-currency").value,
+                    tier: document.getElementById("new-tier").value,
+                    balance:
+                        parseFloat(
+                            document.getElementById("new-balance").value,
+                        ) || 0,
+                };
+                appLog("info", "account.create.start", {
+                    currency: body.currency,
+                    tier: body.tier,
+                });
+
+                try {
+                    const res = await fetch("/internal/accounts", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(body),
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok && data.id) {
+                        statusEl.textContent = `Created: ${data.id}  (${data.tier} · ${data.currency} · ${data.balance})`;
+                        statusEl.className = "status-box show status-ok";
+                        addChip(data.id);
+                        addActivity(
+                            "ok",
+                            `Account <code>${data.id}</code> — ${data.tier} · ${data.currency} · balance ${data.balance}`,
+                        );
+                        appLog("info", "account.create.success", {
+                            account_tier: data.tier,
+                            currency: data.currency,
+                        });
+
+                        // ── DATADOG RUM ACTION ────────────────────────────────────────────
+                        // window.DD_RUM && window.DD_RUM.addAction('account.create', {
+                        //   account_tier: data.tier,   // bounded — safe
+                        //   currency:     data.currency,
+                        // });
+                        // ─────────────────────────────────────────────────────────────────
+
+                        // Refresh the accounts table
+                        loadAccounts();
+                    } else {
+                        const msg =
+                            data.message || data.error || `HTTP ${res.status}`;
+                        statusEl.textContent = `Error: ${msg}`;
+                        statusEl.className = "status-box show status-err";
+                        addActivity("err", `Account creation failed — ${msg}`);
+                    }
+                } catch (err) {
+                    statusEl.textContent = `Network error: ${err.message}`;
+                    statusEl.className = "status-box show status-err";
+                    addActivity(
+                        "err",
+                        `Account creation error: ${err.message}`,
+                    );
+                    appLog("error", "account.create.error", {
+                        message: err.message,
+                    });
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Create Account";
+                }
+            }
+
+            function addChip(id) {
+                const chip = document.createElement("span");
+                chip.className = "account-chip";
+                chip.textContent = id;
+                chip.title = "Click to use in payment / balance forms";
+                chip.onclick = () => useAccount(id);
+                document.getElementById("account-chips").appendChild(chip);
+            }
+
+            // ── Initiate Payment ──────────────────────────────────────────────────────
+            async function initiatePayment() {
+                const btn = document.getElementById("pay-btn");
+                const statusEl = document.getElementById("pay-status");
+                statusEl.className = "status-box";
+
+                const accountId = document
+                    .getElementById("pay-account")
+                    .value.trim();
+                const amount = parseFloat(
+                    document.getElementById("pay-amount").value,
+                );
+                const currency = document.getElementById("pay-currency").value;
+
+                if (!accountId || isNaN(amount) || amount <= 0) {
+                    statusEl.textContent =
+                        "Please enter a valid account ID and a positive amount.";
+                    statusEl.className = "status-box show status-err";
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = "Processing…";
+
+                const amountBucket =
+                    amount < 100
+                        ? "<100"
+                        : amount <= 1000
+                          ? "100-1000"
+                          : ">1000";
+                appLog("info", "payment_form.submit", {
+                    currency,
+                    amount_bucket: amountBucket,
+                });
+
+                try {
+                    const res = await fetch("/v1/payments", {
+                        method: "POST",
+                        headers: authHeaders(),
+                        body: JSON.stringify({
+                            account_id: accountId,
+                            amount,
+                            currency,
+                        }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok) {
+                        statusEl.textContent = `Accepted ✓   Reference: ${data.payment_id || "—"}   Status: ${data.status || "pending"}`;
+                        statusEl.className = "status-box show status-ok";
+                        addActivity(
+                            "ok",
+                            `Payment <code>${data.payment_id || "—"}</code> — ${amount} ${currency} from <code>${accountId}</code>`,
+                        );
+                        appLog("info", "payment_form.success", {
+                            status: data.status,
+                            currency,
+                            amount_bucket: amountBucket,
+                        });
+
+                        // ── DATADOG RUM ACTION ────────────────────────────────────────────
+                        // window.DD_RUM && window.DD_RUM.addAction('payment_form.submit', {
+                        //   currency, amount_bucket: amountBucket,
+                        // });
+                        // ─────────────────────────────────────────────────────────────────
+                    } else {
+                        const msg =
+                            data.detail?.[0]?.msg ||
+                            data.detail ||
+                            data.error ||
+                            data.message ||
+                            `HTTP ${res.status}`;
+                        statusEl.textContent = `Failed: ${msg}`;
+                        statusEl.className = "status-box show status-err";
+                        addActivity("err", `Payment failed — ${msg}`);
+                        appLog("error", "payment_form.error", {
+                            http_status: res.status,
+                            currency,
+                        });
+
+                        // ── DATADOG RUM ERROR ─────────────────────────────────────────────
+                        // window.DD_RUM && window.DD_RUM.addError(new Error('Payment failed: ' + msg), {
+                        //   http_status: res.status, currency,
+                        // });
+                        // ─────────────────────────────────────────────────────────────────
+                    }
+                } catch (err) {
+                    statusEl.textContent = `Network error: ${err.message}`;
+                    statusEl.className = "status-box show status-err";
+                    addActivity(
+                        "err",
+                        `Network error on payment: ${err.message}`,
+                    );
+                    appLog("error", "payment_form.network_error", {
+                        message: err.message,
+                    });
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Submit Payment";
+                }
+            }
+
+            // ── Fetch Balance ──────────────────────────────────────────────────────────
+            async function fetchBalance() {
+                const btn = document.getElementById("balance-btn");
+                const accountId = document
+                    .getElementById("balance-id")
+                    .value.trim();
+                const amountEl = document.getElementById("balance-amount");
+                const metaEl = document.getElementById("balance-meta");
+                const tagsEl = document.getElementById("balance-tags");
+                const statusEl = document.getElementById("balance-status");
+
+                if (!accountId) {
+                    statusEl.textContent = "Enter an account ID first.";
+                    statusEl.className = "status-box show status-info";
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = "Loading…";
+                statusEl.className = "status-box";
+                amountEl.textContent = "…";
+                tagsEl.innerHTML = "";
+
+                appLog("info", "account_dashboard.load", {
+                    account_id_prefix: accountId.slice(0, 3),
+                });
+
+                try {
+                    const res = await fetch(
+                        `/v1/accounts/${encodeURIComponent(accountId)}/balance`,
+                        { headers: authHeaders() },
+                    );
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok) {
+                        const balance = data.balance ?? "—";
+                        const currency = data.currency ?? "";
+                        const tier = data.tier ?? data.account_tier ?? "retail";
+
+                        amountEl.textContent = `${Number(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
+                        metaEl.textContent = `Last updated: ${ts()}`;
+                        tagsEl.innerHTML = `<span class="tag">tier: ${tier}</span><span class="tag">currency: ${currency}</span>`;
+
+                        addActivity(
+                            "ok",
+                            `Balance for <code>${accountId}</code>: ${balance} ${currency} (${tier})`,
+                        );
+                        appLog("info", "account_dashboard.load.success", {
+                            account_tier: tier,
+                            currency,
+                        });
+
+                        // ── DATADOG RUM ACTION ────────────────────────────────────────────
+                        // window.DD_RUM && window.DD_RUM.addAction('account_dashboard.load', {
+                        //   account_tier: tier, currency,
+                        // });
+                        // ─────────────────────────────────────────────────────────────────
+                    } else {
+                        amountEl.textContent = "— —";
+                        const msg =
+                            data.detail || data.error || `HTTP ${res.status}`;
+                        statusEl.textContent = msg;
+                        statusEl.className = "status-box show status-err";
+                        addActivity(
+                            "err",
+                            `Balance fetch failed for <code>${accountId}</code> — ${msg}`,
+                        );
+                        appLog("error", "account_dashboard.load.error", {
+                            http_status: res.status,
+                        });
+                    }
+                } catch (err) {
+                    amountEl.textContent = "— —";
+                    statusEl.textContent = `Network error: ${err.message}`;
+                    statusEl.className = "status-box show status-err";
+                    addActivity("err", `Balance network error: ${err.message}`);
+                    appLog("error", "account_dashboard.load.network_error", {
+                        message: err.message,
+                    });
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Refresh";
+                }
+            }
+
+            document
+                .getElementById("balance-id")
+                .addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") fetchBalance();
+                });
+        </script>
+    </body>
+</html>

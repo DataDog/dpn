@@ -1,0 +1,107 @@
+--- a/transaction-service/src/index.js
++++ b/transaction-service/src/index.js
+@@ -1,23 +1,18 @@
+ //
+-// ── DATADOG INSTRUMENTATION ────────────────────────────────────────
+-// Uncomment to enable APM tracing for this service.
+-// Requires: DD_ENV, DD_SERVICE, DD_VERSION, DD_AGENT_HOST env vars.
+-// Docs: https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/nodejs/
+ //
+-// const tracer = require("dd-trace").init({
+-//   service: process.env.DD_SERVICE || "transaction-service",
+-//   env: process.env.DD_ENV || "staging",
+-//   version: process.env.DD_VERSION || "0.0.0",
+-//   hostname: process.env.DD_AGENT_HOST || "datadog-agent",
+-//   // ── Datadog Log Injection (enable via 'make tags') ───────────────
+-//   // Uncomment to stitch pino JSON logs to APM traces via dd.trace_id /
+-//   // dd.span_id — enables "View in APM" from Log Management.
+-//   // Docs: https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/?tab=nodejs
+-//   //
+-//   // logInjection: true,
+-//   // ────────────────────────────────────────────────────────────
+-// });
+-// ─────────────────────────────────────────────────────────────────
++const tracer = require("dd-trace").init({
++  service: process.env.DD_SERVICE || "transaction-service",
++  env: process.env.DD_ENV || "staging",
++  version: process.env.DD_VERSION || "0.0.0",
++  hostname: process.env.DD_AGENT_HOST || "datadog-agent",
++  // ── Datadog Log Injection (enable via 'make tags') ──────────────────
++  // Uncomment to stitch pino JSON logs to APM traces via dd.trace_id /
++  // dd.span_id — enables "View in APM" from Log Management.
++  // Docs: https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/?tab=nodejs
++  //
++  // logInjection: true,
++  // ─────────────────────────────────────────────────────────────────────
++});
+ 
+ ("use strict");
+ 
+--- a/transaction-service/src/routes/payments.js
++++ b/transaction-service/src/routes/payments.js
+@@ -44,30 +44,19 @@
+   const payment_id = incoming_id || uuidv4();
+   const startTime = Date.now();
+ 
+-  // ── DATADOG INSTRUMENTATION ──────────────────────────────────────────
+-  // Step 5 — custom span for payment.authorize.
+-  // Wraps the core authorisation logic so the span duration matches the
+-  // actual business operation, not the full HTTP handler.
++    //
+   //
+-  // Finance tags (transaction.type, payment.currency) let you slice APM
+-  // error rates and latency by transaction category and currency in the
+-  // APM Service page or a custom dashboard.
+   //
+-  // HIGH-CARDINALITY WARNING: Do NOT tag with raw payment_id or account_id
+-  // at the metric level — use them only on spans/logs where trace sampling
+-  // already limits volume. See: https://docs.datadoghq.com/tagging/assigning_tags/
+-  //
+-  // const tracer = require('dd-trace');
+-  // const span = tracer.startSpan('payment.authorize', {
+-  //   tags: {
+-  //     'transaction.type':  'payment',
+-  //     'payment.currency':  currency,
+-  //     'account.id':        account_id,  // bounded: OK on spans, not on metrics
+-  //     'http.route':        '/v1/payments',
+-  //     'resource.name':     'payment.authorize',
+-  //   },
+-  // });
+-  // ─────────────────────────────────────────────────────────────────────
++  const tracer = require('dd-trace');
++  const span = tracer.startSpan('payment.authorize', {
++    tags: {
++      'transaction.type':  'payment',
++      'payment.currency':  currency,
++      'account.id':        account_id,  // bounded: OK on spans, not on metrics
++      'http.route':        '/v1/payments',
++      'resource.name':     'payment.authorize',
++    },
++  });
+ 
+   // Store the payment immediately — persistence must not depend on JMS availability.
+   const payment = {
+@@ -113,12 +102,7 @@
+       "payment.initiated",
+     );
+ 
+-    // ── DATADOG INSTRUMENTATION ──────────────────────────────────────
+-    // Step 5 (continued) — close the payment.authorize span on success.
+-    // Custom metrics (finance.payment.hits / .duration) come from span-based
+-    // metrics in deploy/terraform/datadog — no DogStatsD here.
+-    // span.finish();
+-    // ─────────────────────────────────────────────────────────────────
++        span.finish();
+ 
+     return res.status(201).json(payment);
+   } catch (err) {
+--- a/transaction-service/package.json
++++ b/transaction-service/package.json
+@@ -8,6 +8,7 @@
+     "dev": "nodemon src/index.js"
+   },
+   "dependencies": {
++    "dd-trace": "^5.0.0",
+     "express": "^4.18.3",
+     "pg": "^8.13.0",
+     "pino": "^8.21.0",

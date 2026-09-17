@@ -1,0 +1,48 @@
+--- a/deploy/kubernetes/datadog/agent/datadog-agent.yaml
++++ b/deploy/kubernetes/datadog/agent/datadog-agent.yaml
+@@ -152,11 +152,11 @@
+     # Docs: https://docs.datadoghq.com/security/application_security/
+     # Docs: https://docs.datadoghq.com/security/application_security/enabling/
+     #
+-    # asm:
+-    #   threats:
+-    #     enabled: true
+-    #   sca:
+-    #     enabled: true # Software Composition Analysis — OSS vulnerability scanning
++    asm:
++      threats:
++        enabled: true
++      sca:
++        enabled: true # Software Composition Analysis — OSS vulnerability scanning
+     #
+     # ── CLOUD WORKLOAD SECURITY (CWS / CSM Threats) ───────────────────────────
+     # Runtime security monitoring at the kernel level via eBPF. Detects:
+@@ -183,9 +183,9 @@
+     # full security suite, prefer t3.large nodes (see
+     # deploy/terraform/aws/staging.tfvars) before running 'make security'.
+     #
+-    # cws:
+-    #   enabled: true
+-    #   syscallMonitorEnabled: true # Audit syscalls for deeper forensic visibility
++    cws:
++      enabled: true
++      syscallMonitorEnabled: true # Audit syscalls for deeper forensic visibility
+     #
+     # ── CSM MISCONFIGURATIONS (CSPM) ──────────────────────────────────────────
+     # Continuously evaluates K8s and cloud resources against CIS benchmarks,
+@@ -194,11 +194,10 @@
+     #
+     # Docs: https://docs.datadoghq.com/security/cloud_security_management/misconfigurations/
+     #
+-    # cspm:
+-    #   enabled: true
+-    #   hostBenchmarks:
+-    #     enabled: true # CIS benchmark checks on the underlying node OS
+-    # ─────────────────────────────────────────────────────────────────────────
++    cspm:
++      enabled: true
++      hostBenchmarks:
++        enabled: true # CIS benchmark checks on the underlying node OS
+ 
+   # Cluster Agent replicas via override (Operator v2alpha1 >= 1.0)
+   override:

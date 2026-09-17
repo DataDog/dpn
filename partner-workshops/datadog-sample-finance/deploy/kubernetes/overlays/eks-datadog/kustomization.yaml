@@ -1,0 +1,23 @@
+# =============================================================================
+# Kustomize overlay — Datadog Agent on EKS
+# =============================================================================
+# Applied by: make deploy-k8s-dd (auto-detected when running on EKS).
+#
+# Inherits the full DatadogAgent spec from the shared base and applies only
+# the EKS-specific deltas via datadog-agent-eks-patch.yaml. This replaces the
+# old approach of maintaining a second full copy of the agent config (which
+# had silently drifted — the EKS copy was missing ASM/CWS/CSPM).
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../datadog/agent
+
+patches:
+  - path: datadog-agent-eks-patch.yaml
+    target:
+      group: datadoghq.com
+      version: v2alpha1
+      kind: DatadogAgent
+      name: datadog

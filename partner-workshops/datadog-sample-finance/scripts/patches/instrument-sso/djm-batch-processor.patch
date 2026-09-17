@@ -1,0 +1,12 @@
+--- a/deploy/kubernetes/base/services/batch-processor.yaml
++++ b/deploy/kubernetes/base/services/batch-processor.yaml
+@@ -180,7 +180,7 @@
+             # Docs: https://docs.datadoghq.com/data_jobs/
+             #
+-            # - name: DD_DATA_JOBS_ENABLED
+-            #   value: "true"
++            - name: DD_DATA_JOBS_ENABLED
++              value: "true"
+             # ─────────────────────────────────────────────────────────────────
+             # ── CONTINUOUS PROFILER ──────────────────────────────────────────
+             # Uncomment via 'make instrument' to enable Continuous Profiler for

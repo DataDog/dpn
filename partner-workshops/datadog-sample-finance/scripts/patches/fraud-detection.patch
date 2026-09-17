@@ -1,0 +1,123 @@
+--- a/fraud-detection/main.py
++++ b/fraud-detection/main.py
+@@ -7,17 +7,7 @@
+ import os
+ import time
+ 
+-# ── DATADOG INSTRUMENTATION ────────────────────────────────────────
+-# Uncomment to enable APM tracing for this service. Requires Single Step
+-# Instrumentation (Admission Controller library injection, enable via
+-# 'make instrument') plus the Datadog Operator installed in-cluster
+-# ('make deploy-k8s-dd') — this service intentionally has NO ddtrace pip
+-# dependency baked into the image; SSI injects it at pod startup, no
+-# rebuild required.
+-# Docs: https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/python/
+-#
+-# from ddtrace import patch_all
+-# ──────────────────────────────────────────────────────
++from ddtrace import patch_all
+ # ── Datadog Log Injection (enable via 'make tags') ───────────────
+ # Uncomment to inject dd.trace_id / dd.span_id into every log record via
+ # ddtrace's logging integration — stitches JSON logs to APM traces so
+@@ -28,24 +18,12 @@
+ # ────────────────────────────────────────────────────
+ from pythonjsonlogger import jsonlogger
+ 
+-# ── DATADOG INSTRUMENTATION ────────────────────────────────────────
+-# Uncomment to activate ddtrace patching for all instrumented libraries.
+-# Must run once ddtrace is actually importable — see the SSI note above.
+-# Docs: https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/python/
+-#
+-# patch_all()
+-# ────────────────────────────────────────────────────
++patch_all()
+ # ── Datadog Log Injection (enable via 'make tags') ───────────────
+ # patch_logging()
+ # ────────────────────────────────────────────────────
+ 
+-# ── DATADOG INSTRUMENTATION ────────────────────────────────────────
+-# Uncomment to enable Continuous Profiling for this service (see the SSI
+-# note above — same mechanism, no separate pip dependency).
+-# Docs: https://docs.datadoghq.com/profiler/enabling/python/
+-#
+-# import ddtrace.profiling.auto  # noqa: F401  — side-effect import, keep at top
+-# ────────────────────────────────────────────────────
++import ddtrace.profiling.auto  # noqa: F401  — side-effect import, keep at top
+ import stomp
+ from listener import FraudScoreListener
+ 
+--- a/fraud-detection/listener.py
++++ b/fraud-detection/listener.py
+@@ -10,15 +10,7 @@
+ 
+ import stomp
+ 
+-# ── DATADOG INSTRUMENTATION ────────────────────────────────────────
+-# Manual span around each fraud.score operation. Requires Single Step
+-# Instrumentation to have injected ddtrace (enable via 'make instrument'
+-# + 'make deploy-k8s-dd') — this service intentionally has no baked
+-# ddtrace pip dependency; 'tracer' is undefined without SSI having run.
+-# Docs: https://docs.datadoghq.com/tracing/trace_collection/custom_instrumentation/python/
+-#
+-# from ddtrace import tracer
+-# ─────────────────────────────────────────────────────────────────────
++from ddtrace import tracer
+ from scorer import score
+ 
+ # ── DATA STREAMS MONITORING (DSM) ────────────────────────────────────
+@@ -118,38 +110,24 @@
+         amount = float(body.get("amount", 0.0))
+         currency = body.get("currency", "UNKNOWN")
+ 
+-        result = score({"transaction_id": transaction_id, "amount": amount})
++        with tracer.trace(
++            "fraud.score", service="fraud-detection", resource=transaction_type
++        ) as span:
++            result = score({"transaction_id": transaction_id, "amount": amount})
++            span.set_tag("transaction.type", transaction_type)
++            span.set_tag("payment.currency", currency)
++            span.set_tag("fraud.score_bucket", result["bucket"])
++            # Numeric score → feeds the finance.fraud.score distribution span metric.
++            # Safe as a span metric value (aggregated), NOT used as a grouping tag.
++            span.set_tag("fraud.score", float(result["score"]))
++            span.set_tag("messaging.destination", "fraud.score.queue")
++            # HIGH-CARDINALITY WARNING: messaging.message_id is per-message —
++            # tag only when debugging a specific incident, not in production.
++            # span.set_tag("messaging.message_id", message_id)
++            if result["bucket"] == "high":
++                span.error = 1
++                span.set_tag("error.message", "High-risk transaction flagged")
+ 
+-        # ── DATADOG INSTRUMENTATION ────────────────────────────────────────
+-        # Wrap the scoring result in a manual span named "fraud.score" so it
+-        # shows up in the APM Trace view, taggable with Finance-domain
+-        # attributes for slice-and-dice analysis. Requires Single Step
+-        # Instrumentation to have injected ddtrace (see the import banner
+-        # near the top of this file) — 'tracer' is undefined otherwise.
+-        #
+-        # HIGH-CARDINALITY WARNING: do NOT add transaction_id or
+-        # message_id as span tags — those are unbounded.
+-        # Use correlation_id only if your broker reuses a bounded set.
+-        # Docs: https://docs.datadoghq.com/tracing/trace_collection/custom_instrumentation/python/
+-        #
+-        # with tracer.trace(
+-        #     "fraud.score", service="fraud-detection", resource=transaction_type
+-        # ) as span:
+-        #     span.set_tag("transaction.type", transaction_type)
+-        #     span.set_tag("payment.currency", currency)
+-        #     span.set_tag("fraud.score_bucket", result["bucket"])
+-        #     # Numeric score → feeds the finance.fraud.score distribution span metric.
+-        #     # Safe as a span metric value (aggregated), NOT used as a grouping tag.
+-        #     span.set_tag("fraud.score", float(result["score"]))
+-        #     span.set_tag("messaging.destination", "fraud.score.queue")
+-        #     # HIGH-CARDINALITY WARNING: messaging.message_id is per-message —
+-        #     # tag only when debugging a specific incident, not in production.
+-        #     # span.set_tag("messaging.message_id", message_id)
+-        #     if result["bucket"] == "high":
+-        #         span.error = 1
+-        #         span.set_tag("error.message", "High-risk transaction flagged")
+-        # ─────────────────────────────────────────────────────────────────────
+-
+         logger.info(
+             "Fraud score computed",
+             extra={

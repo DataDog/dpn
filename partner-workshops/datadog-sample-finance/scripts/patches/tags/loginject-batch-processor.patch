@@ -1,0 +1,23 @@
+--- a/deploy/kubernetes/base/services/batch-processor.yaml
++++ b/deploy/kubernetes/base/services/batch-processor.yaml
+@@ -137,17 +137,9 @@
+               valueFrom:
+                 fieldRef:
+                   fieldPath: status.hostIP
+-            # ── DATADOG INSTRUMENTATION (log injection) ─────────────────────
+-            # Uncomment via 'make tags' to inject dd.trace_id / dd.span_id
+-            # into Spring Batch job logs via dd-trace-java's MDC integration —
+-            # stitches JSON logs to APM traces ("View in APM" from Logs).
+-            # Java has no source-level patch_logging() equivalent — this is
+-            # the only switch needed.
+-            # Docs: https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/?tab=java
+-            #
+-            # - name: DD_LOGS_INJECTION
+-            #   value: "true"
+-            # ─────────────────────────────────────────────────────────────────
++            # ── Datadog log injection (Java MDC via dd-trace-java) ───────────
++            - name: DD_LOGS_INJECTION
++              value: "true"
+             # ── DATADOG INSTRUMENTATION (Application Security Management) ───
+             # Uncomment via 'make security' to enable AppSec threat detection
+             # in the tracer. Works alongside the Agent-side asm.threats

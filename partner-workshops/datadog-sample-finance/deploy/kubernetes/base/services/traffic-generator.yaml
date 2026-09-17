@@ -1,0 +1,144 @@
+# =============================================================================
+# Finance Sample App — Traffic Generator
+# =============================================================================
+# A continuously-running in-cluster Deployment that generates realistic
+# mixed traffic against the Finance services.
+#
+# Running inside the cluster means:
+#   - Works identically on local k3s and EKS (no NodePort or port-forward needed)
+#   - Produces a constant stream of APM traces, logs, and metrics in Datadog
+#   - Always-on: no laptop required, survives cluster restarts
+#
+# The generator talks to services via their ClusterIP DNS names:
+#   gateway-api:8080, account-service:8081, transaction-service:8082, keycloak:8080
+#
+# Note: keycloak:8080 here is plain HTTP via ClusterIP — this generator never
+# goes through the nginx self-signed HTTPS proxy on :30443, so it is
+# unaffected by the browser-only self-signed certificate warning.
+#
+# Tune rate and behaviour via the TRAFFIC_RATE and TRAFFIC_SCENARIOS env vars.
+#
+# To watch live output:
+#   kubectl logs -n finance deploy/traffic-generator -f
+#
+# To pause traffic (scale to 0):
+#   kubectl scale deployment traffic-generator --replicas=0 -n finance
+#
+# To resume:
+#   kubectl scale deployment traffic-generator --replicas=1 -n finance
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traffic-generator
+  namespace: finance
+  labels:
+    app: traffic-generator
+    component: tooling
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traffic-generator
+  template:
+    metadata:
+      labels:
+        app: traffic-generator
+        component: tooling
+        # ── No Datadog injection on the traffic generator ──────────────────
+        # We deliberately do NOT add admission.datadoghq.com/enabled: "true"
+        # here. The generator is a tooling pod — its own traces would add
+        # noise to APM. The traces we care about are on the Finance services.
+    spec:
+      # Restart policy: Always (default for Deployment) keeps traffic flowing
+      # after transient failures (e.g. Keycloak restart, network blip).
+      restartPolicy: Always
+
+      # Wait for all finance services to be reachable before starting.
+      # Uses nc (netcat from busybox) to probe each service port.
+      initContainers:
+        - name: wait-for-services
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for finance services..."
+              until nc -z keycloak 8080; do echo "  keycloak not ready"; sleep 5; done
+              echo "  keycloak ✓"
+              until nc -z gateway-api 8080; do echo "  gateway-api not ready"; sleep 5; done
+              echo "  gateway-api ✓"
+              until nc -z account-service 8081; do echo "  account-service not ready"; sleep 5; done
+              echo "  account-service ✓"
+              until nc -z transaction-service 8082; do echo "  transaction-service not ready"; sleep 5; done
+              echo "  transaction-service ✓"
+              until nc -z batch-processor 8083; do echo "  batch-processor not ready"; sleep 5; done
+              echo "  batch-processor ✓"
+              echo "All services ready — starting traffic generator."
+
+      containers:
+        - name: traffic-generator
+          image: python:3.11-slim
+          imagePullPolicy: IfNotPresent
+
+          command:
+            - python3
+            - /scripts/generate-traffic.py
+            - --rate
+            - "$(TRAFFIC_RATE)"
+
+          env:
+            # ── In-cluster service URLs (ClusterIP DNS) ──────────────────────
+            # These resolve via kube-dns to the ClusterIP of each service.
+            # No NodePort, no port-forward, no external access needed.
+            - name: GATEWAY_URL
+              value: "http://gateway-api:8080"
+            - name: ACCOUNTS_URL
+              value: "http://account-service:8081"
+            - name: TXNS_URL
+              value: "http://transaction-service:8082"
+            - name: BATCH_URL
+              value: "http://batch-processor:8083"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak:8080"
+
+            # ── Keycloak OIDC client secret ───────────────────────────────────
+            # Must match the finance-gateway client secret seeded into Keycloak
+            # via identity-provider/realm-export/finance-realm.json. Without
+            # this, password-grant token requests fail with invalid_client_credentials
+            # and every authenticated scenario (balance checks, payments) 401s.
+            - name: KEYCLOAK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: keycloak-client-secret
+
+            # ── Tuning ───────────────────────────────────────────────────────
+            # TRAFFIC_RATE: requests per second. Default 2 — enough to produce
+            # meaningful APM data without overwhelming a demo cluster.
+            # Raise to 5-10 for load testing, lower to 0.5 for quiet demos.
+            - name: TRAFFIC_RATE
+              value: "2"
+
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+
+          # Liveness: the script runs in a loop — if the process dies the
+          # container exits (non-zero) and Kubernetes restarts it.
+          # No HTTP health check needed here.
+
+      volumes:
+        - name: scripts
+          configMap:
+            name: traffic-generator-script
+            defaultMode: 0755

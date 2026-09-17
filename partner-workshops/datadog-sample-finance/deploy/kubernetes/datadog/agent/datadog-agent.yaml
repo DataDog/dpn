@@ -1,0 +1,299 @@
+# ── DATADOG OPERATOR — DatadogAgent CRD ──────────────────────────────────────
+# apiVersion: datadoghq.com/v2alpha1
+# Requires the Datadog Operator to be installed first:
+#   helm repo add datadog https://helm.datadoghq.com
+#   helm install datadog-operator datadog/datadog-operator
+#
+# Docs: https://github.com/DataDog/datadog-operator
+# Docs: https://docs.datadoghq.com/containers/kubernetes/
+# ─────────────────────────────────────────────────────────────────────────────
+
+apiVersion: datadoghq.com/v2alpha1
+kind: DatadogAgent
+metadata:
+  name: datadog
+  namespace: datadog
+  labels:
+    app.kubernetes.io/name: datadog-agent
+    app.kubernetes.io/part-of: finance-sample-app
+spec:
+  # ── GLOBAL SETTINGS ────────────────────────────────────────────────────────
+  global:
+    site: datadoghq.com # Change to datadoghq.eu for EU region
+
+    # ── CREDENTIALS (never inline the API key) ───────────────────────────────
+    # The API key is read from a K8s Secret created separately:
+    #   kubectl create secret generic datadog-secret \
+    #     --from-literal api-key=<YOUR_DD_API_KEY> \
+    #     --namespace datadog
+    # Docs: https://docs.datadoghq.com/containers/kubernetes/installation/
+    credentials:
+      apiSecret:
+        secretName: datadog-secret # Name of the K8s Secret
+        keyName: api-key # Key inside the Secret
+
+    # ── UNIFIED SERVICE TAGGING ───────────────────────────────────────────────
+    # These tags propagate to ALL telemetry: traces, logs, metrics, profiles.
+    # Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+    tags:
+      - env:staging
+      - app:finance-sample-app
+
+    # ── KUBELET TLS ───────────────────────────────────────────────────────────
+    kubelet:
+      tlsVerify: false # Set to true in production with proper cert
+
+    # ── APP-SIDE APPSEC ENABLEMENT ────────────────────────────────────────────
+    # Each application pod also needs DD_APPSEC_ENABLED=true set as an env var.
+    # This is done in the service manifests (deploy/kubernetes/base/services/).
+    # The Admission Controller can inject it automatically when asm.threats is
+    # enabled above — see admissionController.mutateUnlabelled below.
+    # ────────────────────────────────────────────────────────────────────────────
+
+  # ── FEATURES ──────────────────────────────────────────────────────────────
+  features:
+    # ── APM / DISTRIBUTED TRACING ─────────────────────────────────────────────
+    # Enables the trace agent. Application pods send traces to the Agent via
+    # DD_AGENT_HOST (set to status.hostIP via downward API in each pod spec).
+    # Docs: https://docs.datadoghq.com/tracing/
+    apm:
+      enabled: true
+      hostPortConfig:
+        enabled: true
+        hostPort: 8126 # Default APM port
+
+    # ── LOG COLLECTION ─────────────────────────────────────────────────────────
+    # Collects container stdout/stderr logs and forwards them to Datadog.
+    # containerCollectAll: true collects from ALL containers — restrict per-pod
+    # using the ad.datadoghq.com/<container>.logs annotation when needed.
+    # Docs: https://docs.datadoghq.com/logs/log_collection/
+    logCollection:
+      enabled: true
+      containerCollectAll: true
+      # containerLogsPath is intentionally NOT set: the Operator auto-detects
+      # the node's container runtime and picks the right host path
+      # (/var/lib/docker/containers for Docker/cri-dockerd, /var/log/containers
+      # for containerd such as EKS Bottlerocket, kind, k3d). Hardcoding a single
+      # value was fragile — it broke log collection on whichever runtime it
+      # didn't match. Auto-detection works for both local and EKS, so the EKS
+      # overlay no longer needs to patch this value.
+
+    # ── PROCESS DISCOVERY ─────────────────────────────────────────────────────
+    # Enables the process agent for Live Processes and Network Performance
+    # Monitoring visibility.
+    liveProcessCollection:
+      enabled: true
+
+    # ── DATA STREAMS MONITORING (DSM) ──────────────────────────────────────────
+    # DSM is enabled automatically when APM is enabled in Operator >= 1.0.
+    # No separate feature flag needed.
+    # Docs: https://docs.datadoghq.com/data_streams/
+
+    # ── DOGSTATSD (CUSTOM METRICS) ─────────────────────────────────────────────
+    # Receives custom DogStatsD metrics from application pods.
+    # Finance metrics: finance.payment.initiated, finance.fraud.score, etc.
+    # Applications should use DD_DOGSTATSD_URL=udp://$(DD_AGENT_HOST):8125
+    # Docs: https://docs.datadoghq.com/developers/dogstatsd/
+    dogstatsd:
+      hostPortConfig:
+        enabled: true
+        hostPort: 8125
+
+    # ── LIVE CONTAINER MONITORING ──────────────────────────────────────────────
+    liveContainerCollection:
+      enabled: true
+
+    # ── ORCHESTRATOR EXPLORER ──────────────────────────────────────────────────
+    # Provides K8s resource visibility (pods, deployments, nodes) in the UI.
+    orchestratorExplorer:
+      enabled: true
+
+    # ── CONTINUOUS PROFILER ───────────────────────────────────────────────────
+    # Agent-side profiler intake. Per-service profiler must also be enabled:
+    #   Python: DD_PROFILING_ENABLED=true
+    #   Java:   -Ddd.profiling.enabled=true
+    #   Go:     profiler.Start() call in code
+    # Docs: https://docs.datadoghq.com/profiler/
+    #
+    # NOTE: The profiler is currently enabled at the Agent level.
+    # Each service must still opt in via its own env var / JVM flag.
+
+    # ── CLUSTER CHECKS ────────────────────────────────────────────────────────
+    # Required for postgres.d and activemq.d ConfigMap-mounted checks.
+    clusterChecks:
+      enabled: true
+
+    # ── ADMISSION CONTROLLER ─────────────────────────────────────────────────
+    # Auto-injects DD_AGENT_HOST, DD_TRACE_AGENT_URL, DD_ENTITY_ID into
+    # pods annotated with admission.datadoghq.com/enabled: "true".
+    # Docs: https://docs.datadoghq.com/containers/cluster_agent/admission_controller/
+    admissionController:
+      enabled: true
+      mutateUnlabelled: false # false = only inject into pods with admission.datadoghq.com/enabled:true label
+      # Set to true to inject into ALL pods in non-excluded namespaces (simpler, but broader)
+
+    # ── DATADOG INSTRUMENTATION (Application/Cloud Security) ─────────────────
+    # Uncomment via 'make security' to enable ASM Threats/SCA, CWS, and CSPM.
+    #
+    # ── APPLICATION SECURITY MANAGEMENT (ASM / AppSec) ───────────────────────
+    # Detects and blocks web attacks (SQLi, XSS, SSRF, etc.) and tracks
+    # business-logic threats (credential stuffing, payment fraud) in real time.
+    # Works by instrumenting the APM tracer — no separate agent needed.
+    #
+    # Finance relevance:
+    #   - Detects SQLi attempts against the ledger API
+    #   - Tracks brute-force on /v1/payments (business logic rules)
+    #   - Surfaces threats in Security > Application Security > Threats
+    #
+    # Requires: DD_APPSEC_ENABLED=true on each service pod (see service manifests,
+    # also gated behind 'make security').
+    # The Agent feature below enables the threat intake pipeline on the Agent side.
+    #
+    # Docs: https://docs.datadoghq.com/security/application_security/
+    # Docs: https://docs.datadoghq.com/security/application_security/enabling/
+    #
+    # asm:
+    #   threats:
+    #     enabled: true
+    #   sca:
+    #     enabled: true # Software Composition Analysis — OSS vulnerability scanning
+    #
+    # ── CLOUD WORKLOAD SECURITY (CWS / CSM Threats) ───────────────────────────
+    # Runtime security monitoring at the kernel level via eBPF. Detects:
+    #   - Unexpected process execution inside containers (e.g. shell in app pod)
+    #   - File integrity violations (e.g. write to /etc inside a container)
+    #   - Network anomalies and suspicious syscalls
+    #   - Privilege escalation attempts
+    #
+    # Finance relevance: PCI-DSS and SOC 2 require evidence of runtime threat
+    # detection. CWS generates audit-ready security signals.
+    #
+    # Requires: privileged DaemonSet (the Operator sets this automatically when
+    # cwsInstrumentation is enabled). No app-side changes needed.
+    #
+    # Docs: https://docs.datadoghq.com/security/cloud_workload_security/
+    # Docs: https://docs.datadoghq.com/security/cloud_security_management/
+    #
+    # ── RESOURCE NOTE (small / demo clusters) ────────────────────────────────
+    # CWS (eBPF system-probe) and CSPM host benchmarks are the heaviest
+    # features here. On small nodes (e.g. EKS t3.medium) they add noticeable
+    # CPU/memory and privileged-DaemonSet overhead. If the demo only needs
+    # APM + logs + metrics, leave the `cws:` and `cspm:` blocks below
+    # commented out (and `asm.sca` if OSS scanning isn't needed). For the
+    # full security suite, prefer t3.large nodes (see
+    # deploy/terraform/aws/staging.tfvars) before running 'make security'.
+    #
+    # cws:
+    #   enabled: true
+    #   syscallMonitorEnabled: true # Audit syscalls for deeper forensic visibility
+    #
+    # ── CSM MISCONFIGURATIONS (CSPM) ──────────────────────────────────────────
+    # Continuously evaluates K8s and cloud resources against CIS benchmarks,
+    # PCI-DSS, SOC 2, and NIST frameworks.
+    # Surfaces misconfigured RBAC, exposed secrets, insecure pod specs, etc.
+    #
+    # Docs: https://docs.datadoghq.com/security/cloud_security_management/misconfigurations/
+    #
+    # cspm:
+    #   enabled: true
+    #   hostBenchmarks:
+    #     enabled: true # CIS benchmark checks on the underlying node OS
+    # ─────────────────────────────────────────────────────────────────────────
+
+  # Cluster Agent replicas via override (Operator v2alpha1 >= 1.0)
+  override:
+    clusterAgent:
+      replicas: 2 # HA for production
+
+    # ── DATADOG INSTRUMENTATION (Database Monitoring) ───────────────────────
+    # Uncomment via 'make dbm' to mount the postgres.d check config and inject
+    # the DBM role password below (both required for DBM — a ConfigMap or
+    # env var alone does nothing unless wired in like this).
+    #
+    # ── DATABASE MONITORING (DBM) — PostgreSQL check config + password ─────
+    # 1. Mounts the datadog-postgres-check ConfigMap (deploy/kubernetes/datadog/
+    #    checks/postgres-check.yaml) into conf.d/postgres.d/conf.yaml so the
+    #    Agent actually picks up the DBM check (a ConfigMap alone does nothing
+    #    unless it's mounted like this).
+    # 2. Injects the 'datadog' DBM role's password (created by 'make dbm')
+    #    into the node Agent container as an env var, referenced from the
+    #    postgres.d check config via %%env_DD_DBM_POSTGRES_PASSWORD%% templating.
+    #    This avoids requiring a full Agent secrets-backend script for a single
+    #    value. Docs: https://docs.datadoghq.com/agent/guide/autodiscovery-management/?tab=helm#template-variables
+    # ── DATA STREAMS: ActiveMQ Artemis JMX check config ─────────────────────
+    # Mounts the datadog-activemq-check ConfigMap (deploy/kubernetes/datadog/
+    # checks/activemq-check.yaml) into conf.d/activemq.d/conf.yaml. No
+    # password/env wiring needed here: the broker runs with JMX
+    # authentication disabled (see activemq.yaml's JAVA_ARGS), so unlike
+    # postgres.d there's no secret to inject.
+    #
+    # ── JMX / JAVA RUNTIME ─────────────────────────────────────────────────
+    # The standard agent:7 image does NOT bundle a JVM, so JMXFetch (needed by
+    # any is_jmx:true check, e.g. activemq.d) fails with:
+    #   "exec: java: executable file not found in $PATH"
+    # image.jmxEnabled: true switches the Node Agent to the '-jmx' image
+    # variant (e.g. 7.80.2-jmx), which bundles a JRE. Required for the
+    # ActiveMQ Artemis check below. Not DBM-gated — kept always-on since the
+    # ActiveMQ JMX check has no separate make target.
+    # Docs: https://docs.datadoghq.com/integrations/java
+    nodeAgent:
+      image:
+        jmxEnabled: true
+      volumes:
+        # ── DATADOG INSTRUMENTATION (Database Monitoring) ───────────────────
+        # Uncomment via 'make dbm'.
+        #
+        # - name: postgres-check-config
+        #   configMap:
+        #     name: datadog-postgres-check
+        # ─────────────────────────────────────────────────────────────────────
+        - name: activemq-check-config
+          configMap:
+            name: datadog-activemq-check
+      containers:
+        agent:
+          # ── DATADOG INSTRUMENTATION (Database Monitoring) ─────────────────
+          # Uncomment via 'make dbm' (adds the 'env:' key back with this entry).
+          #
+          # env:
+          #   - name: DD_DBM_POSTGRES_PASSWORD
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: datadog-secret
+          #         key: dbm-password
+          # ─────────────────────────────────────────────────────────────────
+          volumeMounts:
+            # ── DATADOG INSTRUMENTATION (Database Monitoring) ───────────────────
+            # Uncomment via 'make dbm'.
+            #
+            # - name: postgres-check-config
+            #   mountPath: /etc/datadog-agent/conf.d/postgres.d/conf.yaml
+            #   subPath: conf.yaml
+            # ─────────────────────────────────────────────────────────────────────
+            - name: activemq-check-config
+              mountPath: /etc/datadog-agent/conf.d/activemq.d/conf.yaml
+              subPath: conf.yaml
+
+  # ── OVERRIDE PER COMPONENT (optional) ────────────────────────────────────
+  # Use overrides to set resource limits, node selectors, tolerations, etc.
+  # on the Node Agent, Cluster Agent, or Cluster Checks Runner.
+  #
+  # override:
+  #   nodeAgent:
+  #     tolerations:
+  #       - operator: Exists
+  #     resources:
+  #       requests:
+  #         cpu: 200m
+  #         memory: 256Mi
+  #       limits:
+  #         cpu: 400m
+  #         memory: 512Mi
+  #   clusterAgent:
+  #     resources:
+  #       requests:
+  #         cpu: 100m
+  #         memory: 128Mi
+  #       limits:
+  #         cpu: 200m
+  #         memory: 256Mi

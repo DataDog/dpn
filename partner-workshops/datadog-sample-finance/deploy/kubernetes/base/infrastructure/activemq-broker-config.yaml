@@ -1,0 +1,187 @@
+# =============================================================================
+# Finance Sample App — ActiveMQ Artemis broker.xml override
+# =============================================================================
+# BUG FIX: STOMP consumers (fraud-detection, notification-service,
+# transaction-service) subscribe using JMS-style destination names like
+# "/queue/alert.queue". Without anycastPrefix/multicastPrefix configured on
+# the STOMP acceptor, Artemis takes that string LITERALLY as an address name
+# — creating a brand-new MULTICAST address called "/queue/alert.queue" (with
+# the slashes baked into the name) that has nothing to do with the ANYCAST
+# address "alert.queue" that JMS/OpenWire producers (account-service via
+# Spring JmsTemplate) publish to. Result: producers report
+# "event=jms.produce status=sent" successfully, messages pile up forever on
+# the ANYCAST "alert.queue" address (0 consumers), while the STOMP consumer
+# sits idle on an entirely different, empty MULTICAST address. No errors on
+# either side — it looks like a silent broker/consumer bug rather than an
+# address-naming mismatch.
+#
+# Fix: add `anycastPrefix=/queue/;multicastPrefix=/topic/` to the `stomp`
+# acceptor URL. This tells Artemis' STOMP protocol handler to strip the
+# leading "/queue/" (or "/topic/") from the destination header and resolve
+# the remainder as a plain ANYCAST (or MULTICAST) address name — the
+# standard, documented Artemis convention for STOMP/JMS interop with
+# queue-style destination naming.
+# Docs: https://activemq.apache.org/components/artemis/documentation/latest/stomp.html
+#
+# This file is copied over the auto-generated broker.xml at container start
+# via the official apache/activemq-artemis image's `etc-override` mechanism
+# (see /docker-run.sh in the image: any file under $BROKER_HOME/etc-override
+# is copied into $BROKER_HOME/etc after `artemis create` runs). Because the
+# broker's data directory is an emptyDir, `artemis create` — and therefore
+# this override — runs again on every pod restart, so the fix persists
+# across restarts without needing a PVC or manual intervention.
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: activemq-broker-config
+  namespace: finance
+  labels:
+    app: activemq-artemis
+    component: infrastructure
+data:
+  broker.xml: |
+    <?xml version='1.0'?>
+    <configuration xmlns="urn:activemq"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   xsi:schemaLocation="urn:activemq /schema/artemis-configuration.xsd">
+
+       <core xmlns="urn:activemq:core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="urn:activemq:core ">
+
+          <name>0.0.0.0</name>
+
+          <persistence-enabled>true</persistence-enabled>
+
+          <max-redelivery-records>1</max-redelivery-records>
+
+          <journal-type>ASYNCIO</journal-type>
+
+          <purge-page-folders>false</purge-page-folders>
+
+          <paging-directory>data/paging</paging-directory>
+
+          <bindings-directory>data/bindings</bindings-directory>
+
+          <journal-directory>data/journal</journal-directory>
+
+          <large-messages-directory>data/large-messages</large-messages-directory>
+
+          <journal-datasync>true</journal-datasync>
+
+          <journal-min-files>2</journal-min-files>
+
+          <journal-pool-files>10</journal-pool-files>
+
+          <journal-device-block-size>4096</journal-device-block-size>
+
+          <journal-file-size>10M</journal-file-size>
+
+          <journal-buffer-timeout>32000</journal-buffer-timeout>
+
+          <journal-max-io>4096</journal-max-io>
+
+          <disk-scan-period>5000</disk-scan-period>
+
+          <max-disk-usage>90</max-disk-usage>
+
+          <critical-analyzer>true</critical-analyzer>
+
+          <critical-analyzer-timeout>120000</critical-analyzer-timeout>
+
+          <critical-analyzer-check-period>60000</critical-analyzer-check-period>
+
+          <critical-analyzer-policy>HALT</critical-analyzer-policy>
+
+          <page-sync-timeout>944000</page-sync-timeout>
+
+          <global-max-messages>-1</global-max-messages>
+
+          <acceptors>
+
+             <acceptor name="artemis">tcp://0.0.0.0:61616?tcpSendBufferSize=1048576;tcpReceiveBufferSize=1048576;amqpMinLargeMessageSize=102400;protocols=CORE,AMQP,STOMP,HORNETQ,MQTT,OPENWIRE;useEpoll=true;amqpCredits=1000;amqpLowCredits=300;amqpDuplicateDetection=true;supportAdvisory=false;suppressInternalManagementObjects=false</acceptor>
+
+             <acceptor name="amqp">tcp://0.0.0.0:5672?tcpSendBufferSize=1048576;tcpReceiveBufferSize=1048576;protocols=AMQP;useEpoll=true;amqpCredits=1000;amqpLowCredits=300;amqpMinLargeMessageSize=102400;amqpDuplicateDetection=true</acceptor>
+
+             <!-- STOMP Acceptor. -->
+             <!-- anycastPrefix/multicastPrefix: strip the "/queue/" or "/topic/"
+                  prefix that STOMP clients (Go, Python, Node) send in the
+                  destination header, and resolve the remainder as a plain
+                  ANYCAST/MULTICAST address name — matching the address that
+                  JMS/OpenWire producers (Spring JmsTemplate) auto-create.
+                  Without this, "/queue/alert.queue" becomes its own distinct
+                  (and wrong) address instead of resolving to "alert.queue". -->
+             <acceptor name="stomp">tcp://0.0.0.0:61613?tcpSendBufferSize=1048576;tcpReceiveBufferSize=1048576;protocols=STOMP;useEpoll=true;anycastPrefix=/queue/;multicastPrefix=/topic/</acceptor>
+
+             <!-- HornetQ Compatibility Acceptor.  Enables HornetQ Core and STOMP for legacy HornetQ clients. -->
+             <acceptor name="hornetq">tcp://0.0.0.0:5445?anycastPrefix=jms.queue.;multicastPrefix=jms.topic.;protocols=HORNETQ,STOMP;useEpoll=true</acceptor>
+
+             <!-- MQTT Acceptor -->
+             <acceptor name="mqtt">tcp://0.0.0.0:1883?tcpSendBufferSize=1048576;tcpReceiveBufferSize=1048576;protocols=MQTT;useEpoll=true</acceptor>
+
+          </acceptors>
+
+          <security-settings>
+             <security-setting match="#">
+                <permission type="createNonDurableQueue" roles="amq"/>
+                <permission type="deleteNonDurableQueue" roles="amq"/>
+                <permission type="createDurableQueue" roles="amq"/>
+                <permission type="deleteDurableQueue" roles="amq"/>
+                <permission type="createAddress" roles="amq"/>
+                <permission type="deleteAddress" roles="amq"/>
+                <permission type="consume" roles="amq"/>
+                <permission type="browse" roles="amq"/>
+                <permission type="send" roles="amq"/>
+                <permission type="manage" roles="amq"/>
+             </security-setting>
+          </security-settings>
+
+          <address-settings>
+             <address-setting match="activemq.management.#">
+                <dead-letter-address>DLQ</dead-letter-address>
+                <expiry-address>ExpiryQueue</expiry-address>
+                <redelivery-delay>0</redelivery-delay>
+                <max-size-bytes>-1</max-size-bytes>
+                <message-counter-history-day-limit>10</message-counter-history-day-limit>
+                <address-full-policy>PAGE</address-full-policy>
+                <auto-create-queues>true</auto-create-queues>
+                <auto-create-addresses>true</auto-create-addresses>
+             </address-setting>
+             <!--default for catch all-->
+             <address-setting match="#">
+                <dead-letter-address>DLQ</dead-letter-address>
+                <expiry-address>ExpiryQueue</expiry-address>
+                <redelivery-delay>0</redelivery-delay>
+                <message-counter-history-day-limit>10</message-counter-history-day-limit>
+                <address-full-policy>PAGE</address-full-policy>
+                <auto-create-queues>true</auto-create-queues>
+                <auto-create-addresses>true</auto-create-addresses>
+                <auto-delete-queues>false</auto-delete-queues>
+                <auto-delete-addresses>false</auto-delete-addresses>
+                <page-size-bytes>10M</page-size-bytes>
+                <max-size-bytes>-1</max-size-bytes>
+                <max-size-messages>-1</max-size-messages>
+                <max-read-page-messages>-1</max-read-page-messages>
+                <max-read-page-bytes>20M</max-read-page-bytes>
+                <page-limit-bytes>-1</page-limit-bytes>
+                <page-limit-messages>-1</page-limit-messages>
+              </address-setting>
+          </address-settings>
+
+          <addresses>
+             <address name="DLQ">
+                <anycast>
+                   <queue name="DLQ" />
+                </anycast>
+             </address>
+             <address name="ExpiryQueue">
+                <anycast>
+                   <queue name="ExpiryQueue" />
+                </anycast>
+             </address>
+          </addresses>
+
+       </core>
+    </configuration>

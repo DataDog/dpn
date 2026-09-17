@@ -1,0 +1,18 @@
+# =============================================================================
+# Kustomize base — Datadog Agent (DatadogAgent CRD)
+# =============================================================================
+# This is the single source of truth for the DatadogAgent spec (APM, logs,
+# metrics, DSM, profiler intake, ASM, CWS, CSPM).
+#
+#   Local clusters:  kubectl apply -k deploy/kubernetes/datadog/agent
+#   EKS:             kubectl apply -k deploy/kubernetes/overlays/eks-datadog
+#                    (overlay patches ONLY the EKS-specific deltas — clusterName,
+#                     tags, kubelet.tlsVerify — and inherits every feature from
+#                     here, so the security suite can never silently diverge
+#                     between local and EKS again).
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - datadog-agent.yaml

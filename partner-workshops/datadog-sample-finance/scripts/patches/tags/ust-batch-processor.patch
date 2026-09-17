@@ -1,0 +1,47 @@
+--- a/deploy/kubernetes/base/services/batch-processor.yaml
++++ b/deploy/kubernetes/base/services/batch-processor.yaml
+@@ -70,15 +70,9 @@
+         app: batch-processor
+         component: service
+         # ─────────────────────────────────────────────────────────────────
+-        # ── DATADOG UST (Unified Service Tagging) ────────────────────────
+-        # Uncomment via 'make tags' to set the tags.datadoghq.com/* pod
+-        # labels used for Deployment Tracking / trace-log-metric correlation.
+-        # Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+-        #
+-        # tags.datadoghq.com/env: "staging"
+-        # tags.datadoghq.com/service: "batch-processor"
+-        # tags.datadoghq.com/version: "latest"
+-        # ─────────────────────────────────────────────────────────────────
++        tags.datadoghq.com/env: "staging"
++        tags.datadoghq.com/service: "batch-processor"
++        tags.datadoghq.com/version: "latest"
+     spec:
+       # Wait for PostgreSQL before starting Spring Batch — it creates
+       # its metadata tables on first run (initialize-schema: always).
+@@ -119,18 +113,13 @@
+                   name: app-secrets
+                   key: postgres-password
+ 
+-            # ── DATADOG INSTRUMENTATION (Unified Service Tagging) ───────────
+-            # Uncomment via 'make tags' to set DD_ENV/DD_SERVICE/DD_VERSION —
+-            # required for APM/logs/metrics correlation and Deployment
+-            # Tracking. Docs: https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/
+-            #
+-            # - name: DD_ENV
+-            #   value: "staging"
+-            # - name: DD_SERVICE
+-            #   value: "batch-processor"
+-            # - name: DD_VERSION
+-            #   value: "latest"
+-            # ─────────────────────────────────────────────────────────────────
++            # ── Datadog Unified Service Tagging ─────────────────────────────
++            - name: DD_ENV
++              value: "staging"
++            - name: DD_SERVICE
++              value: "batch-processor"
++            - name: DD_VERSION
++              value: "latest"
+             # DD_AGENT_HOST uses the node's IP so the pod sends traces/metrics
+             # to the DaemonSet agent running on the same node.
+             - name: DD_AGENT_HOST
